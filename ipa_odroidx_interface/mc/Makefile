@@ -95,3 +95,9 @@ nmea.o		: nmea.c			nmea.h		global.h
 vt100.o		: vt100.c		vt100.h		global.h
 gps.o			: gps.c			gps.h			global.h
 $(TRG).o		: $(TRG).c						global.h
+
+
+AVRDUDE=avrdude -p m168 -c gpio -F
+load:	$(TRG).hex
+	@echo "P $(TRG) forced for Atmega168PA"
+	@$(AVRDUDE) -U flash:w:$<:i
