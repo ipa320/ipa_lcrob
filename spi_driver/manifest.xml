@@ -1,0 +1,14 @@
+<package>
+  <description brief="spi_driver">
+
+     spi_driver
+
+  </description>
+  <author>linaro</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/spi_driver</url>
+
+</package>
+
+
