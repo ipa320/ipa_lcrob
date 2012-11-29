@@ -1,0 +1,17 @@
+<package>
+  <description brief="ipa_odroidx_interface">
+
+     ipa_odroidx_interface
+
+  </description>
+  <author>Joshua Hampp</author>
+  <license>GPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/cob_odroidx_interface</url>
+
+  <depend package="rospy"/>
+  <depend package="sensor_msgs"/>
+
+</package>
+
+
