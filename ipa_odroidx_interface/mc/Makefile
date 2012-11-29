@@ -64,7 +64,7 @@ AVRLIB := ../avrlib/
 
 	
 ########### you should not need to change the following line #############
-include $(AVRLIB)/make/avrproj_make
+include avrproj_make
 		  
 ###### dependecies, add any dependencies you need here ###################
 #  Dependencies tell the compiler which files in your code depend on which
