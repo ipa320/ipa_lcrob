@@ -66,6 +66,18 @@ u08 set_motor_direction(u08 channel, u08 dir) {
 }
 #endif
 
+/*
+	motor: 0b???? ??DC
+	D = direction
+	C = channel
+*/
+void set_motor(u08 motor, u08 speed) {
+	u08 channel = motor&1;
+
+	if(set_motor_direction(channel, motor&2))
+		set_motor_speed(channel, speed);
+}
+
 void init(void) {
 	// turn on and initialize A/D converter
 	a2dInit();
@@ -101,18 +113,6 @@ void init(void) {
 void set_output(u08 out) {
 	outb(PORTC, ((inb(PINC)&0x0F)|(out<<4)) );
 	outb(PORTD, ((inb(PIND)&0xFC)|(out>>4)) );
-}
-
-/*
-	motor: 0b???? ??DC
-	D = direction
-	C = channel
-*/
-void set_motor(u08 motor, u08 speed) {
-	u08 channel = motor&1;
-
-	if(set_motor_direction(channel, motor&2))
-		set_motor_speed(channel, speed);
 }
 
 u16 get_analog(u08 ch) {
