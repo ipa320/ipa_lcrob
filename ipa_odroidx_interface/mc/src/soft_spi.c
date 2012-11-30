@@ -29,7 +29,8 @@ volatile u16 data_out = 0;
 volatile u16 data_in = 0;
 volatile u08 data_in_len = 0;
 
-void on_clock() {
+ISR(PCINT0_vect)
+{
 	//set output
 	if(data_out&1)
 		sbi(PORTC, 4);
@@ -49,9 +50,9 @@ void softSpiClear() {
 // access routines
 void softSpiInit()
 {
-	extintInit();
-	extintConfigure(EXTINT5, EXTINT_EDGE_RISING);
-	extintAttach(EXTINT5, on_clock);
+	PCICR |= (1<<PCIE0);
+	//EICRA |= (1<<ISC01)|(1<<ISC00);
+	PCMSK0 |= (1<<PCINT5);
 
 	sbi(DDRB, 4);
 }
