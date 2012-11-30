@@ -46,6 +46,8 @@ static int gpio_export(unsigned gpio)
 	len = snprintf(buf, sizeof(buf), "%d", gpio);
 	write(fd, buf, len);
 	close(fd);
+
+	usleep(100*1000);
  
 	return 0;
 }
