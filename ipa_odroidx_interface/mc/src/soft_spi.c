@@ -31,11 +31,13 @@ volatile u08 data_in_len = 0;
 
 ISR(PCINT0_vect)
 {
+	if( !(inb(PINB)&(1<<5)) )
+		return;
 	//set output
 	if(data_out&1)
-		sbi(PORTC, 4);
+		PORTB |= (1<<4);
 	else
-		cbi(PORTC, 4);
+		PORTB &= ~(1<<4);
 	data_out>>=1;
 
 	data_in<<=1;
@@ -54,7 +56,7 @@ void softSpiInit()
 	//EICRA |= (1<<ISC01)|(1<<ISC00);
 	PCMSK0 |= (1<<PCINT5);
 
-	sbi(DDRB, 4);
+	DDRB |= (1<<4);
 }
 
 void softSpiSendByte(u08 data)
