@@ -21,8 +21,8 @@ setup(name             = 'Ox.GPIO',
       author_email     = 'joshua.hampp@ipa.fraunhofer.de',
       description      = 'A class to control Odroid-X GPIO channels',
       long_description = open('README.txt').read() + open('CHANGELOG.txt').read(),
-      license          = 'MIT',
+      license          = 'GPL',
       keywords         = 'GPIO',
       classifiers      = classifiers,
       packages         = find_packages(),
-      ext_modules      = [Extension('Ox.GPIO', ['src/py_gpio.c', 'src/c_gpio.c'])])
+      ext_modules      = [Extension('Ox.GPIO', ['src/py_gpio.c', 'src/c_gpio.c'], include_dirs=[])])
