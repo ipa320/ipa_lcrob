@@ -9,6 +9,8 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/spi_driver</url>
 
+  <depend package="rospy"/>
+
 </package>
 
 
