@@ -55,52 +55,7 @@ roslib.load_manifest('ipa_odroidx_interface')
 import rospy
 
 from sensor_msgs.msg import ChannelFloat32
-
-from spi import SPIDev, spi_transfer
-import struct
-
-
-class AVRInterface:
-	SET_OUTPUT	=0x10
-	SET_MOTOR	=0x20
-	GET_ANALOG	=0x30
-	GET_INPUT	=0x40
-	SETUP		=0x50
-
-	def __init__(self, dev='/dev/spidev0.0'):
-		#setup device
-		self.spi = SPIDev(dev)
-
-	def write(self,cmd, data=[], expect=0):
-		valtransfer, _, rbuf = spi_transfer(cmd+data, expect=1)
-		# actually do the transfer
-		s.do_transfers([cmdtransfer, valtransfer])
-		return rbuf.raw
-
-	def setup(self):
-		assert self.write(SETUP,[],1)=='O'
-
-	def set_output(self, o):
-		out = 0
-		for i in range(0,6):
-			out += (o[i]<<i)
-		out = chr( out )
-		self.write(SET_OUTPUT,[out])
-
-	def set_motor(self, motor, back, speed):
-		self.write( chr(SET_MOTOR|motor|(back<<1)), [chr(speed)])
-
-	def get_analog(self, ch):
-		assert(ch<4 and ch>=0)
-		data = self.write( chr(GET_ANALOG|ch), [], 2)
-		return ord(data[0])*255 + ord(data[1])
-
-	def get_input(self):
-		data = self.write( GET_INPUT, [], 1)
-		r=[]
-		for i in range(0,4):
-			r.append( ord(data)&(1<<i) )
-		return r
+from avr_interface import AVRInterface
 
 class AVRControl:
 	def __init__(self):
