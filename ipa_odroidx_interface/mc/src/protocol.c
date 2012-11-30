@@ -86,7 +86,7 @@ void init(void) {
 	timerInit();
 
 	outb(DDRB, 0x06);
-	outb(DDRC, 0xF0);
+	outb(DDRC, 0x30);
 	outb(DDRD, 0xA2);
 
 	timer1PWMInit(8); //8 bit resolution
@@ -107,11 +107,10 @@ void init(void) {
 	//timer0SetPrescaler();
 	timerAttach(TIMER0OVERFLOW_INT, check_motor);
 #endif
-
 }
 
 void set_output(u08 out) {
-	outb(PORTC, ((inb(PINC)&0x0F)|(out<<4)) );
+	outb(PORTC, ((inb(PINC)&0xCF)|((out&3)<<4)) );
 	outb(PORTD, ((inb(PIND)&0xFC)|(out>>4)) );
 }
 
