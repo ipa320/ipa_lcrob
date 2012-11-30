@@ -12,7 +12,7 @@
 #define WMOTOR_MIN	40
 #define WMOTOR_MAX	800
 
-void init();
-void parse();
+void init(void);
+void parse(void);
 
 #endif

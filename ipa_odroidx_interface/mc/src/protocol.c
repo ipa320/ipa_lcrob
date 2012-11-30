@@ -8,7 +8,7 @@
 
 #include "a2d.h"		// include A/D converter function library
 #include "timer.h"		// include timer function library (timing, PWM, etc)
-#include "spi.h"		
+#include "soft_spi.h"		
 
 
 //set speed, corred speed according to direction
@@ -46,7 +46,7 @@ u08 set_motor_direction(u08 channel, u08 dir) {
 	return 1;
 }
 
-void check_motor() {
+void check_motor(void) {
 	timer0ClearOverflowCount();
 	set_motor_direction(WATCH_MOTOR, inb(PINB)&(1<<(1+WATCH_MOTOR)) ); //motor 0
 }
@@ -65,7 +65,7 @@ u08 set_motor_direction(u08 channel, u08 dir) {
 }
 #endif
 
-void init() {
+void init(void) {
 	// turn on and initialize A/D converter
 	a2dInit();
 
@@ -87,7 +87,7 @@ void init() {
 	a2dSetPrescaler(ADC_PRESCALE_DIV64);
 	a2dSetReference(ADC_REFERENCE_AVCC);
 
-	spiInit();
+	softSpiInit();
 
 #ifdef WATCH_MOTOR
 	//check if motor went too far  for security
@@ -119,31 +119,34 @@ u16 get_analog(u08 ch) {
 	return a2dConvert10bit(ch);
 }
 
-u08 get_input() {
+u08 get_input(void) {
 	return inb(PINC)&0x0f;
 }
 
-void parse() {
-	u08 c = spiTransferByte(0);
+void parse(void) {
+	u08 c = softSpiGetByte();
+softSpiSendByte(c+1);
+return;
 	switch(c&0xF0) {
 		case SET_OUTPUT:
-			set_output(spiTransferByte(0));
+			set_output(softSpiGetByte());
 			break;
 
 		case SET_MOTOR:
-			set_motor(c&0x03, spiTransferByte(0));
+			set_motor(c&0x03, softSpiGetByte());
 			break;
 
 		case GET_ANALOG:
-			spiTransferWord(get_analog(c&0x03));
+			softSpiSendWord(get_analog(c&0x03));
 			break;
 
 		case GET_INPUT:
-			spiSendByte(get_input());
+			softSpiSendByte(get_input());
 			break;
 
 		case SETUP:
-			PORTC = spiTransferByte('O')&0x0f;
+			softSpiSendByte('O');
+			PORTC = softSpiGetByte()&0x0f;
 			break;
 	}
 }
