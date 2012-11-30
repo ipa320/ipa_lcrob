@@ -10,6 +10,12 @@ class SPI:
 		GPIO.output(self.mosi, GPIO.LOW)
 		self.rest_ms = 10./1000
 
+	def reset(self):
+		GPIO.output(self.reset, GPIO.LOW)
+		time.sleep(0.05)
+		GPIO.output(self.reset, GPIO.HIGH)
+		time.sleep(0.05)
+
 	def sendByte(self, byte):
 		for i in range(0,8):
 			GPIO.output(self.mosi, (byte&(1<<i))>0?GPIO.HIGH:GPIO.LOW)
