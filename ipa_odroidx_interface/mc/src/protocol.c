@@ -126,8 +126,7 @@ u08 get_input(void) {
 
 void parse(void) {
 	u08 c = softSpiGetByte();
-softSpiSendByte(c+1);
-return;
+
 	switch(c&0xF0) {
 		case SET_OUTPUT:
 			set_output(softSpiGetByte());
