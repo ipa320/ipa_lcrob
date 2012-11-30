@@ -6,7 +6,19 @@
 #include <errno.h>
 
 #include "c_gpio.h"
-#include <linux/gpio.h>
+//#include <linux/gpio.h>
+
+/*
+ * End of GPIO user space helpers
+ */
+
+#define N_GPIO 256
+
+/*
+* an array which holds open FDs to /sys/class/gpio/gpioXX/value for all needed pins
+*/
+static int gpio_fds[N_GPIO] ;
+static int gpio_direction[N_GPIO];
 
 /*
  * GPIO user space helpers
@@ -57,10 +69,10 @@ static int gpio_unexport(unsigned gpio)
  
 static int gpio_dir(unsigned gpio, unsigned dir)
 {
-	int fd, len;
+	int fd;
 	char buf[60];
  
-	len = snprintf(buf, sizeof(buf), "/sys/class/gpio/gpio%d/direction", gpio);
+	snprintf(buf, sizeof(buf), "/sys/class/gpio/gpio%d/direction", gpio);
  
 	fd = open(buf, O_WRONLY);
 	if (fd < 0) {
@@ -89,18 +101,6 @@ static int gpio_dir_in(unsigned gpio)
 	return gpio_dir(gpio, GPIO_DIR_IN);
 }
 
-/*
- * End of GPIO user space helpers
- */
-
-#define N_GPIO 256
-
-/*
-* an array which holds open FDs to /sys/class/gpio/gpioXX/value for all needed pins
-*/
-static int gpio_fds[N_GPIO] ;
-static int gpio_direction[N_GPIO];
-
 
 int gpio_setpin(int pin, int value)
 {
@@ -109,11 +109,13 @@ int gpio_setpin(int pin, int value)
   if(gpio_direction[pin]!=GPIO_DIR_OUT)
 	return -2;
 
+#ifdef PIN_INVERSE
   if (pin & PIN_INVERSE)
   {
     value  = !value;
     pin   &= PIN_MASK;
   }
+#endif
 
     if ( gpio_fds[pin] < 0 )
       return -1;
@@ -125,9 +127,6 @@ int gpio_setpin(int pin, int value)
 
   if (r!=1) return -1;
 
-  if (pgm->ispdelay > 1)
-    bitbang_delay(pgm->ispdelay);
-
   return 0;
 }
 
@@ -136,11 +135,13 @@ int gpio_getpin(int pin)
   unsigned char invert=0;
   char c;
 
+#ifdef PIN_INVERSE
   if (pin & PIN_INVERSE)
   {
     invert = 1;
     pin   &= PIN_MASK;
   }
+#endif
 
   if ( gpio_fds[pin] < 0 )
     return -1;
@@ -160,6 +161,7 @@ int gpio_getpin(int pin)
   
 }
 
+#if 0
 static int gpio_highpulsepin(PROGRAMMER * pgm, int pin)
 {
 
@@ -171,6 +173,7 @@ static int gpio_highpulsepin(PROGRAMMER * pgm, int pin)
 
   return 0;
 }
+#endif
 
 int gpio_init() {
   int i;
@@ -186,6 +189,8 @@ int gpio_init() {
 int gpio_open(int pinno, bool out)
 {
 	int r;
+	char filepath[60];
+
         if ((r=gpio_export(pinno)) < 0) 
 	    return r;
 	    
@@ -202,9 +207,6 @@ int gpio_open(int pinno, bool out)
     
         if ((gpio_fds[pinno]=open(filepath, O_RDWR))<0)
 	    return gpio_fds[pinno];
-	    
-    }
-  }
   
  return(0);
 }
