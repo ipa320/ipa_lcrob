@@ -10,10 +10,11 @@
 #include "timer.h"		// include timer function library (timing, PWM, etc)
 #include "soft_spi.h"		
 
+#define CHANNEL2PIN(x) (x==0?5:7)
 
 //set speed, corred speed according to direction
 void set_motor_speed(u08 channel, u08 speed) {
-	if( inb(PINB)&(1<<(1+channel)) )
+	if( inb(PIND)&(1<<CHANNEL2PIN(channel)) )
 		speed = ~speed;
 
 	if(channel&1)
@@ -29,14 +30,14 @@ u08 set_motor_direction(u08 channel, u08 dir) {
 	u16 ad = a2dConvert10bit(0);
 
 	if(dir) {
-		sbi(PORTB,1+channel);
+		sbi(PORTD,CHANNEL2PIN(channel));
 		if(ad<WMOTOR_MIN) {
 			set_motor_speed(channel, 0);
 			return 0;
 		}
 	}
 	else {
-		cbi(PORTB,1+channel);
+		cbi(PORTD,CHANNEL2PIN(channel));
 		if(ad>WMOTOR_MAX) {
 			set_motor_speed(channel, 0);
 			return 0;
@@ -48,7 +49,7 @@ u08 set_motor_direction(u08 channel, u08 dir) {
 
 void check_motor(void) {
 	timer0ClearOverflowCount();
-	set_motor_direction(WATCH_MOTOR, inb(PINB)&(1<<(1+WATCH_MOTOR)) ); //motor 0
+	set_motor_direction(WATCH_MOTOR, inb(PIND)&(1<<CHANNEL2PIN(WATCH_MOTOR)) ); //motor 0
 }
 
 #else
@@ -57,9 +58,9 @@ void check_motor(void) {
 u08 set_motor_direction(u08 channel, u08 dir) {
 
 	if(dir)
-		sbi(PORTB,1+channel);
+		sbi(PORTD,CHANNEL2PIN(channel));
 	else
-		cbi(PORTB,1+channel);
+		cbi(PORTD,CHANNEL2PIN(channel));
 
 	return 1;
 }
