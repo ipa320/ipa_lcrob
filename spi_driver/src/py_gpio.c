@@ -15,7 +15,7 @@ static PyObject *output;
 static PyObject *version;
 
 
-// setup function run on import of the RPi.GPIO module
+// setup function run on import of the Ox.GPIO module
 static int module_setup(void)
 {
    gpio_init();
@@ -61,15 +61,17 @@ static PyObject *py_setup_channel(PyObject *self, PyObject *args, PyObject *kwar
 // python function output(channel, value)
 static PyObject *py_output_gpio(PyObject *self, PyObject *args)
 {
-   int channel, value;
+   int channel, value, r;
+   char buffer[128];
 
    if (!PyArg_ParseTuple(args, "ii", &channel, &value)) 
       return NULL;
 
 //   printf("Output GPIO %d value %d\n", gpio, value);
-   if(gpio_setpin(channel, value)!=0)
+   if( (r=gpio_setpin(channel, value))!=0)
    {
-      PyErr_WarnEx(NULL, "Error on setting pin.", 1);
+      sprintf(buffer, "Error on setting pin (%d).", r);
+      PyErr_WarnEx(NULL, buffer, 1);
    }
 
    Py_INCREF(Py_None);
@@ -102,7 +104,7 @@ PyMethodDef rpi_gpio_methods[] = {
 #if PY_MAJOR_VERSION > 2
 static struct PyModuleDef rpigpiomodule = {
    PyModuleDef_HEAD_INIT,
-   "RPi.GPIO", /* name of module */
+   "Ox.GPIO", /* name of module */
    NULL,       /* module documentation, may be NULL */
    -1,         /* size of per-interpreter state of the module,
                   or -1 if the module keeps state in global variables. */
@@ -111,9 +113,9 @@ static struct PyModuleDef rpigpiomodule = {
 #endif
 
 #if PY_MAJOR_VERSION > 2
-PyMODINIT_FUNC PyInit_SPI(void)
+PyMODINIT_FUNC PyInit_GPIO(void)
 #else
-PyMODINIT_FUNC initSPI(void)
+PyMODINIT_FUNC initGPIO(void)
 #endif
 {
    PyObject *module = NULL;
@@ -122,29 +124,29 @@ PyMODINIT_FUNC initSPI(void)
    if ((module = PyModule_Create(&rpigpiomodule)) == NULL)
       goto exit;
 #else
-   if ((module = Py_InitModule("RPi.GPIO", rpi_gpio_methods)) == NULL)
+   if ((module = Py_InitModule("Ox.GPIO", rpi_gpio_methods)) == NULL)
       goto exit;
 #endif
 
-   WrongDirectionException = PyErr_NewException("RPi.GPIO.WrongDirectionException", NULL, NULL);
+   WrongDirectionException = PyErr_NewException("Ox.GPIO.WrongDirectionException", NULL, NULL);
    PyModule_AddObject(module, "WrongDirectionException", WrongDirectionException);
 
-   InvalidModeException = PyErr_NewException("RPi.GPIO.InvalidModeException", NULL, NULL);
+   InvalidModeException = PyErr_NewException("Ox.GPIO.InvalidModeException", NULL, NULL);
    PyModule_AddObject(module, "InvalidModeException", InvalidModeException);
 
-   InvalidDirectionException = PyErr_NewException("RPi.GPIO.InvalidDirectionException", NULL, NULL);
+   InvalidDirectionException = PyErr_NewException("Ox.GPIO.InvalidDirectionException", NULL, NULL);
    PyModule_AddObject(module, "InvalidDirectionException", InvalidDirectionException);
 
-   InvalidChannelException = PyErr_NewException("RPi.GPIO.InvalidChannelException", NULL, NULL);
+   InvalidChannelException = PyErr_NewException("Ox.GPIO.InvalidChannelException", NULL, NULL);
    PyModule_AddObject(module, "InvalidChannelException", InvalidChannelException);
 
-   InvalidPullException = PyErr_NewException("RPi.GPIO.InvalidPullException", NULL, NULL);
+   InvalidPullException = PyErr_NewException("Ox.GPIO.InvalidPullException", NULL, NULL);
    PyModule_AddObject(module, "InvalidPullException", InvalidPullException);
 
-   ModeNotSetException = PyErr_NewException("RPi.GPIO.ModeNotSetException", NULL, NULL);
+   ModeNotSetException = PyErr_NewException("Ox.GPIO.ModeNotSetException", NULL, NULL);
    PyModule_AddObject(module, "ModeNotSetException", ModeNotSetException);
 
-   SetupException = PyErr_NewException("RPi.GPIO.SetupException", NULL, NULL);
+   SetupException = PyErr_NewException("Ox.GPIO.SetupException", NULL, NULL);
    PyModule_AddObject(module, "SetupException", SetupException);
 
    high = Py_BuildValue("i", HIGH);
