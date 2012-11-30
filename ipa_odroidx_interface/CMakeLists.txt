@@ -29,9 +29,9 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
-rosbuild_download_data("http://pypi.python.org/packages/source/S/SPIlib/SPIlib-0.1.0.tar.gz" "SPIlib.tar.gz" 8b8ea5df1bc6543c48087126a79cbbca)
-execute_process(COMMAND bash -c "tar xf SPIlib*.tar.gz")
-execute_process(COMMAND bash -c "cd SPIlib* && python setup.py install --prefix=build && cp build/lib/python*/site-packages/* ../src")
+#rosbuild_download_data("http://pypi.python.org/packages/source/S/SPIlib/SPIlib-0.1.0.tar.gz" "SPIlib.tar.gz" 8b8ea5df1bc6543c48087126a79cbbca)
+#execute_process(COMMAND bash -c "tar xf SPIlib*.tar.gz")
+#execute_process(COMMAND bash -c "cd SPIlib* && python setup.py install --prefix=build && cp build/lib/python*/site-packages/* ../src")
 
 #rosbuild_download_data("http://www.procyonengineering.com/embedded/avr/avrlib/avrlib.zip" "avrlib.zip" 33fd3ffffff84de7fbaa6b643ce0ecee)
 #rosbuild_untar_file(avrlib.zip ".")
