@@ -73,10 +73,8 @@ class AVRControl:
 		else:
 			self.analog_ch = map(int, rospy.get_param(self.ns_global_prefix + "/dev").split(","))
 
-		if not rospy.has_param(self.ns_global_prefix + "/dev"):
-			self.intf = AVRInterface()
-		else:
-			self.intf = AVRInterface( rospy.get_param(self.ns_global_prefix + "/dev") )
+		self.intf = AVRInterface()
+		self.intf.setup()
 
 	def setCallback(self, data):
 		assert(len(data.values)==8)
@@ -104,6 +102,6 @@ if __name__ == '__main__':
 
 	r = rospy.Rate(ac.polling_interval)
 	while not rospy.is_shutdown():
-		ac.publish_marker()
+		ac.publish()
 		r.sleep()
 	
