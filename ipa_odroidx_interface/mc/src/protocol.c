@@ -18,27 +18,28 @@
 u08 pwm_vals[SOFT_PWM_CHANNELS] = {};
 
 
-void set_output(u08 out) {
+static void set_output(u08 out) {
 	outb(PORTC, ((inb(PINC)&0xCF)|((out&3)<<4)) );
 	outb(PORTD, ((inb(PIND)&0xFC)|(out>>4)) );
 }
 
-void soft_pwm(void) {
-	static u08 cnt = 0, v=0;
-	u08 i;
+static void soft_pwm(void) {
+	static u08 cnt = 0, vo=0;
+	u08 i,v=0xFF;
 
 	for(i=0; i<SOFT_PWM_CHANNELS; i++) {
-		if(pwm_vals[i]==cnt) {
+		if(pwm_vals[i]<=cnt) {
 			v&=~(1<<i);
-		}
-		else if(cnt==0) {
-			v|= (1<<i);
 		}
 	}
 
-	set_output(v);
+	if(v!=vo) {
+		set_output(v);
+		vo=v;
+	}
 
-	++cnt;
+	cnt+=3;
+	//timer2ClearOverflowCount();
 }
 
 //set speed, corred speed according to direction
@@ -107,6 +108,52 @@ void set_motor(u08 motor, u08 speed) {
 		set_motor_speed(channel, speed);
 }
 
+u16 get_analog(u08 ch) {
+	if(ch>=4) return 0xffff;
+	return a2dConvert10bit(ch);
+}
+
+u08 get_input(void) {
+	return inb(PINC)&0x0f;
+}
+
+void on_parse(void) {
+	u08 c = softSpiGetByte();
+
+	switch(c&0xF0) {
+		case SET_OUTPUT:
+			//set_output(softSpiGetByte());
+			if((c&0x0F)>=6) break;
+			while(!softSpiHasByte()) soft_pwm();
+			pwm_vals[c&0x0F] = softSpiGetByte();
+			break;
+
+		case SET_MOTOR:
+			while(!softSpiHasByte()) soft_pwm();
+			set_motor(c&0x03, softSpiGetByte());
+			break;
+
+		case GET_ANALOG:
+			softSpiSendWord(get_analog(c&0x03));
+			break;
+
+		case GET_INPUT:
+			softSpiSendByte(get_input());
+			break;
+
+		case SETUP:
+			softSpiSendByte('O');
+			PORTC = softSpiGetByte()&0x0f;
+			break;
+	}
+}
+
+void parse(void) {
+	if(softSpiHasByte())
+		on_parse();
+	soft_pwm();
+}
+
 void init(void) {
 	// turn on and initialize A/D converter
 	a2dInit();
@@ -131,50 +178,12 @@ void init(void) {
 
 	softSpiInit();
 
-	timer2SetPrescaler(TIMERRTC_CLK_DIV1024);
-	timerAttach(TIMER2OVERFLOW_INT, soft_pwm);
+	//timer2SetPrescaler(TIMERRTC_CLK_DIV32);
+	//timerAttach(TIMER2OVERFLOW_INT, soft_pwm);
 
 #ifdef WATCH_MOTOR
 	//check if motor went too far  for security
 	//timer0SetPrescaler();
 	timerAttach(TIMER0OVERFLOW_INT, check_motor);
 #endif
-}
-
-u16 get_analog(u08 ch) {
-	if(ch>=4) return 0xffff;
-	return a2dConvert10bit(ch);
-}
-
-u08 get_input(void) {
-	return inb(PINC)&0x0f;
-}
-
-void parse(void) {
-	u08 c = softSpiGetByte();
-
-	switch(c&0xF0) {
-		case SET_OUTPUT:
-			//set_output(softSpiGetByte());
-			if((c&0x0F)>=6) break;
-			pwm_vals[c&0x0F] = softSpiGetByte();
-			break;
-
-		case SET_MOTOR:
-			set_motor(c&0x03, softSpiGetByte());
-			break;
-
-		case GET_ANALOG:
-			softSpiSendWord(get_analog(c&0x03));
-			break;
-
-		case GET_INPUT:
-			softSpiSendByte(get_input());
-			break;
-
-		case SETUP:
-			softSpiSendByte('O');
-			PORTC = softSpiGetByte()&0x0f;
-			break;
-	}
 }
