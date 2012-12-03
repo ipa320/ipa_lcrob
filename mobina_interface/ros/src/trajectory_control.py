@@ -122,7 +122,7 @@ class TrajectoryControl(object):
 
 		return abs(end[1]-start[1])/(end[0]-start[0])
 
-	def change(self):
+	def changed(self):
 		return
 	
 	def speed2val(self, rad):
