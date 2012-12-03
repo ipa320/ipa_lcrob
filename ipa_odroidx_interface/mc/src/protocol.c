@@ -153,7 +153,9 @@ void parse(void) {
 
 	switch(c&0xF0) {
 		case SET_OUTPUT:
-			set_output(softSpiGetByte());
+			//set_output(softSpiGetByte());
+			if((c&0x0F)>=6) break;
+			pwm_vals[c&0x0F] = softSpiGetByte();
 			break;
 
 		case SET_MOTOR:
