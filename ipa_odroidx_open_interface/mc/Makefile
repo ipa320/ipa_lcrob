@@ -33,7 +33,7 @@ AVRLIB := ../avrlib/
 #  They will be compiled in the order you list them, so it's probably best
 #  to list $(TRG).c, your top-level target file, last.
 
-	SRC = src/main.c src/protocol.c $(AVRLIB)/timerx8.c $(AVRLIB)/a2d.c $(AVRLIB)/extint.c src/soft_spi.c
+	SRC = src/main.c src/protocol.c $(AVRLIB)/uart.c $(AVRLIB)/uartsw.c
 
 #put additional assembler source file here
 #  The ASRC line allows you to list files which contain assembly code/routines that
