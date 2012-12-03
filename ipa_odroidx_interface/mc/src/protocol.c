@@ -126,7 +126,7 @@ void init(void) {
 	timer1PWMBOn();
 	timer1PWMBSet(0);
 
-	a2dSetPrescaler(ADC_PRESCALE_DIV64);
+	a2dSetPrescaler(ADC_PRESCALE_DIV8);
 	a2dSetReference(ADC_REFERENCE_AVCC);
 
 	softSpiInit();

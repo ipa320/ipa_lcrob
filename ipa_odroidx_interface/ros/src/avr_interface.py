@@ -32,6 +32,7 @@ class AVRInterface:
 	def get_analog(self, ch):
 		assert(ch<4 and ch>=0)
 		self.write(self.GET_ANALOG|ch)
+		self.spi.wait(200)
 		data1 = self.spi.readByte()
 		data2 = self.spi.readByte()
 		return data1*255 + data2
