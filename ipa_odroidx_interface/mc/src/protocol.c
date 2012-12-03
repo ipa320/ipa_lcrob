@@ -10,6 +10,8 @@
 #include "timer.h"		// include timer function library (timing, PWM, etc)
 #include "soft_spi.h"		
 
+#undef WATCH_MOTOR
+
 #define CHANNEL2PIN(x) (x==0?5:7)
 
 #define SOFT_PWM_CHANNELS 6
