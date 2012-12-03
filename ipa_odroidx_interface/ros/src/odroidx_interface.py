@@ -79,11 +79,11 @@ class AVRControl:
 	def setCallback(self, data):
 		assert(len(data.values)==8)
 		for i in range(0,2):
-			self.intf.set_motor(i, data.values[i]<0, data.values[i]*255)
-		o=[]
+			assert (data.values[i]>=0 and data.values[i]<=1)
+			self.intf.set_motor(i, data.values[i]<0, int(data.values[i]*255))
 		for i in range(2,8):
-			o.append( data.values[i]>0.5 )
-		self.intf.set_output(o)
+			assert (data.values[i]>=0 and data.values[i]<=1)
+			self.intf.set_output(i-2, int(data.values[i]*255))
 
 	def publish(self):
 		data = map(float, self.intf.get_input() )
