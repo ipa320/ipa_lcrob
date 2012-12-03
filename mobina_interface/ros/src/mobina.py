@@ -61,8 +61,8 @@ from sensor_msgs.msg import ChannelFloat32
 
 class MobinaInterface:
 	def __init__(self):
-		self.pub_out = rospy.Publisher("odroidx_command", ChannelFloat32)
-		rospy.Subscriber("odroidx_state", ChannelFloat32, self.InputCallback)
+		self.pub_out = rospy.Publisher("command", ChannelFloat32)
+		rospy.Subscriber("state", ChannelFloat32, self.InputCallback)
 
 		self.output = ChannelFloat32()
 		self.input = ChannelFloat32()
@@ -73,7 +73,7 @@ class MobinaInterface:
 		self.input.name = "input"
 		self.input.values = [0,0, 0,0]
 
-		self.lights = [LightControl("light0", self, 2), LightControl("light1", self, 3), LightControl("light2", self, 4), LightControl("light3", self, 5)]
+		self.lights = [LightControl("light", self, [1,4,0])]
 		self.motors = [TrajectoryControl("motor0", self, 0)]
 
 	def set_val(self, pin, value):
