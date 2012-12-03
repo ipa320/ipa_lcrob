@@ -28,6 +28,8 @@
 volatile u16 data_out = 0;
 volatile u16 data_in = 0;
 volatile u08 data_in_len = 0;
+//typedef void (*func)(void);
+//volatile func _handler = 0;
 
 ISR(PCINT0_vect)
 {
@@ -43,6 +45,9 @@ ISR(PCINT0_vect)
 	data_in<<=1;
 	data_in |= (inb(PINB)&(1<<3)?1:0);
 	++data_in_len;
+
+	//if(data_in_len>=8 && _handler)
+	//	_handler();
 }
 
 void softSpiClear() {
@@ -50,8 +55,10 @@ void softSpiClear() {
 }
 
 // access routines
-void softSpiInit()
+void softSpiInit(/*void (*func)(void)*/)
 {
+	//_handler = func;
+
 	PCICR |= (1<<PCIE0);
 	//EICRA |= (1<<ISC01)|(1<<ISC00);
 	PCMSK0 |= (1<<PCINT5);
@@ -67,6 +74,10 @@ void softSpiSendByte(u08 data)
 void softSpiSendWord(u16 data)
 {
 	data_out = data;
+}
+
+u08 softSpiHasByte(void) {
+	return data_in_len>=8;
 }
 
 u08 softSpiGetByte(void) {

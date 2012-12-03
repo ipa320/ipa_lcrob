@@ -37,7 +37,7 @@
 // function prototypes
 
 // SPI interface initializer
-void softSpiInit(void);
+void softSpiInit(/*void (*func)(void)*/);
 
 void softSpiClear(void);
 
@@ -50,6 +50,7 @@ void softSpiSendWord(u16 data);
 // spiTransferByte(u08 data) waits until the SPI interface is ready
 // and then sends a single byte over the SPI port.  The function also
 // returns the byte that was received during transmission.
+u08 softSpiHasByte(void);
 u08 softSpiGetByte(void);
 u16 softSpiGetWord(void);
 
