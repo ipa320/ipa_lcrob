@@ -12,10 +12,33 @@
 
 #define CHANNEL2PIN(x) (x==0?5:7)
 
+#define SOFT_PWM_CHANNELS 6
+u08 pwm_vals[SOFT_PWM_CHANNELS] = {};
+
+
 void set_output(u08 out) {
 	outb(PORTC, ((inb(PINC)&0xCF)|((out&3)<<4)) );
 	outb(PORTD, ((inb(PIND)&0xFC)|(out>>4)) );
 }
+
+void soft_pwm(void) {
+	static u08 cnt = 0, v=0;
+	u08 i;
+
+	for(i=0; i<SOFT_PWM_CHANNELS; i++) {
+		if(pwm_vals[i]==cnt) {
+			v&=~(1<<i);
+		}
+		else if(cnt==0) {
+			v|= (1<<i);
+		}
+	}
+
+	set_output(v);
+
+	++cnt;
+}
+
 //set speed, corred speed according to direction
 void set_motor_speed(u08 channel, u08 speed) {
 	if( inb(PIND)&(1<<CHANNEL2PIN(channel)) )
