@@ -22,11 +22,9 @@ class AVRInterface:
 		self.write(self.SETUP)
 		assert self.spi.sendByte(0x00)==ord('O')	#no pullups actiavted (0-0x0f)
 
-	def set_output(self, o):
-		out = 0
-		for i in range(0,6):
-			out += (o[i]<<i)
-		self.write(self.SET_OUTPUT,[out])
+	def set_output(self, ch, v):
+		assert (ch>=0 and ch<6)
+		self.write( (self.SET_OUTPUT|ch),[v])
 
 	def set_motor(self, motor, back, speed):
 		self.write( (self.SET_MOTOR|motor|(back<<1)), [speed])
