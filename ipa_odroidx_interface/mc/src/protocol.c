@@ -12,6 +12,10 @@
 
 #define CHANNEL2PIN(x) (x==0?5:7)
 
+void set_output(u08 out) {
+	outb(PORTC, ((inb(PINC)&0xCF)|((out&3)<<4)) );
+	outb(PORTD, ((inb(PIND)&0xFC)|(out>>4)) );
+}
 //set speed, corred speed according to direction
 void set_motor_speed(u08 channel, u08 speed) {
 	if( inb(PIND)&(1<<CHANNEL2PIN(channel)) )
@@ -107,11 +111,6 @@ void init(void) {
 	//timer0SetPrescaler();
 	timerAttach(TIMER0OVERFLOW_INT, check_motor);
 #endif
-}
-
-void set_output(u08 out) {
-	outb(PORTC, ((inb(PINC)&0xCF)|((out&3)<<4)) );
-	outb(PORTD, ((inb(PIND)&0xFC)|(out>>4)) );
 }
 
 u16 get_analog(u08 ch) {
