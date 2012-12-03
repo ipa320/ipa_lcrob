@@ -93,11 +93,23 @@ static PyObject *py_input_gpio(PyObject *self, PyObject *args)
       Py_RETURN_FALSE;
 }
 
+static PyObject *py_usleep_gpio(PyObject *self, PyObject *args)
+{
+   int channel;
+
+   if (!PyArg_ParseTuple(args, "i", &channel))
+      return NULL;
+   
+   usleep(channel);
+   Py_RETURN_TRUE;
+}
+
 PyMethodDef rpi_gpio_methods[] = {
    {"setup", (PyCFunction)py_setup_channel, METH_VARARGS | METH_KEYWORDS, "Set up the GPIO channel,direction and (optional) pull/up down control\nchannel   - Either: RPi board pin number (not BCM GPIO 00..nn number).  Pins start from 1\n            or    : BCM GPIO number\ndirection - INPUT or OUTPUT\n[pull_up_down] - PUD_OFF (default), PUD_UP or PUD_DOWN"},
    {"cleanup", py_cleanup, METH_VARARGS, "Clean up by resetting all GPIO channels that have been used by this program to INPUT with no pullup/pulldown and no event detection"},
    {"output", py_output_gpio, METH_VARARGS, "Output to a GPIO channel"},
    {"input", py_input_gpio, METH_VARARGS, "Input from a GPIO channel"},
+   {"usleep", py_usleep_gpio, METH_VARARGS, "usleep"},
    {NULL, NULL, 0, NULL}
 };
 
