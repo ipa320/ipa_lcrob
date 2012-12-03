@@ -129,6 +129,9 @@ void init(void) {
 
 	softSpiInit();
 
+	timer2SetPrescaler(TIMERRTC_CLK_DIV1024);
+	timerAttach(TIMER2OVERFLOW_INT, soft_pwm);
+
 #ifdef WATCH_MOTOR
 	//check if motor went too far  for security
 	//timer0SetPrescaler();
