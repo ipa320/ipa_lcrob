@@ -19,8 +19,8 @@ class SPI:
 		GPIO.output(self.reset, GPIO.HIGH)
 		GPIO.output(self.mosi, GPIO.LOW)
 
-		self.rest_ms = 20./10000
-		time.sleep(0.1)
+		self.rest_ms = 500
+		GPIO.usleep(10000)
 
 	def reset(self):
 		GPIO.output(self.reset, GPIO.LOW)
@@ -35,10 +35,10 @@ class SPI:
 			if (byte&(1<<(7-i)))>0: v = GPIO.HIGH
 			GPIO.output(self.mosi, v)
 			GPIO.output(self.clk, GPIO.HIGH)
-			time.sleep(self.rest_ms)
+			GPIO.usleep(self.rest_ms)
 			r |= (GPIO.input(self.miso)<<i)
 			GPIO.output(self.clk, GPIO.LOW)
-			time.sleep(self.rest_ms)
+			GPIO.usleep(self.rest_ms)
 		return r
 
 	def readByte(self):
