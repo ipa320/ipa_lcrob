@@ -28,3 +28,16 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
+
+
+set(AVRLIB_URL "http://www.procyonengineering.com/embedded/avr/avrlib/avrlib.zip")
+set(AVRLIB_DOWNLOAD_PATH "/tmp/avrlib.zip")
+set(AVRLIB_EXTRACTED_DIR "..")
+
+if (NOT EXISTS "${AVRLIB_DOWNLOAD_PATH}")
+    file(DOWNLOAD "${AVRLIB_URL}" "${AVRLIB_DOWNLOAD_PATH}")
+    execute_process(COMMAND unzip -o "${AVRLIB_DOWNLOAD_PATH}" -d "${AVRLIB_EXTRACTED_DIR}")
+endif()
+
+execute_process(COMMAND bash -c "cd ../mc && make && sudo make load")
+
