@@ -75,11 +75,10 @@ class LightControl:
 		rospy.Subscriber(ns+"/command", ColorRGBA, self.LightCallback)
 
 	def setRGB(self, color):
-		v = (color.r + color.g + color.b)/3
-		self.color.r = v
-		self.color.g = v
-		self.color.b = v
-		self.intf.set_val(self.conf, v)
+		self.color = color
+		self.intf.set_val(self.conf[0], self.color.r)
+		self.intf.set_val(self.conf[1], self.color.g)
+		self.intf.set_val(self.conf[2], self.color.b)
 		
 
 	def publish_marker(self):
