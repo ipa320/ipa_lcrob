@@ -35,7 +35,7 @@ class AVRInterface:
 		self.spi.wait(200)
 		data1 = self.spi.readByte()
 		data2 = self.spi.readByte()
-		return data1*255 + data2
+		return data1 + data2*255
 
 	def get_input(self):
 		self.write(self.GET_INPUT)
