@@ -59,7 +59,7 @@ from avr_interface import AVRInterface
 
 class AVRControl:
 	def __init__(self):
-		self.ns_global_prefix = "/light_controller"
+		self.ns_global_prefix = "/odroidx_controller"
 		self.pub_marker = rospy.Publisher("state", ChannelFloat32)
 		rospy.Subscriber("command", ChannelFloat32, self.setCallback)
 
@@ -88,7 +88,7 @@ class AVRControl:
 	def publish(self):
 		data = map(float, self.intf.get_input() )
 		for a in self.analog_ch:
-			data[a] = self.intf.get_analog(a)/float(0x400)
+			data[a] = self.intf.get_analog(a)/float(1023)
 		
 		ch = ChannelFloat32()
 		ch.name = "avr_measurements"
