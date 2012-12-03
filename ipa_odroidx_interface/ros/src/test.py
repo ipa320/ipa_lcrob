@@ -14,7 +14,7 @@ for i in range(0,4):
 
 while False:
 	print "Inputs are ", intf.get_input()
-	intf.set_output([1,1,1, 1,1,1])
-	intf.set_output([0,0,0, 0,0,0])
+	intf.set_output(0,255)
+	intf.set_output(0,0)
 intf.set_motor(0,1,127)
 intf.set_motor(1,1,0)
