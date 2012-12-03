@@ -22,6 +22,9 @@ class SPI:
 		self.rest_ms = 100
 		time.sleep(0.1)
 
+	def wait(self, us):
+		GPIO.usleep(us)
+
 	def reset(self):
 		GPIO.output(self.reset, GPIO.LOW)
 		time.sleep(0.05)
