@@ -26,6 +26,9 @@ void init(void)
 #define OP_DRIVE_DIRECT	145
 #define OP_LEDS		139
 #define OP_OUTPUT	147
+#define OP_SEND_IR	151
+#define OP_SONG		140
+#define OP_PLAY_SONG	141
 
 void parse(void)
 {
@@ -60,6 +63,10 @@ void parse(void)
 				break;
 			case OP_DEMO:	uartGetByte();//dummy
 				break;
+			case OP_SEND_IR:	uartGetByte();//dummy
+				break;
+			case OP_PLAY_SONG:	uartGetByte();//dummy
+				break;
 			case OP_LEDS:	uartGetByte();uartGetByte();uartGetByte();//dummy
 				break;
 			case OP_OUTPUT:	uartGetByte();//dummy
@@ -77,6 +84,13 @@ void parse(void)
 			case OP_DRIVE_DIRECT:
 				vel1 = (((u16)uartGetByte())<<8) | uartGetByte();
 				vel2 = (((u16)uartGetByte())<<8) | uartGetByte();
+				break;
+			case OP_SONG:
+				uartGetByte();//dummy
+				vel = uartGetByte();
+				for(radius=0; radius!=vel; radius++) {
+					uartGetByte();uartGetByte();
+				}
 				break;
 		}
 	}
