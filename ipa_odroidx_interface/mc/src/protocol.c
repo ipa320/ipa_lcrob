@@ -12,7 +12,7 @@
 
 #undef WATCH_MOTOR
 
-#define CHANNEL2PIN(x) (x==0?5:7)
+#define CHANNEL2PIN(x) (x==0?7:5)
 
 #define SOFT_PWM_CHANNELS 6
 u08 pwm_vals[SOFT_PWM_CHANNELS] = {};
@@ -44,7 +44,7 @@ static void soft_pwm(void) {
 
 //set speed, corred speed according to direction
 void set_motor_speed(u08 channel, u08 speed) {
-	if( !(inb(PIND)&(1<<CHANNEL2PIN(channel))) )
+	if( (inb(PIND)&(1<<CHANNEL2PIN(channel))) )
 		speed = ~speed;
 
 	if(channel&1)
