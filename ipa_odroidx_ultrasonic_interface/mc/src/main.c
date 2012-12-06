@@ -22,13 +22,10 @@ struct TIME_KEEPER{
 *whereas MSB is unused.
 */
 
-volatile unsigned char PING_STAGE_0=FALSE;
-volatile unsigned char PING_STAGE_1=FALSE;
-volatile unsigned char PING_STAGE_2=FALSE;
-volatile unsigned char PING_STAGE_3=FALSE;
+volatile unsigned char PING_STAGE=0;
 
 volatile unsigned char PORTA_CONTROL=0x7f;
-volatile unsigned char PORTD_CONTROL=0x7f;
+volatile unsigned char PORTD_CONTROL=0x33;
 
 volatile struct TIME_KEEPER PORT_B_VALS[MAX_NUMBER_OF_VALUES]; 
 volatile struct TIME_KEEPER PORT_C_VALS[MAX_NUMBER_OF_VALUES];
@@ -63,26 +60,26 @@ int main(void){
 	}
 }
 ISR(TIMER0_OVF_vect){ // Timer 0 is dedicated for Pinging and listening.
-	if(PING_STAGE_0 == FALSE){
+	if(PING_STAGE == 0){
 		PORTA = 0x7F;
 		PORTD = 0x7F;
 		TCNT0 = 160; // Setting for 330us
-		PING_STAGE_0 = TRUE;
+		PING_STAGE = 1;
 		TCCR0B &= ~(1 << CS00);
 		TCCR0B &= ~(1 << CS02);
 		TCCR0B |= (1 << CS01);
 	}
-	else if(PING_STAGE_1 == FALSE){
+	else if(PING_STAGE == 1){
 		PORTA = ~(PORTA_CONTROL) & (0x7F);
 		PORTD = ~(PORTD_CONTROL) & (0x7F);
 		TCNT0 = 154; // Setting for 350us -0.02% error
-		PING_STAGE_1 = TRUE;
+		PING_STAGE = 2;
 	}
-	else if(PING_STAGE_2 == FALSE){
+	else if(PING_STAGE == 2){
 		PORTA = PORTA_CONTROL;
 		PORTD = PORTD_CONTROL;
 		TCNT0 = 177; // Setting for 270us -0.02% error
-		PING_STAGE_2 = TRUE;
+		PING_STAGE = 3;
 	}
 	else{
 		PORTA = 0x00;
@@ -91,10 +88,6 @@ ISR(TIMER0_OVF_vect){ // Timer 0 is dedicated for Pinging and listening.
 		TCCR0B &= ~(1 << CS01);
 		TCCR0B |= (1 << CS00);
 		TCCR0B |= (1 << CS02);
-		PING_STAGE_0 = FALSE;
-		PING_STAGE_1 = FALSE;
-		PING_STAGE_2 = FALSE;
-
-		//Setting up Timer1 for 100ms
+		PING_STAGE = 0;
 	}
 }
