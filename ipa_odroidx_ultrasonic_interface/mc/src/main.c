@@ -3,9 +3,6 @@
 
 #include "iocompat.h"
 
-#define TRUE 1
-#define FALSE 0
-
 #define MAX_NUMBER_OF_VALUES 20
 
 struct TIME_KEEPER{
@@ -14,13 +11,13 @@ struct TIME_KEEPER{
 };
 
 /*
-*PORTA and PORTD are for output whereas PORTB and PORTC are for input
-*The board is programmed to use the external crystal of 18.432MHz and
-*the CLKDIV8 fuse is also programmed, causing effective frequency
-*equal to 2304000
-*In PORTA_CONTROL and PORTD_CONTROL 1 denotes ping and 0 denotes listen,
-*whereas MSB is unused.
-*/
+ *PORTA and PORTD are for output whereas PORTB and PORTC are for input
+ *The board is programmed to use the external crystal of 18.432MHz and
+ *the CLKDIV8 fuse is also programmed, causing effective frequency
+ *equal to 2304000
+ *In PORTA_CONTROL and PORTD_CONTROL 1 denotes ping and 0 denotes listen,
+ *whereas MSB is unused.
+ */
 
 volatile unsigned char PING_STAGE=0;
 
@@ -55,7 +52,6 @@ int main(void){
 	TIMSK0 |= (1 << TOIE0); // Enabling timer 1 overflow
 	sei(); // Setting global interrupt
 
-
 	for(;;){
 	}
 }
@@ -81,13 +77,35 @@ ISR(TIMER0_OVF_vect){ // Timer 0 is dedicated for Pinging and listening.
 		TCNT0 = 177; // Setting for 270us -0.02% error
 		PING_STAGE = 3;
 	}
-	else{
+	else if(PING_STAGE == 3){
 		PORTA = 0x00;
 		PORTD = 0x00;
-		TCNT0 = 30; // Setting for 100ms
+		//Disabling timer0 to setup timer1 to enable data reading from sensors.
 		TCCR0B &= ~(1 << CS01);
-		TCCR0B |= (1 << CS00);
-		TCCR0B |= (1 << CS02);
-		PING_STAGE = 0;
+		TCCR0B &= ~(1 << CS00);
+		TCCR0B &= ~(1 << CS02);
+		TIMSK0 &= ~(1 << TOIE0);
+
+		//Setting up timer1 for 100ms
+		TCNT1 = 36735;
+		TCCR1B |= (1 << CS11);
+		TIMSK |= (1 << TOIE1);
+		// Place to enable PCINT
+		//
+		//
 	}
 }
+ISR(TIMER1_OVF_vect){
+	//Disabling timer1
+	TCCR1B &= ~(1 << CS11);
+	TIMSK &= ~(1 << TOIE1);
+
+	TCNT0 = 255; // Initializing timer 0 to trigger.
+	TCCR0B &= ~(1 << CS01);
+	TCCR0B |= (1 << CS00);
+	TIFR0 |= (1 << TOV0); //Forced timer0 interrupt trigger.
+	TIMSK0 |= (1 << TOIE0);
+	PING_STAGE = 0;
+
+}
+
