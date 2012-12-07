@@ -2,6 +2,7 @@
 #include <avr/interrupt.h>
 
 #include "iocompat.h"
+#include "softuart.h"
 
 #define MAX_NUMBER_OF_VALUES 20
 
@@ -50,9 +51,13 @@ int main(void){
 	TCCR0B |= (1 << CS01);
 
 	TIMSK0 |= (1 << TOIE0); // Enabling timer 1 overflow
+
+	softuart_init();
+
 	sei(); // Setting global interrupt
 
 	for(;;){
+		softuart_putchar(0xA);
 	}
 }
 ISR(TIMER0_OVF_vect){ // Timer 0 is dedicated for Pinging and listening.
