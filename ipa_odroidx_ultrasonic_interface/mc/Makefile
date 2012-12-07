@@ -35,7 +35,7 @@ CTAGS = ctags
 #UISP=uisp -dt_sck=200 -v=3 -dlpt=/dev/parport0 -dprog=dapa
 UISP=uisp -v=3 -dlpt=/dev/parport0 -dprog=dapa
 AVRDUDE_P=avrdude -p $(MCU) -F -c dapa -P /dev/parport0 -i 30
-AVRDUDE_U=avrdude -p $(MCU) -c butterfly -P /dev/ttyUSB0 -b 230400
+AVRDUDE_U=avrdude -p $(MCU) -F -c stk500v2 -P /dev/ttyUSB0
 #AVRDUDE_U=avrdude -p $(MCU) -c butterfly -P com1 -b 230400
 CFLAGS = -std=c99 -pedantic -Wall $(INCPATH:%=-I%) -mmcu=$(MCU) \
          -mcall-prologues $(COPTS)
@@ -80,6 +80,10 @@ tags:
 load: $(TARGET).hex
 	@echo "P $(TARGET)"
 	@$(AVRDUDE_P) -U flash:w:$<:i
+
+loadu: $(TARGET).hex
+	@echo "P(USB) $(TARGET)"
+	@$(AVRDUDE_U) -U flash:w:$<:i
 
 config:
 	@$(AVRDUDE_P) -t
