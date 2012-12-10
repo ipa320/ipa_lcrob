@@ -5,7 +5,6 @@
 #include "softuart.h"
 
 #define MAX_NUMBER_OF_VALUES 20
-
 struct TIME_KEEPER{
 	uint8_t port_val;
 	uint16_t time_reg_val;
@@ -57,7 +56,7 @@ int main(void){
 	sei(); // Setting global interrupt
 
 	for(;;){
-		softuart_putchar(0xA);
+		softuart_putchar('a');
 	}
 }
 ISR(TIMER0_OVF_vect){ // Timer 0 is dedicated for Pinging and listening.
