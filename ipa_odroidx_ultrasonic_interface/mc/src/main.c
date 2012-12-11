@@ -81,7 +81,7 @@ int main(void){
 		if(CYCLE_COMPLETE == 1){
 			LAST_VALUE=0;
 			//For PA6-PC7
-			if ((PORTA_CONTROL & 0x40)== 0x40){
+			if ((~(PORTA_CONTROL) & 0x40)== 0x40){
 				for (uint8_t count=0; count <PORTC_INPUT_count; count++){
 					if((0x40 & PORTC_INPUT_VALS[count].port_val) != LAST_VALUE){
 						TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
@@ -97,7 +97,7 @@ int main(void){
 			}
 
 			//For PA5-PB6
-			if ((PORTA_CONTROL & 0x20) == 0x20){
+			if ((~(PORTA_CONTROL) & 0x20) == 0x20){
 				for (uint8_t count=0; count <PORTB_INPUT_count; count++){
 					if((0x40 & PORTB_INPUT_VALS[count].port_val) != LAST_VALUE){
 						TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
@@ -113,7 +113,7 @@ int main(void){
 			}
 
 			//For PA4-PB4
-			if ((PORTA_CONTROL & 0x10) == 0x10){
+			if ((~(PORTA_CONTROL) & 0x10) == 0x10){
 				for (uint8_t count=0; count <PORTB_INPUT_count; count++){
 					if((0x10 & PORTB_INPUT_VALS[count].port_val) != LAST_VALUE){
 						TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
@@ -129,7 +129,7 @@ int main(void){
 			}
 
 			//For PA3-PB3
-			if ((PORTA_CONTROL & 0x08) == 0x08){
+			if ((~(PORTA_CONTROL) & 0x08) == 0x08){
 				for (uint8_t count=0; count <PORTB_INPUT_count; count++){
 					if((0x08 & PORTB_INPUT_VALS[count].port_val) != LAST_VALUE){
 						TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
@@ -145,7 +145,7 @@ int main(void){
 			}
 
 			//For PA2-PB2
-			if ((PORTA_CONTROL & 0x04) == 0x04){
+			if ((~(PORTA_CONTROL) & 0x04) == 0x04){
 				for (uint8_t count=0; count <PORTB_INPUT_count; count++){
 					if((0x04 & PORTB_INPUT_VALS[count].port_val) != LAST_VALUE){
 						TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
@@ -161,7 +161,7 @@ int main(void){
 			}
 
 			//For PA1-PB1
-			if ((PORTA_CONTROL & 0x02) == 0x02){
+			if ((~(PORTA_CONTROL) & 0x02) == 0x02){
 				for (uint8_t count=0; count <PORTB_INPUT_count; count++){
 					if((0x02 & PORTB_INPUT_VALS[count].port_val) != LAST_VALUE){
 						TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
@@ -177,7 +177,7 @@ int main(void){
 			}
 
 			//For PA0-PB0
-			if ((PORTA_CONTROL & 0x01) == 0x01){
+			if ((~(PORTA_CONTROL) & 0x01) == 0x01){
 				for (uint8_t count=0; count <PORTB_INPUT_count; count++){
 					if((0x01 & PORTB_INPUT_VALS[count].port_val) != LAST_VALUE){
 						TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
@@ -193,10 +193,124 @@ int main(void){
 			}
 			
 			//For PD6-PD7
-
-
+			if ((~(PORTD_CONTROL) & 0x40) == 0x40){
+				for (uint8_t count=0; count <PORTD_INPUT_count; count++){
+					if((0x01 & PORTD_INPUT_VALS[count].port_val) != LAST_VALUE){
+						TIMER[TIMER_count++] = PORTD_INPUT_VALS[count].time_reg_val;
+						LAST_VALUE = (0x80 & PORTD_INPUT_VALS[count].port_val);
+					}
+				}
+				//Sending data out
+				if (TIMER_count>0){
+					print_TIMER();
+					TIMER_count=0;
+				}
+				LAST_VALUE = 0;
+			}
+			
+			//For PD5-PC2
+			if ((~(PORTD_CONTROL) & 0x20) == 0x20){
+				for (uint8_t count=0; count <PORTD_INPUT_count; count++){
+					if((0x02 & PORTC_INPUT_VALS[count].port_val) != LAST_VALUE){
+						TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
+						LAST_VALUE = (0x02 & PORTC_INPUT_VALS[count].port_val);
+					}
+				}
+				//Sending data out
+				if (TIMER_count>0){
+					print_TIMER();
+					TIMER_count=0;
+				}
+				LAST_VALUE = 0;
+			}
+			
+			//For PD4-PC3
+			if ((~(PORTD_CONTROL) & 0x10) == 0x10){
+				for (uint8_t count=0; count <PORTD_INPUT_count; count++){
+					if((0x04 & PORTC_INPUT_VALS[count].port_val) != LAST_VALUE){
+						TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
+						LAST_VALUE = (0x04 & PORTC_INPUT_VALS[count].port_val);
+					}
+				}
+				//Sending data out
+				if (TIMER_count>0){
+					print_TIMER();
+					TIMER_count=0;
+				}
+				LAST_VALUE = 0;
+			}
+			
+			//For PD3-PC4
+			if ((~(PORTD_CONTROL) & 0x08) == 0x08){
+				for (uint8_t count=0; count <PORTD_INPUT_count; count++){
+					if((0x10 & PORTC_INPUT_VALS[count].port_val) != LAST_VALUE){
+						TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
+						LAST_VALUE = (0x10 & PORTC_INPUT_VALS[count].port_val);
+					}
+				}
+				//Sending data out
+				if (TIMER_count>0){
+					print_TIMER();
+					TIMER_count=0;
+				}
+				LAST_VALUE = 0;
+			}
+			
+			//For PD2-PC5
+			if ((~(PORTD_CONTROL) & 0x04) == 0x04){
+				for (uint8_t count=0; count <PORTD_INPUT_count; count++){
+					if((0x20 & PORTC_INPUT_VALS[count].port_val) != LAST_VALUE){
+						TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
+						LAST_VALUE = (0x20 & PORTC_INPUT_VALS[count].port_val);
+					}
+				}
+				//Sending data out
+				if (TIMER_count>0){
+					print_TIMER();
+					TIMER_count=0;
+				}
+				LAST_VALUE = 0;
+			}
+			
+			//For PD1-PC6
+			if ((~(PORTD_CONTROL) & 0x02) == 0x02){
+				for (uint8_t count=0; count <PORTD_INPUT_count; count++){
+					if((0x40 & PORTC_INPUT_VALS[count].port_val) != LAST_VALUE){
+						TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
+						LAST_VALUE = (0x40 & PORTC_INPUT_VALS[count].port_val);
+					}
+				}
+				//Sending data out
+				if (TIMER_count>0){
+					print_TIMER();
+					TIMER_count=0;
+				}
+				LAST_VALUE = 0;
+			}
+			
+			//For PD0-PA7
+			if ((~(PORTD_CONTROL) & 0x01) == 0x01){
+				for (uint8_t count=0; count <PORTD_INPUT_count; count++){
+					if((0x80 & PORTA_INPUT_VALS[count].port_val) != LAST_VALUE){
+						TIMER[TIMER_count++] = PORTA_INPUT_VALS[count].time_reg_val;
+						LAST_VALUE = (0x80 & PORTA_INPUT_VALS[count].port_val);
+					}
+				}
+				//Sending data out
+				if (TIMER_count>0){
+					print_TIMER();
+					TIMER_count=0;
+				}
+				LAST_VALUE = 0;
+			}
+			
 
 			//After All Values have been sent out to the master.
+			PORTA_INPUT_count=0;
+			PORTB_INPUT_count=0;
+			PORTC_INPUT_count=0;
+			PORTD_INPUT_count=0;
+
 			CYCLE_COMPLETE = 0;
 
 			TCNT0 = 254; // Initializing timer 0 to trigger.
