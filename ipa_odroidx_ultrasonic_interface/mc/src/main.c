@@ -57,6 +57,12 @@ volatile uint8_t PC6_VALS_count = 0;
 
 volatile uint8_t CYCLE_COMPLETE = 0;
 
+void print_val(struct TIME_KEEPER val){
+	softuart_putchar(val.port_val);
+	softuart_putchar((uint8_t)((val.time_reg_val & 0xFF00)>> 8));
+	softuart_putchar((uint8_t)(val.time_reg_val & 0x00FF));
+}
+
 int main(void){
 	//Setting PORTA and PORTD as output
 	DDRA = 0x7F;
@@ -85,20 +91,41 @@ int main(void){
 	for(;;){
 		if(CYCLE_COMPLETE == 1){
 			for (uint8_t count = 0; count < PC7_VALS_count; count++){
-				softuart_putchar(PC7_VALS[count].port_val);
-				softuart_putchar((uint8_t)((PC7_VALS[count].time_reg_val & 0xFF00)>> 8));
-				softuart_putchar((uint8_t)(PC7_VALS[count].time_reg_val & 0x00FF));
+				print_val(PC7_VALS[count]);
 			}
 			PC7_VALS_count = 0;
 			
 			for (uint8_t count = 0; count < PB6_VALS_count; count++){
-				softuart_putchar(PB6_VALS[count].port_val);
-				softuart_putchar((uint8_t)((PB6_VALS[count].time_reg_val & 0xFF00)>> 8));
-				softuart_putchar((uint8_t)(PB6_VALS[count].time_reg_val & 0x00FF));
+				print_val(PC6_VALS[count]);
 			}
 			PB6_VALS_count = 0;
 
+			for (uint8_t count = 0; count < PB4_VALS_count; count++){
+				print_val(PB4_VALS[count]);
+			}
+			PB4_VALS_count = 0;
 
+			for (uint8_t count = 0; count < PB3_VALS_count; count++){
+				print_val(PB3_VALS[count]);
+			}
+			PB3_VALS_count = 0;
+
+			for (uint8_t count = 0; count < PB2_VALS_count; count++){
+				print_val(PB2_VALS[count]);
+			}
+			PB2_VALS_count = 0;
+
+			for (uint8_t count = 0; count < PB1_VALS_count; count++){
+				print_val(PB1_VALS[count]);
+			}
+			PB1_VALS_count = 0;
+
+			for (uint8_t count = 0; count < PB0_VALS_count; count++){
+				print_val(PB0_VALS[count]);
+			}
+			PB0_VALS_count = 0;
+
+			//After All Values have been sent out to the master.
 			CYCLE_COMPLETE = 0;
 
 			TCNT0 = 254; // Initializing timer 0 to trigger.
@@ -155,6 +182,11 @@ ISR(TIMER0_OVF_vect){ // Timer 0 is dedicated for Pinging and listening.
 			PCMSK0 |= (1 << PCINT6);
 			PCICR |= (1 << PCIE0);
 		}
+
+		//For PA[4:0]-PB[4:0]
+		PCMSK0 |= (0x1F &  ~(PORTA_CONTROL));
+		if ((~(PORTA_CONTROL) & 0x1F) >0 )
+			PCICR |= (1 << PCIE0);
 	}	
 }
 ISR(TIMER1_OVF_vect){
@@ -166,6 +198,7 @@ ISR(TIMER1_OVF_vect){
 
 	CYCLE_COMPLETE = 1;
 
+	//Disbaling all PCINTs
 	PCMSK0 = 0x00;
 	PCMSK1 = 0x00;
 	PCMSK2 = 0x00;
@@ -186,9 +219,45 @@ ISR(PCINT2_vect){
 ISR(PCINT0_vect){
 	if((PORTA_CONTROL & (1<<5))==0x20) {
 		if(PB6_VALS_count < MAX_VALUES){
-			PB6_VALS[PB6_VALS_count].port_val=PINC;
+			PB6_VALS[PB6_VALS_count].port_val=PINB;
 			PB6_VALS[PB6_VALS_count].time_reg_val = TCNT1 - 36735;
 			PB6_VALS_count++;
+		}
+	}
+
+	if((PORTA_CONTROL & (1<<4))==0x10) {
+		if(PB4_VALS_count < MAX_VALUES){
+			PB4_VALS[PB4_VALS_count].port_val=PINB;
+			PB4_VALS[PB4_VALS_count].time_reg_val = TCNT1 - 36735;
+			PB4_VALS_count++;
+		}
+	}
+	if((PORTA_CONTROL & (1<<3))==0x08) {
+		if(PB3_VALS_count < MAX_VALUES){
+			PB3_VALS[PB3_VALS_count].port_val=PINB;
+			PB3_VALS[PB3_VALS_count].time_reg_val = TCNT1 - 36735;
+			PB3_VALS_count++;
+		}
+	}
+	if((PORTA_CONTROL & (1<<2))==0x04) {
+		if(PB2_VALS_count < MAX_VALUES){
+			PB2_VALS[PB2_VALS_count].port_val=PINB;
+			PB2_VALS[PB2_VALS_count].time_reg_val = TCNT1 - 36735;
+			PB2_VALS_count++;
+		}
+	}
+	if((PORTA_CONTROL & (1<<1))==0x02) {
+		if(PB2_VALS_count < MAX_VALUES){
+			PB1_VALS[PB1_VALS_count].port_val=PINB;
+			PB1_VALS[PB1_VALS_count].time_reg_val = TCNT1 - 36735;
+			PB1_VALS_count++;
+		}
+	}
+	if((PORTA_CONTROL & (1<<0))==0x01) {
+		if(PB0_VALS_count < MAX_VALUES){
+			PB0_VALS[PB0_VALS_count].port_val=PINB;
+			PB0_VALS[PB0_VALS_count].time_reg_val = TCNT1 - 36735;
+			PB0_VALS_count++;
 		}
 	}
 }
