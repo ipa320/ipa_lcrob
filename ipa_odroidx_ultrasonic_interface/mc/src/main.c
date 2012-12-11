@@ -24,45 +24,33 @@ volatile  uint8_t PING_STAGE=0;
 volatile unsigned char PORTA_CONTROL=0x00;
 volatile unsigned char PORTD_CONTROL=0x00;
 
-volatile struct TIME_KEEPER PC7_VALS[32];
-volatile struct TIME_KEEPER PB6_VALS[32];
-volatile struct TIME_KEEPER PB4_VALS[32];
-volatile struct TIME_KEEPER PB3_VALS[32];
-volatile struct TIME_KEEPER PB2_VALS[32];
-volatile struct TIME_KEEPER PB1_VALS[32];
-volatile struct TIME_KEEPER PB0_VALS[32];
+volatile struct TIME_KEEPER PORTA_INPUT_VALS[32];
+volatile uint8_t PORTA_INPUT_count=0;
 
-volatile struct TIME_KEEPER PD7_VALS[32];
-volatile struct TIME_KEEPER PC2_VALS[32];
-volatile struct TIME_KEEPER PC3_VALS[32];
-volatile struct TIME_KEEPER PC4_VALS[32];
-volatile struct TIME_KEEPER PC5_VALS[32];
-volatile struct TIME_KEEPER PC6_VALS[32];
-volatile struct TIME_KEEPER PA7_VALS[32];
+volatile struct TIME_KEEPER PORTD_INPUT_VALS[32];
+volatile uint8_t PORTD_INPUT_count=0;
 
-volatile uint8_t PC7_VALS_count = 0;
-volatile uint8_t PB6_VALS_count = 0;
-volatile uint8_t PB4_VALS_count = 0;
-volatile uint8_t PB3_VALS_count = 0;
-volatile uint8_t PB2_VALS_count = 0;
-volatile uint8_t PB1_VALS_count = 0;
-volatile uint8_t PB0_VALS_count = 0;
+volatile struct TIME_KEEPER PORTC_INPUT_VALS[32];
+volatile uint8_t PORTC_INPUT_count=0;
 
-volatile uint8_t PD7_VALS_count = 0;
-volatile uint8_t PC2_VALS_count = 0;
-volatile uint8_t PC3_VALS_count = 0;
-volatile uint8_t PC4_VALS_count = 0;
-volatile uint8_t PC5_VALS_count = 0;
-volatile uint8_t PC6_VALS_count = 0;
-volatile uint8_t PA7_VALS_count = 0;
+volatile struct TIME_KEEPER PORTB_INPUT_VALS[32];
+volatile uint8_t PORTB_INPUT_count=0;
+
+volatile uint16_t TIMER[MAX_VALUES];
+volatile uint8_t TIMER_count=0;
+
+volatile uint8_t LAST_VALUE=0;
 
 volatile uint8_t CYCLE_COMPLETE = 0;
 
-void print_val(struct TIME_KEEPER val){
-	softuart_putchar(val.port_val);
-	softuart_putchar((uint8_t)((val.time_reg_val & 0xFF00)>> 8));
-	softuart_putchar((uint8_t)(val.time_reg_val & 0x00FF));
+void print_TIMER(){
+	softuart_putchar(TIMER_count);
+	for (uint8_t count=0; count <TIMER_count; count++){
+		softuart_putchar((uint8_t)((TIMER[count] & 0xFF00)>> 8));
+		softuart_putchar((uint8_t)(TIMER[count] & 0x00FF));
+	}
 }
+
 
 int main(void){
 	//Setting PORTA and PORTD as output
@@ -91,59 +79,129 @@ int main(void){
 
 	for(;;){
 		if(CYCLE_COMPLETE == 1){
-			//PORTA 
-			for (uint8_t count = 0; count < PC7_VALS_count; count++){
-				print_val(PC7_VALS[count]);
+			LAST_VALUE=0;
+			//For PA6-PC7
+			if ((PORTA_CONTROL & 0x40)== 0x40){
+				for (uint8_t count=0; count <PORTC_INPUT_count; count++){
+					if((0x40 & PORTC_INPUT_VALS[count].port_val) != LAST_VALUE){
+						TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
+						LAST_VALUE = (0x40 & PORTC_INPUT_VALS[count].port_val);
+					}
+				}
+				//Sending data out
+				if (TIMER_count>0){
+					print_TIMER();
+					TIMER_count=0;
+				}
+				LAST_VALUE = 0;
 			}
-			PC7_VALS_count = 0;
+
+			//For PA5-PB6
+			if ((PORTA_CONTROL & 0x20) == 0x20){
+				for (uint8_t count=0; count <PORTB_INPUT_count; count++){
+					if((0x40 & PORTB_INPUT_VALS[count].port_val) != LAST_VALUE){
+						TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
+						LAST_VALUE = (0x40 & PORTB_INPUT_VALS[count].port_val);
+					}
+				}
+				//Sending data out
+				if (TIMER_count>0){
+					print_TIMER();
+					TIMER_count=0;
+				}
+				LAST_VALUE = 0;
+			}
+
+			//For PA4-PB4
+			if ((PORTA_CONTROL & 0x10) == 0x10){
+				for (uint8_t count=0; count <PORTB_INPUT_count; count++){
+					if((0x10 & PORTB_INPUT_VALS[count].port_val) != LAST_VALUE){
+						TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
+						LAST_VALUE = (0x10 & PORTB_INPUT_VALS[count].port_val);
+					}
+				}
+				//Sending data out
+				if (TIMER_count>0){
+					print_TIMER();
+					TIMER_count=0;
+				}
+				LAST_VALUE = 0;
+			}
+
+			//For PA3-PB3
+			if ((PORTA_CONTROL & 0x08) == 0x08){
+				for (uint8_t count=0; count <PORTB_INPUT_count; count++){
+					if((0x08 & PORTB_INPUT_VALS[count].port_val) != LAST_VALUE){
+						TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
+						LAST_VALUE = (0x08 & PORTB_INPUT_VALS[count].port_val);
+					}
+				}
+				//Sending data out
+				if (TIMER_count>0){
+					print_TIMER();
+					TIMER_count=0;
+				}
+				LAST_VALUE = 0;
+			}
+
+			//For PA2-PB2
+			if ((PORTA_CONTROL & 0x04) == 0x04){
+				for (uint8_t count=0; count <PORTB_INPUT_count; count++){
+					if((0x04 & PORTB_INPUT_VALS[count].port_val) != LAST_VALUE){
+						TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
+						LAST_VALUE = (0x04 & PORTB_INPUT_VALS[count].port_val);
+					}
+				}
+				//Sending data out
+				if (TIMER_count>0){
+					print_TIMER();
+					TIMER_count=0;
+				}
+				LAST_VALUE = 0;
+			}
+
+			//For PA1-PB1
+			if ((PORTA_CONTROL & 0x02) == 0x02){
+				for (uint8_t count=0; count <PORTB_INPUT_count; count++){
+					if((0x02 & PORTB_INPUT_VALS[count].port_val) != LAST_VALUE){
+						TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
+						LAST_VALUE = (0x02 & PORTB_INPUT_VALS[count].port_val);
+					}
+				}
+				//Sending data out
+				if (TIMER_count>0){
+					print_TIMER();
+					TIMER_count=0;
+				}
+				LAST_VALUE = 0;
+			}
+
+			//For PA0-PB0
+			if ((PORTA_CONTROL & 0x01) == 0x01){
+				for (uint8_t count=0; count <PORTB_INPUT_count; count++){
+					if((0x01 & PORTB_INPUT_VALS[count].port_val) != LAST_VALUE){
+						TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
+						LAST_VALUE = (0x01 & PORTB_INPUT_VALS[count].port_val);
+					}
+				}
+				//Sending data out
+				if (TIMER_count>0){
+					print_TIMER();
+					TIMER_count=0;
+				}
+				LAST_VALUE = 0;
+			}
 			
-			for (uint8_t count = 0; count < PB6_VALS_count; count++){
-				print_val(PB6_VALS[count]);
-			}
-			PB6_VALS_count = 0;
+			//For PD6-PD7
 
-			for (uint8_t count = 0; count < PB4_VALS_count; count++){
-				print_val(PB4_VALS[count]);
-			}
-			PB4_VALS_count = 0;
 
-			for (uint8_t count = 0; count < PB3_VALS_count; count++){
-				print_val(PB3_VALS[count]);
-			}
-			PB3_VALS_count = 0;
-
-			for (uint8_t count = 0; count < PB2_VALS_count; count++){
-				print_val(PB2_VALS[count]);
-			}
-			PB2_VALS_count = 0;
-
-			for (uint8_t count = 0; count < PB1_VALS_count; count++){
-				print_val(PB1_VALS[count]);
-			}
-			PB1_VALS_count = 0;
-
-			for (uint8_t count = 0; count < PB0_VALS_count; count++){
-				print_val(PB0_VALS[count]);
-			}
-			PB0_VALS_count = 0;
-
-			//PORTD
-			for (uint8_t count = 0; count < PC6_VALS_count; count++){
-				print_val(PC6_VALS[count]);
-			}
-			PC6_VALS_count = 0;
-
-			for (uint8_t count = 0; count < PA7_VALS_count; count++){
-				print_val(PA7_VALS[count]);
-			}
-			PA7_VALS_count = 0;
 
 			//After All Values have been sent out to the master.
 			CYCLE_COMPLETE = 0;
 
 			TCNT0 = 254; // Initializing timer 0 to trigger.
 			TCCR0B |= (1 << CS01);
-		//	TCCR0B |= (1 << CS00);
+			//	TCCR0B |= (1 << CS00);
 			TIFR0 |= (1 << TOV0); //Forced timer0 interrupt trigger.
 			TIMSK0 |= (1 << TOIE0);
 		}
@@ -210,9 +268,38 @@ ISR(TIMER0_OVF_vect){ // Timer 0 is dedicated for Pinging and listening.
 		//For PD1-PC6
 		if ((~(PORTD_CONTROL) & 0x02) == 0x02){
 			PCMSK2 |= (1 << PCINT22);
-			PCICR |= (PCIE2);
+			PCICR |= (1<< PCIE2);
 		}
 
+		//For PD2-PC5
+		if ((~(PORTD_CONTROL) & 0x04) == 0x04){
+			PCMSK2 |= (1 << PCINT21);
+			PCICR |= (1 << PCIE2);
+		}
+
+		//For PD3-PC4
+		if ((~(PORTD_CONTROL) & 0x08) == 0x08){
+			PCMSK2 |= (1 << PCINT20);
+			PCICR |= (1 << PCIE2);
+		}
+
+		//For PD4-PC3
+		if ((~(PORTD_CONTROL) & 0x10) == 0x10){
+			PCMSK2 |= (1 << PCINT19);
+			PCICR |= (1 << PCIE2);
+		}
+
+		//For PD5-PC2
+		if ((~(PORTD_CONTROL) & 0x20) == 0x20){
+			PCMSK2 |= (1 << PCINT18);
+			PCICR |= (1 << PCIE2);
+		}
+
+		//For PD6-PD7
+		if ((~(PORTD_CONTROL) & 0x40) == 0x40){
+			PCMSK3 |= (1 << PCINT31);
+			PCICR |= (1 << PCIE3);
+		}
 
 	}	
 }
@@ -234,74 +321,40 @@ ISR(TIMER1_OVF_vect){
 }
 
 ISR(PCINT2_vect){
-	if((~(PORTA_CONTROL) & (1<<6))==0x40) {
-		if(PC7_VALS_count < MAX_VALUES){
-			PC7_VALS[PC7_VALS_count].port_val=PINC;
-			PC7_VALS[PC7_VALS_count].time_reg_val = TCNT1 - 36735;
-			PC7_VALS_count++;
+	if(((~(PORTA_CONTROL) & (1<<6))==0x40) ||((~(PORTD_CONTROL) & 0X3E)>0)){
+		if(PORTC_INPUT_count < MAX_VALUES){
+			PORTC_INPUT_VALS[PORTC_INPUT_count].port_val=PINC;
+			PORTC_INPUT_VALS[PORTC_INPUT_count].time_reg_val = TCNT1 - 36735;
+			PORTC_INPUT_count++;
 		}
 	}
-	if((~(PORTD_CONTROL) & 0x02)==0x02) {
-		if(PC6_VALS_count < MAX_VALUES){
-			PC6_VALS[PC6_VALS_count].port_val=PINC;
-			PC6_VALS[PC6_VALS_count].time_reg_val = TCNT1 - 36735;
-			PC6_VALS_count++;
-		}
-	}
-
 }
 ISR(PCINT1_vect){
-	if((~(PORTA_CONTROL) & (1<<5))==0x20) {
-		if(PB6_VALS_count < MAX_VALUES){
-			PB6_VALS[PB6_VALS_count].port_val=PINB;
-			PB6_VALS[PB6_VALS_count].time_reg_val = TCNT1 - 36735;
-			PB6_VALS_count++;
-		}
-	}
-
-	if((~(PORTA_CONTROL) & (1<<4))==0x10) {
-		if(PB4_VALS_count < MAX_VALUES){
-			PB4_VALS[PB4_VALS_count].port_val=PINB;
-			PB4_VALS[PB4_VALS_count].time_reg_val = TCNT1 - 36735;
-			PB4_VALS_count++;
-		}
-	}
-	if((~(PORTA_CONTROL) & (1<<3))==0x08) {
-		if(PB3_VALS_count < MAX_VALUES){
-			PB3_VALS[PB3_VALS_count].port_val=PINB;
-			PB3_VALS[PB3_VALS_count].time_reg_val = TCNT1 - 36735;
-			PB3_VALS_count++;
-		}
-	}
-	if((~(PORTA_CONTROL) & (1<<2))==0x04) {
-		if(PB2_VALS_count < MAX_VALUES){
-			PB2_VALS[PB2_VALS_count].port_val=PINB;
-			PB2_VALS[PB2_VALS_count].time_reg_val = TCNT1 - 36735;
-			PB2_VALS_count++;
-		}
-	}
-	if((~(PORTA_CONTROL) & (1<<1))==0x02) {
-		if(PB1_VALS_count < MAX_VALUES){
-			PB1_VALS[PB1_VALS_count].port_val=PINB;
-			PB1_VALS[PB1_VALS_count].time_reg_val = TCNT1 - 36735;
-			PB1_VALS_count++;
-		}
-	}
-	if((~(PORTA_CONTROL) & 0x01)==0x01) {
-		if(PB0_VALS_count < MAX_VALUES){
-			PB0_VALS[PB0_VALS_count].port_val=PINB;
-			PB0_VALS[PB0_VALS_count].time_reg_val = TCNT1 - 36735;
-			PB0_VALS_count++;
+	if((~(PORTA_CONTROL) & (0x3F))>0) {
+		if(PORTB_INPUT_count < MAX_VALUES){
+			PORTB_INPUT_VALS[PORTB_INPUT_count].port_val=PINB;
+			PORTB_INPUT_VALS[PORTB_INPUT_count].time_reg_val = TCNT1 - 36735;
+			PORTB_INPUT_count++;
 		}
 	}
 }
 
 ISR(PCINT0_vect){
 	if((~(PORTD_CONTROL) & 0x01)==0x01) {
-		if(PA7_VALS_count < MAX_VALUES){
-			PA7_VALS[PA7_VALS_count].port_val=PINA;
-			PA7_VALS[PA7_VALS_count].time_reg_val = TCNT1 - 36735;
-			PA7_VALS_count++;
+		if(PORTA_INPUT_count < MAX_VALUES){
+			PORTA_INPUT_VALS[PORTA_INPUT_count].port_val=PINA;
+			PORTA_INPUT_VALS[PORTA_INPUT_count].time_reg_val = TCNT1 - 36735;
+			PORTA_INPUT_count++;
+		}
+	}
+}
+
+ISR(PCINT3_vect){
+	if((~(PORTD_CONTROL) & 0x40)==0x40) {
+		if(PORTD_INPUT_count < MAX_VALUES){
+			PORTD_INPUT_VALS[PORTD_INPUT_count].port_val=PIND;
+			PORTD_INPUT_VALS[PORTD_INPUT_count].time_reg_val = TCNT1 - 36735;
+			PORTD_INPUT_count++;
 		}
 	}
 }
