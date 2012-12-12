@@ -60,9 +60,9 @@ void print_TIMER(){
 void printPORTA(){
 
 	//For PA6-PC7
+	LAST_VALUE=0x80;
 	for(uint8_t count=0; count < PORTC_INPUT_count; count++){
 		if ((~(PORTA_CONTROL) & 0x40)== 0x40){ // If listening
-			LAST_VALUE=0x80;
 			if(((0x80 & PORTC_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x80)){
 				if(TIMER_count <MAX_VALUES)
 					TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
@@ -84,9 +84,9 @@ void printPORTA(){
 	}
 
 	//For PA5-PB6
+	LAST_VALUE = 0x40;
 	for (uint8_t count=0; count <PORTB_INPUT_count; count++){
 		if ((~(PORTA_CONTROL) & 0x20) == 0x20){
-			LAST_VALUE = 0x40;
 			if(((0x40 & PORTB_INPUT_VALS[count].port_val)== 0x00) && (LAST_VALUE==0x40)){
 				if(TIMER_count < MAX_VALUES)
 					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
@@ -109,9 +109,9 @@ void printPORTA(){
 	}
 
 	//For PA4-PB4
+	LAST_VALUE = 0x10;
 	for (uint8_t count=0; count <PORTB_INPUT_count; count++){
 		if ((~(PORTA_CONTROL) & 0x10) == 0x10){
-			LAST_VALUE = 0x10;
 			if(((0x10 & PORTB_INPUT_VALS[count].port_val)== 0x00) && (LAST_VALUE==0x10)){
 				if(TIMER_count < MAX_VALUES)
 					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
@@ -135,9 +135,9 @@ void printPORTA(){
 
 
 	//For PA3-PB3
+	LAST_VALUE = 0x08;
 	for (uint8_t count=0; count <PORTB_INPUT_count; count++){
 		if ((~(PORTA_CONTROL) & 0x08) == 0x08){
-			LAST_VALUE = 0x08;
 			if(((0x08 & PORTB_INPUT_VALS[count].port_val) == 0x00) && (LAST_VALUE==0x08)){
 				if(TIMER_count < MAX_VALUES)
 					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
@@ -161,9 +161,9 @@ void printPORTA(){
 
 
 	//For PA2-PB2
+	LAST_VALUE = 0x04;
 	for (uint8_t count=0; count <PORTB_INPUT_count; count++){
 		if ((~(PORTA_CONTROL) & 0x04) == 0x04){
-			LAST_VALUE = 0x04;
 			if(((0x04 & PORTB_INPUT_VALS[count].port_val)== 0x00) && (LAST_VALUE==0x04)){
 				if(TIMER_count < MAX_VALUES)
 					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
@@ -186,9 +186,9 @@ void printPORTA(){
 	}
 
 	//For PA1-PB1
+	LAST_VALUE = 0x02;
 	for (uint8_t count=0; count <PORTB_INPUT_count; count++){
 		if ((~(PORTA_CONTROL) & 0x02) == 0x02){
-			LAST_VALUE = 0x02;
 			if(((0x02 & PORTB_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x02)){
 				if(TIMER_count < MAX_VALUES)
 					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
@@ -211,9 +211,9 @@ void printPORTA(){
 	}
 
 	//For PA0-PB0
+	LAST_VALUE = 0x01;
 	for (uint8_t count=0; count <PORTB_INPUT_count; count++){
 		if ((~(PORTA_CONTROL) & 0x01) == 0x01){
-			LAST_VALUE = 0x01;
 			if(((0x01 & PORTB_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x01)){
 				if(TIMER_count < MAX_VALUES)
 					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
@@ -240,12 +240,12 @@ void printPORTD(){
 	//The last values are set assuming that the inputs were initially high
 
 	//For PD6-PD7
+	LAST_VALUE = 0x80;
 	for (uint8_t count=0; count <PORTD_INPUT_count; count++){
 		if ((~(PORTD_CONTROL) & 0x40) == 0x40){
-			LAST_VALUE = 0x80;
 			if(((0x80 & PORTD_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x80)){
 				if(TIMER_count < MAX_VALUES)
-				TIMER[TIMER_count++] = PORTD_INPUT_VALS[count].time_reg_val;
+					TIMER[TIMER_count++] = PORTD_INPUT_VALS[count].time_reg_val;
 			}
 			LAST_VALUE = (0x80 & PORTD_INPUT_VALS[count].port_val);
 
@@ -265,12 +265,12 @@ void printPORTD(){
 	}
 
 	//For PD5-PC2
+	LAST_VALUE = 0x02;
 	for (uint8_t count=0; count <PORTD_INPUT_count; count++){
 		if ((~(PORTD_CONTROL) & 0x20) == 0x20){
-			LAST_VALUE = 0x02;
 			if(((0x02 & PORTC_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x02)){
 				if(TIMER_count < MAX_VALUES)
-				TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
+					TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
 			}
 			LAST_VALUE = (0x02 & PORTC_INPUT_VALS[count].port_val);
 
@@ -290,12 +290,12 @@ void printPORTD(){
 	}
 
 	//For PD4-PC3
+	LAST_VALUE = 0x04;
 	for (uint8_t count=0; count <PORTD_INPUT_count; count++){
 		if ((~(PORTD_CONTROL) & 0x10) == 0x10){
-			LAST_VALUE = 0x04;
 			if(((0x04 & PORTC_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x04)){
 				if(TIMER_count < MAX_VALUES)
-				TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
+					TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
 			}
 			LAST_VALUE = (0x04 & PORTC_INPUT_VALS[count].port_val);
 
@@ -315,12 +315,12 @@ void printPORTD(){
 	}
 
 	//For PD3-PC4
+	LAST_VALUE = 0x10;
 	for (uint8_t count=0; count <PORTD_INPUT_count; count++){
 		if ((~(PORTD_CONTROL) & 0x08) == 0x08){
-			LAST_VALUE = 0x10;
 			if(((0x10 & PORTC_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x10)){
 				if(TIMER_count < MAX_VALUES)
-				TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
+					TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
 			}
 			LAST_VALUE = (0x10 & PORTC_INPUT_VALS[count].port_val);
 
@@ -340,12 +340,12 @@ void printPORTD(){
 	}
 
 	//For PD2-PC5
+	LAST_VALUE = 0x20;
 	for (uint8_t count=0; count <PORTD_INPUT_count; count++){
 		if ((~(PORTD_CONTROL) & 0x04) == 0x04){
-			LAST_VALUE = 0x20;
 			if(((0x20 & PORTC_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x20)){
 				if(TIMER_count < MAX_VALUES)
-				TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
+					TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
 			}
 			LAST_VALUE = (0x20 & PORTC_INPUT_VALS[count].port_val);
 
@@ -365,12 +365,12 @@ void printPORTD(){
 	}
 
 	//For PD1-PC6
+	LAST_VALUE = 0x40;
 	for (uint8_t count=0; count <PORTD_INPUT_count; count++){
 		if ((~(PORTD_CONTROL) & 0x02) == 0x02){
-			LAST_VALUE = 0x40;
 			if(((0x40 & PORTC_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x40)){
 				if(TIMER_count < MAX_VALUES)
-				TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
+					TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
 			}
 			LAST_VALUE = (0x40 & PORTC_INPUT_VALS[count].port_val);
 
@@ -390,12 +390,12 @@ void printPORTD(){
 	}
 
 	//For PD0-PA7
+	LAST_VALUE = 0x80;
 	for (uint8_t count=0; count <PORTD_INPUT_count; count++){
 		if ((~(PORTD_CONTROL) & 0x01) == 0x01){
-			LAST_VALUE = 0x80;
 			if(((0x80 & PORTA_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x80)){
 				if(TIMER_count < MAX_VALUES)
-				TIMER[TIMER_count++] = PORTA_INPUT_VALS[count].time_reg_val;
+					TIMER[TIMER_count++] = PORTA_INPUT_VALS[count].time_reg_val;
 			}
 			LAST_VALUE = (0x80 & PORTA_INPUT_VALS[count].port_val);
 
