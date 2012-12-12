@@ -58,7 +58,7 @@ void print_TIMER(){
 }
 
 void printPORTA(){
-
+	uint8_t PING_CHECK=0;
 	//For PA6-PC7
 	LAST_VALUE=0x80;
 	for(uint8_t count=0; count < PORTC_INPUT_count; count++){
@@ -71,10 +71,16 @@ void printPORTA(){
 
 		}
 		else{ //Pinging
-			if((0x80 & PORTC_INPUT_VALS[count].port_val) == 0x80){
+			if(((0x80 & PORTC_INPUT_VALS[count].port_val) == 0x80) && (PING_CHECK==0)){
 				TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
-				break;
+				PING_CHECK = 1;
 			}
+			else if(((0x80 & PORTC_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x80) &&(PING_CHECK==1)){
+				if(TIMER_count <MAX_VALUES)
+					TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
+			}
+			LAST_VALUE = (0x80 & PORTC_INPUT_VALS[count].port_val);
+
 		}
 	}
 	if (TIMER_count>0){
@@ -82,6 +88,7 @@ void printPORTA(){
 		print_TIMER();
 		TIMER_count=0;
 	}
+	PING_CHECK=0;
 
 	//For PA5-PB6
 	LAST_VALUE = 0x40;
@@ -92,13 +99,17 @@ void printPORTA(){
 					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
 			}
 			LAST_VALUE = (0x40 & PORTB_INPUT_VALS[count].port_val);
-
 		}
 		else{
-			if((0x40 & PORTB_INPUT_VALS[count].port_val) == 0x40){
+			if(((0x40 & PORTB_INPUT_VALS[count].port_val) == 0x40) && (PING_CHECK==0)){
 				TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-				break;
+				PING_CHECK=1;
 			}
+			else if(((0x40 & PORTB_INPUT_VALS[count].port_val)== 0x00) && (LAST_VALUE==0x40) && (PING_CHECK==1)){
+				if(TIMER_count < MAX_VALUES)
+					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
+			}
+			LAST_VALUE = (0x40 & PORTB_INPUT_VALS[count].port_val);
 		}
 	}
 	//Sending data out
@@ -107,6 +118,7 @@ void printPORTA(){
 		print_TIMER();
 		TIMER_count=0;
 	}
+	PING_CHECK = 0;
 
 	//For PA4-PB4
 	LAST_VALUE = 0x10;
@@ -117,13 +129,17 @@ void printPORTA(){
 					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
 			}
 			LAST_VALUE = (0x10 & PORTB_INPUT_VALS[count].port_val);
-
 		}
 		else{
-			if((0x10 & PORTB_INPUT_VALS[count].port_val) == 0x10){
+			if(((0x10 & PORTB_INPUT_VALS[count].port_val) == 0x10) && (PING_CHECK==0)){
 				TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-				break;
+				PING_CHECK=1;
 			}
+			else if(((0x10 & PORTB_INPUT_VALS[count].port_val)== 0x00) && (LAST_VALUE==0x10) && (PING_CHECK==1)){
+				if(TIMER_count < MAX_VALUES)
+					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
+			}
+			LAST_VALUE = (0x10 & PORTB_INPUT_VALS[count].port_val);
 		}
 	}
 	//Sending data out
@@ -132,7 +148,7 @@ void printPORTA(){
 		print_TIMER();
 		TIMER_count=0;
 	}
-
+	PING_CHECK=0;
 
 	//For PA3-PB3
 	LAST_VALUE = 0x08;
@@ -146,10 +162,15 @@ void printPORTA(){
 
 		}
 		else{
-			if((0x08 & PORTB_INPUT_VALS[count].port_val) == 0x08){
+			if(((0x08 & PORTB_INPUT_VALS[count].port_val) == 0x08) && (PING_CHECK==0)){
 				TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-				break;
+				PING_CHECK=1;
 			}
+			else if(((0x08 & PORTB_INPUT_VALS[count].port_val) == 0x00) && (LAST_VALUE==0x08) && (PING_CHECK==1)){
+				if(TIMER_count < MAX_VALUES)
+					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
+			}
+			LAST_VALUE = (0x08 & PORTB_INPUT_VALS[count].port_val);
 		}
 	}
 	//Sending data out
@@ -158,7 +179,7 @@ void printPORTA(){
 		print_TIMER();
 		TIMER_count=0;
 	}
-
+	PING_CHECK=0;
 
 	//For PA2-PB2
 	LAST_VALUE = 0x04;
@@ -172,10 +193,15 @@ void printPORTA(){
 
 		}
 		else{
-			if((0x04 & PORTB_INPUT_VALS[count].port_val) == 0x04){
+			if(((0x04 & PORTB_INPUT_VALS[count].port_val) == 0x04) && (PING_CHECK==0)){
 				TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-				break;
+				PING_CHECK=0;;
 			}
+			else if(((0x04 & PORTB_INPUT_VALS[count].port_val)== 0x00) && (LAST_VALUE==0x04) && (PING_CHECK==1)){
+				if(TIMER_count < MAX_VALUES)
+					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
+			}
+			LAST_VALUE = (0x04 & PORTB_INPUT_VALS[count].port_val);
 		}
 	}
 	//Sending data out
@@ -184,6 +210,7 @@ void printPORTA(){
 		print_TIMER();
 		TIMER_count=0;
 	}
+	PING_CHECK=0;
 
 	//For PA1-PB1
 	LAST_VALUE = 0x02;
@@ -197,10 +224,15 @@ void printPORTA(){
 
 		}
 		else{
-			if((0x02 & PORTB_INPUT_VALS[count].port_val) == 0x02){
+			if(((0x02 & PORTB_INPUT_VALS[count].port_val) == 0x02) && (PING_CHECK==0)){
 				TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-				break;
+				PING_CHECK=0;
 			}
+			else if(((0x02 & PORTB_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x02)&& (PING_CHECK==1)){
+				if(TIMER_count < MAX_VALUES)
+					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
+			}
+			LAST_VALUE = (0x02 & PORTB_INPUT_VALS[count].port_val);
 		}
 	}
 	//Sending data out
@@ -209,6 +241,7 @@ void printPORTA(){
 		print_TIMER();
 		TIMER_count=0;
 	}
+	PING_CHECK=0;
 
 	//For PA0-PB0
 	LAST_VALUE = 0x01;
@@ -222,10 +255,15 @@ void printPORTA(){
 
 		}
 		else{
-			if((0x01 & PORTB_INPUT_VALS[count].port_val) == 0x01){
+			if(((0x01 & PORTB_INPUT_VALS[count].port_val) == 0x01) && (PING_CHECK==0)){
 				TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-				break;
+				PING_CHECK=1;
 			}
+			else if(((0x01 & PORTB_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x01)&& (PING_CHECK==1)){
+				if(TIMER_count < MAX_VALUES)
+					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
+			}
+			LAST_VALUE = (0x01 & PORTB_INPUT_VALS[count].port_val);
 		}
 	}
 	//Sending data out
@@ -237,6 +275,7 @@ void printPORTA(){
 }
 
 void printPORTD(){
+	uint8_t PING_CHECK = 0;
 	//The last values are set assuming that the inputs were initially high
 
 	//For PD6-PD7
@@ -251,10 +290,15 @@ void printPORTD(){
 
 		}
 		else{
-			if((0x80 & PORTD_INPUT_VALS[count].port_val) == 0x80){
+			if(((0x80 & PORTD_INPUT_VALS[count].port_val) == 0x80) && (PING_CHECK==0)){
 				TIMER[TIMER_count++] = PORTD_INPUT_VALS[count].time_reg_val;
-				break;
+				PING_CHECK = 1;
 			}
+			else if(((0x80 & PORTD_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x80) && (PING_CHECK==1)){
+				if(TIMER_count < MAX_VALUES)
+					TIMER[TIMER_count++] = PORTD_INPUT_VALS[count].time_reg_val;
+			}
+			LAST_VALUE = (0x80 & PORTD_INPUT_VALS[count].port_val);
 		}
 	}
 	//Sending data out
@@ -263,6 +307,7 @@ void printPORTD(){
 		print_TIMER();
 		TIMER_count=0;
 	}
+	PING_CHECK = 0;
 
 	//For PD5-PC2
 	LAST_VALUE = 0x02;
@@ -276,10 +321,15 @@ void printPORTD(){
 
 		}
 		else{
-			if((0x02 & PORTC_INPUT_VALS[count].port_val) == 0x02){
+			if(((0x02 & PORTC_INPUT_VALS[count].port_val) == 0x02) && (PING_CHECK==0)){
 				TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
-				break;
+				PING_CHECK=1;
 			}
+			else if(((0x02 & PORTC_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x02)&& (PING_CHECK==1)){
+				if(TIMER_count < MAX_VALUES)
+					TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
+			}
+			LAST_VALUE = (0x02 & PORTC_INPUT_VALS[count].port_val);
 		}
 	}
 	//Sending data out
@@ -288,6 +338,7 @@ void printPORTD(){
 		print_TIMER();
 		TIMER_count=0;
 	}
+	PING_CHECK = 0;
 
 	//For PD4-PC3
 	LAST_VALUE = 0x04;
@@ -301,10 +352,15 @@ void printPORTD(){
 
 		}
 		else{
-			if((0x04 & PORTC_INPUT_VALS[count].port_val) == 0x04){
+			if(((0x04 & PORTC_INPUT_VALS[count].port_val) == 0x04) && (PING_CHECK==0)){
 				TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
-				break;
+				PING_CHECK=1;
 			}
+			else if(((0x04 & PORTC_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x04)&& (PING_CHECK==1)){
+				if(TIMER_count < MAX_VALUES)
+					TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
+			}
+			LAST_VALUE = (0x04 & PORTC_INPUT_VALS[count].port_val);
 		}
 	}
 	//Sending data out
@@ -313,6 +369,7 @@ void printPORTD(){
 		print_TIMER();
 		TIMER_count=0;
 	}
+	PING_CHECK = 0;
 
 	//For PD3-PC4
 	LAST_VALUE = 0x10;
@@ -326,10 +383,15 @@ void printPORTD(){
 
 		}
 		else{
-			if((0x10 & PORTC_INPUT_VALS[count].port_val) == 0x10){
+			if(((0x10 & PORTC_INPUT_VALS[count].port_val) == 0x10) &&(PING_CHECK==0)){
 				TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
-				break;
+				PING_CHECK = 1;
 			}
+			else if(((0x10 & PORTC_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x10)&& (PING_CHECK==1)){
+				if(TIMER_count < MAX_VALUES)
+					TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
+			}
+			LAST_VALUE = (0x10 & PORTC_INPUT_VALS[count].port_val);
 		}
 	}
 	//Sending data out
@@ -338,6 +400,7 @@ void printPORTD(){
 		print_TIMER();
 		TIMER_count=0;
 	}
+	PING_CHECK=0;
 
 	//For PD2-PC5
 	LAST_VALUE = 0x20;
@@ -351,10 +414,15 @@ void printPORTD(){
 
 		}
 		else{
-			if((0x20 & PORTC_INPUT_VALS[count].port_val) == 0x20){
+			if(((0x20 & PORTC_INPUT_VALS[count].port_val) == 0x20) && (PING_CHECK==0)){
 				TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
-				break;
+				PING_CHECK=1;
 			}
+			else if(((0x20 & PORTC_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x20) && (PING_CHECK==1)){
+				if(TIMER_count < MAX_VALUES)
+					TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
+			}
+			LAST_VALUE = (0x20 & PORTC_INPUT_VALS[count].port_val);
 		}
 	}
 	//Sending data out
@@ -363,6 +431,7 @@ void printPORTD(){
 		print_TIMER();
 		TIMER_count=0;
 	}
+	PING_CHECK=0;
 
 	//For PD1-PC6
 	LAST_VALUE = 0x40;
@@ -376,10 +445,15 @@ void printPORTD(){
 
 		}
 		else{
-			if((0x40 & PORTC_INPUT_VALS[count].port_val) == 0x40){
+			if(((0x40 & PORTC_INPUT_VALS[count].port_val) == 0x40) && (PING_CHECK==0)){
 				TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
-				break;
+				PING_CHECK=1;
 			}
+			else if(((0x40 & PORTC_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x40) && (PING_CHECK==1)){
+				if(TIMER_count < MAX_VALUES)
+					TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
+			}
+			LAST_VALUE = (0x40 & PORTC_INPUT_VALS[count].port_val);
 		}
 	}
 	//Sending data out
@@ -388,6 +462,7 @@ void printPORTD(){
 		print_TIMER();
 		TIMER_count=0;
 	}
+	PING_CHECK = 0;
 
 	//For PD0-PA7
 	LAST_VALUE = 0x80;
@@ -401,10 +476,15 @@ void printPORTD(){
 
 		}
 		else{
-			if((0x80 & PORTC_INPUT_VALS[count].port_val) == 0x80){
+			if(((0x80 & PORTC_INPUT_VALS[count].port_val) == 0x80) && (PING_CHECK==0)){
 				TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
-				break;
+				PING_CHECK = 1;
 			}
+			else if(((0x80 & PORTA_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x80) && (PING_CHECK==1)){
+				if(TIMER_count < MAX_VALUES)
+					TIMER[TIMER_count++] = PORTA_INPUT_VALS[count].time_reg_val;
+			}
+			LAST_VALUE = (0x80 & PORTA_INPUT_VALS[count].port_val);
 		}
 	}
 	//Sending data out
