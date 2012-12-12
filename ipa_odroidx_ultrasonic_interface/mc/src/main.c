@@ -118,159 +118,39 @@ void printPORTA(){
 		print_TIMER();
 		TIMER_count=0;
 	}
-	PING_CHECK = 0;
 
-	//For PA4-PB4
-	LAST_VALUE = 0x10;
-	for (uint8_t count=0; count <PORTB_INPUT_count; count++){
-		if ((~(PORTA_CONTROL) & 0x10) == 0x10){
-			if(((0x10 & PORTB_INPUT_VALS[count].port_val)== 0x00) && (LAST_VALUE==0x10)){
-				if(TIMER_count < MAX_VALUES)
+	//For PA[4:0]-PB[4:0]
+	uint8_t sensor_address = 0x04;
+	for(uint8_t COMMON_MASK = 0x10; COMMON_MASK >0; COMMON_MASK>>=1){
+		PING_CHECK = 0;
+		LAST_VALUE = COMMON_MASK;
+		for (uint8_t count=0; count <PORTB_INPUT_count; count++){
+			if ((~(PORTA_CONTROL) & COMMON_MASK) == COMMON_MASK){
+				if(((COMMON_MASK & PORTB_INPUT_VALS[count].port_val)== 0x00) && (LAST_VALUE==COMMON_MASK)){
+					if(TIMER_count < MAX_VALUES)
+						TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
+				}
+				LAST_VALUE = (COMMON_MASK & PORTB_INPUT_VALS[count].port_val);
+			}
+			else{
+				if(((COMMON_MASK & PORTB_INPUT_VALS[count].port_val) == COMMON_MASK) && (PING_CHECK==0)){
 					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
+					PING_CHECK=1;
+				}
+				else if(((COMMON_MASK & PORTB_INPUT_VALS[count].port_val)== 0x00) && (LAST_VALUE==COMMON_MASK) && (PING_CHECK==1)){
+					if(TIMER_count < MAX_VALUES)
+						TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
+				}
+				LAST_VALUE = (COMMON_MASK & PORTB_INPUT_VALS[count].port_val);
 			}
-			LAST_VALUE = (0x10 & PORTB_INPUT_VALS[count].port_val);
 		}
-		else{
-			if(((0x10 & PORTB_INPUT_VALS[count].port_val) == 0x10) && (PING_CHECK==0)){
-				TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-				PING_CHECK=1;
-			}
-			else if(((0x10 & PORTB_INPUT_VALS[count].port_val)== 0x00) && (LAST_VALUE==0x10) && (PING_CHECK==1)){
-				if(TIMER_count < MAX_VALUES)
-					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-			}
-			LAST_VALUE = (0x10 & PORTB_INPUT_VALS[count].port_val);
+		//Sending data out
+		if (TIMER_count>0){
+			softuart_putchar((sensor_address<<4) | TIMER_count); //Address + TIMER value
+			print_TIMER();
+			TIMER_count=0;
 		}
-	}
-	//Sending data out
-	if (TIMER_count>0){
-		softuart_putchar(0x40 | TIMER_count); //Address + TIMER value
-		print_TIMER();
-		TIMER_count=0;
-	}
-	PING_CHECK=0;
-
-	//For PA3-PB3
-	LAST_VALUE = 0x08;
-	for (uint8_t count=0; count <PORTB_INPUT_count; count++){
-		if ((~(PORTA_CONTROL) & 0x08) == 0x08){
-			if(((0x08 & PORTB_INPUT_VALS[count].port_val) == 0x00) && (LAST_VALUE==0x08)){
-				if(TIMER_count < MAX_VALUES)
-					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-			}
-			LAST_VALUE = (0x08 & PORTB_INPUT_VALS[count].port_val);
-
-		}
-		else{
-			if(((0x08 & PORTB_INPUT_VALS[count].port_val) == 0x08) && (PING_CHECK==0)){
-				TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-				PING_CHECK=1;
-			}
-			else if(((0x08 & PORTB_INPUT_VALS[count].port_val) == 0x00) && (LAST_VALUE==0x08) && (PING_CHECK==1)){
-				if(TIMER_count < MAX_VALUES)
-					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-			}
-			LAST_VALUE = (0x08 & PORTB_INPUT_VALS[count].port_val);
-		}
-	}
-	//Sending data out
-	if (TIMER_count>0){
-		softuart_putchar(0x30 | TIMER_count); //Address + TIMER value
-		print_TIMER();
-		TIMER_count=0;
-	}
-	PING_CHECK=0;
-
-	//For PA2-PB2
-	LAST_VALUE = 0x04;
-	for (uint8_t count=0; count <PORTB_INPUT_count; count++){
-		if ((~(PORTA_CONTROL) & 0x04) == 0x04){
-			if(((0x04 & PORTB_INPUT_VALS[count].port_val)== 0x00) && (LAST_VALUE==0x04)){
-				if(TIMER_count < MAX_VALUES)
-					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-			}
-			LAST_VALUE = (0x04 & PORTB_INPUT_VALS[count].port_val);
-
-		}
-		else{
-			if(((0x04 & PORTB_INPUT_VALS[count].port_val) == 0x04) && (PING_CHECK==0)){
-				TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-				PING_CHECK=0;;
-			}
-			else if(((0x04 & PORTB_INPUT_VALS[count].port_val)== 0x00) && (LAST_VALUE==0x04) && (PING_CHECK==1)){
-				if(TIMER_count < MAX_VALUES)
-					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-			}
-			LAST_VALUE = (0x04 & PORTB_INPUT_VALS[count].port_val);
-		}
-	}
-	//Sending data out
-	if (TIMER_count>0){
-		softuart_putchar(0x20 | TIMER_count); //Address + TIMER value
-		print_TIMER();
-		TIMER_count=0;
-	}
-	PING_CHECK=0;
-
-	//For PA1-PB1
-	LAST_VALUE = 0x02;
-	for (uint8_t count=0; count <PORTB_INPUT_count; count++){
-		if ((~(PORTA_CONTROL) & 0x02) == 0x02){
-			if(((0x02 & PORTB_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x02)){
-				if(TIMER_count < MAX_VALUES)
-					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-			}
-			LAST_VALUE = (0x02 & PORTB_INPUT_VALS[count].port_val);
-
-		}
-		else{
-			if(((0x02 & PORTB_INPUT_VALS[count].port_val) == 0x02) && (PING_CHECK==0)){
-				TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-				PING_CHECK=0;
-			}
-			else if(((0x02 & PORTB_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x02)&& (PING_CHECK==1)){
-				if(TIMER_count < MAX_VALUES)
-					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-			}
-			LAST_VALUE = (0x02 & PORTB_INPUT_VALS[count].port_val);
-		}
-	}
-	//Sending data out
-	if (TIMER_count>0){
-		softuart_putchar(0x10 | TIMER_count); //Address + TIMER value
-		print_TIMER();
-		TIMER_count=0;
-	}
-	PING_CHECK=0;
-
-	//For PA0-PB0
-	LAST_VALUE = 0x01;
-	for (uint8_t count=0; count <PORTB_INPUT_count; count++){
-		if ((~(PORTA_CONTROL) & 0x01) == 0x01){
-			if(((0x01 & PORTB_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x01)){
-				if(TIMER_count < MAX_VALUES)
-					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-			}
-			LAST_VALUE = (0x01 & PORTB_INPUT_VALS[count].port_val);
-
-		}
-		else{
-			if(((0x01 & PORTB_INPUT_VALS[count].port_val) == 0x01) && (PING_CHECK==0)){
-				TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-				PING_CHECK=1;
-			}
-			else if(((0x01 & PORTB_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x01)&& (PING_CHECK==1)){
-				if(TIMER_count < MAX_VALUES)
-					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-			}
-			LAST_VALUE = (0x01 & PORTB_INPUT_VALS[count].port_val);
-		}
-	}
-	//Sending data out
-	if (TIMER_count>0){
-		softuart_putchar(0x00 | TIMER_count); //Address + TIMER value
-		print_TIMER();
-		TIMER_count=0;
+		sensor_address--;
 	}
 }
 
