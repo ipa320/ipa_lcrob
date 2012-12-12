@@ -64,9 +64,11 @@ void printPORTA(){
 		if ((~(PORTA_CONTROL) & 0x40)== 0x40){ // If listening
 			LAST_VALUE=0x80;
 			if(((0x80 & PORTC_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x80)){
-				TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
-				LAST_VALUE = (0x80 & PORTC_INPUT_VALS[count].port_val);
+				if(TIMER_count <MAX_VALUES)
+					TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
 			}
+			LAST_VALUE = (0x80 & PORTC_INPUT_VALS[count].port_val);
+
 		}
 		else{ //Pinging
 			if((0x80 & PORTC_INPUT_VALS[count].port_val) == 0x80){
@@ -86,9 +88,11 @@ void printPORTA(){
 		if ((~(PORTA_CONTROL) & 0x20) == 0x20){
 			LAST_VALUE = 0x40;
 			if(((0x40 & PORTB_INPUT_VALS[count].port_val)== 0x00) && (LAST_VALUE==0x40)){
-				TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-				LAST_VALUE = (0x40 & PORTB_INPUT_VALS[count].port_val);
+				if(TIMER_count < MAX_VALUES)
+					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
 			}
+			LAST_VALUE = (0x40 & PORTB_INPUT_VALS[count].port_val);
+
 		}
 		else{
 			if((0x40 & PORTB_INPUT_VALS[count].port_val) == 0x40){
@@ -109,9 +113,11 @@ void printPORTA(){
 		if ((~(PORTA_CONTROL) & 0x10) == 0x10){
 			LAST_VALUE = 0x10;
 			if(((0x10 & PORTB_INPUT_VALS[count].port_val)== 0x00) && (LAST_VALUE==0x10)){
-				TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-				LAST_VALUE = (0x10 & PORTB_INPUT_VALS[count].port_val);
+				if(TIMER_count < MAX_VALUES)
+					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
 			}
+			LAST_VALUE = (0x10 & PORTB_INPUT_VALS[count].port_val);
+
 		}
 		else{
 			if((0x10 & PORTB_INPUT_VALS[count].port_val) == 0x10){
@@ -133,9 +139,11 @@ void printPORTA(){
 		if ((~(PORTA_CONTROL) & 0x08) == 0x08){
 			LAST_VALUE = 0x08;
 			if(((0x08 & PORTB_INPUT_VALS[count].port_val) == 0x00) && (LAST_VALUE==0x08)){
-				TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-				LAST_VALUE = (0x08 & PORTB_INPUT_VALS[count].port_val);
+				if(TIMER_count < MAX_VALUES)
+					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
 			}
+			LAST_VALUE = (0x08 & PORTB_INPUT_VALS[count].port_val);
+
 		}
 		else{
 			if((0x08 & PORTB_INPUT_VALS[count].port_val) == 0x08){
@@ -157,9 +165,11 @@ void printPORTA(){
 		if ((~(PORTA_CONTROL) & 0x04) == 0x04){
 			LAST_VALUE = 0x04;
 			if(((0x04 & PORTB_INPUT_VALS[count].port_val)== 0x00) && (LAST_VALUE==0x04)){
-				TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-				LAST_VALUE = (0x04 & PORTB_INPUT_VALS[count].port_val);
+				if(TIMER_count < MAX_VALUES)
+					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
 			}
+			LAST_VALUE = (0x04 & PORTB_INPUT_VALS[count].port_val);
+
 		}
 		else{
 			if((0x04 & PORTB_INPUT_VALS[count].port_val) == 0x04){
@@ -180,9 +190,11 @@ void printPORTA(){
 		if ((~(PORTA_CONTROL) & 0x02) == 0x02){
 			LAST_VALUE = 0x02;
 			if(((0x02 & PORTB_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x02)){
-				TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-				LAST_VALUE = (0x02 & PORTB_INPUT_VALS[count].port_val);
+				if(TIMER_count < MAX_VALUES)
+					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
 			}
+			LAST_VALUE = (0x02 & PORTB_INPUT_VALS[count].port_val);
+
 		}
 		else{
 			if((0x02 & PORTB_INPUT_VALS[count].port_val) == 0x02){
@@ -203,9 +215,11 @@ void printPORTA(){
 		if ((~(PORTA_CONTROL) & 0x01) == 0x01){
 			LAST_VALUE = 0x01;
 			if(((0x01 & PORTB_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x01)){
-				TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
-				LAST_VALUE = (0x01 & PORTB_INPUT_VALS[count].port_val);
+				if(TIMER_count < MAX_VALUES)
+					TIMER[TIMER_count++] = PORTB_INPUT_VALS[count].time_reg_val;
 			}
+			LAST_VALUE = (0x01 & PORTB_INPUT_VALS[count].port_val);
+
 		}
 		else{
 			if((0x01 & PORTB_INPUT_VALS[count].port_val) == 0x01){
@@ -230,9 +244,11 @@ void printPORTD(){
 		if ((~(PORTD_CONTROL) & 0x40) == 0x40){
 			LAST_VALUE = 0x80;
 			if(((0x80 & PORTD_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x80)){
+				if(TIMER_count < MAX_VALUES)
 				TIMER[TIMER_count++] = PORTD_INPUT_VALS[count].time_reg_val;
-				LAST_VALUE = (0x80 & PORTD_INPUT_VALS[count].port_val);
 			}
+			LAST_VALUE = (0x80 & PORTD_INPUT_VALS[count].port_val);
+
 		}
 		else{
 			if((0x80 & PORTD_INPUT_VALS[count].port_val) == 0x80){
@@ -253,9 +269,11 @@ void printPORTD(){
 		if ((~(PORTD_CONTROL) & 0x20) == 0x20){
 			LAST_VALUE = 0x02;
 			if(((0x02 & PORTC_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x02)){
+				if(TIMER_count < MAX_VALUES)
 				TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
-				LAST_VALUE = (0x02 & PORTC_INPUT_VALS[count].port_val);
 			}
+			LAST_VALUE = (0x02 & PORTC_INPUT_VALS[count].port_val);
+
 		}
 		else{
 			if((0x02 & PORTC_INPUT_VALS[count].port_val) == 0x02){
@@ -276,9 +294,11 @@ void printPORTD(){
 		if ((~(PORTD_CONTROL) & 0x10) == 0x10){
 			LAST_VALUE = 0x04;
 			if(((0x04 & PORTC_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x04)){
+				if(TIMER_count < MAX_VALUES)
 				TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
-				LAST_VALUE = (0x04 & PORTC_INPUT_VALS[count].port_val);
 			}
+			LAST_VALUE = (0x04 & PORTC_INPUT_VALS[count].port_val);
+
 		}
 		else{
 			if((0x04 & PORTC_INPUT_VALS[count].port_val) == 0x04){
@@ -299,9 +319,11 @@ void printPORTD(){
 		if ((~(PORTD_CONTROL) & 0x08) == 0x08){
 			LAST_VALUE = 0x10;
 			if(((0x10 & PORTC_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x10)){
+				if(TIMER_count < MAX_VALUES)
 				TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
-				LAST_VALUE = (0x10 & PORTC_INPUT_VALS[count].port_val);
 			}
+			LAST_VALUE = (0x10 & PORTC_INPUT_VALS[count].port_val);
+
 		}
 		else{
 			if((0x10 & PORTC_INPUT_VALS[count].port_val) == 0x10){
@@ -322,9 +344,11 @@ void printPORTD(){
 		if ((~(PORTD_CONTROL) & 0x04) == 0x04){
 			LAST_VALUE = 0x20;
 			if(((0x20 & PORTC_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x20)){
+				if(TIMER_count < MAX_VALUES)
 				TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
-				LAST_VALUE = (0x20 & PORTC_INPUT_VALS[count].port_val);
 			}
+			LAST_VALUE = (0x20 & PORTC_INPUT_VALS[count].port_val);
+
 		}
 		else{
 			if((0x20 & PORTC_INPUT_VALS[count].port_val) == 0x20){
@@ -345,9 +369,11 @@ void printPORTD(){
 		if ((~(PORTD_CONTROL) & 0x02) == 0x02){
 			LAST_VALUE = 0x40;
 			if(((0x40 & PORTC_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x40)){
+				if(TIMER_count < MAX_VALUES)
 				TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
-				LAST_VALUE = (0x40 & PORTC_INPUT_VALS[count].port_val);
 			}
+			LAST_VALUE = (0x40 & PORTC_INPUT_VALS[count].port_val);
+
 		}
 		else{
 			if((0x40 & PORTC_INPUT_VALS[count].port_val) == 0x40){
@@ -368,9 +394,11 @@ void printPORTD(){
 		if ((~(PORTD_CONTROL) & 0x01) == 0x01){
 			LAST_VALUE = 0x80;
 			if(((0x80 & PORTA_INPUT_VALS[count].port_val)==0x00) && (LAST_VALUE==0x80)){
+				if(TIMER_count < MAX_VALUES)
 				TIMER[TIMER_count++] = PORTA_INPUT_VALS[count].time_reg_val;
-				LAST_VALUE = (0x80 & PORTA_INPUT_VALS[count].port_val);
 			}
+			LAST_VALUE = (0x80 & PORTA_INPUT_VALS[count].port_val);
+
 		}
 		else{
 			if((0x80 & PORTC_INPUT_VALS[count].port_val) == 0x80){
