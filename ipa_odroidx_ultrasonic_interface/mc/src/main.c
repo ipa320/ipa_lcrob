@@ -83,9 +83,9 @@ int main(void){
 			//For PA6-PC7
 			if ((~(PORTA_CONTROL) & 0x40)== 0x40){
 				for (uint8_t count=0; count <PORTC_INPUT_count; count++){
-					if((0x40 & PORTC_INPUT_VALS[count].port_val) != LAST_VALUE){
+					if((0x80 & PORTC_INPUT_VALS[count].port_val) != LAST_VALUE){
 						TIMER[TIMER_count++] = PORTC_INPUT_VALS[count].time_reg_val;
-						LAST_VALUE = (0x40 & PORTC_INPUT_VALS[count].port_val);
+						LAST_VALUE = (0x80 & PORTC_INPUT_VALS[count].port_val);
 					}
 				}
 				//Sending data out
@@ -195,7 +195,7 @@ int main(void){
 			//For PD6-PD7
 			if ((~(PORTD_CONTROL) & 0x40) == 0x40){
 				for (uint8_t count=0; count <PORTD_INPUT_count; count++){
-					if((0x01 & PORTD_INPUT_VALS[count].port_val) != LAST_VALUE){
+					if((0x80 & PORTD_INPUT_VALS[count].port_val) != LAST_VALUE){
 						TIMER[TIMER_count++] = PORTD_INPUT_VALS[count].time_reg_val;
 						LAST_VALUE = (0x80 & PORTD_INPUT_VALS[count].port_val);
 					}
