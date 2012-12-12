@@ -5,6 +5,10 @@
 #include "softuart.h"
 
 #define MAX_VALUES 32
+#define MAX_PINS_PORTA 1
+#define MAX_PINS_PORTB 6
+#define MAX_PINS_PORTC 6
+#define MAX_PINS_PORTD 1
 struct TIME_KEEPER{
 	uint8_t port_val;
 	uint16_t time_reg_val;
@@ -24,16 +28,16 @@ volatile  uint8_t PING_STAGE=0;
 volatile unsigned char PORTA_CONTROL=0x00;
 volatile unsigned char PORTD_CONTROL=0x00;
 
-volatile struct TIME_KEEPER PORTA_INPUT_VALS[32];
+volatile struct TIME_KEEPER PORTA_INPUT_VALS[MAX_VALUES];
 volatile uint8_t PORTA_INPUT_count=0;
 
-volatile struct TIME_KEEPER PORTD_INPUT_VALS[32];
+volatile struct TIME_KEEPER PORTD_INPUT_VALS[MAX_VALUES];
 volatile uint8_t PORTD_INPUT_count=0;
 
-volatile struct TIME_KEEPER PORTC_INPUT_VALS[32];
+volatile struct TIME_KEEPER PORTC_INPUT_VALS[MAX_VALUES * MAX_PINS_PORTC];
 volatile uint8_t PORTC_INPUT_count=0;
 
-volatile struct TIME_KEEPER PORTB_INPUT_VALS[32];
+volatile struct TIME_KEEPER PORTB_INPUT_VALS[MAX_VALUES * MAX_PINS_PORTB];
 volatile uint8_t PORTB_INPUT_count=0;
 
 volatile uint16_t TIMER[MAX_VALUES];
@@ -436,7 +440,7 @@ ISR(TIMER1_OVF_vect){
 
 ISR(PCINT2_vect){
 	if(((~(PORTA_CONTROL) & (1<<6))==0x40) ||((~(PORTD_CONTROL) & 0X3E)>0)){
-		if(PORTC_INPUT_count < MAX_VALUES){
+		if(PORTC_INPUT_count < (MAX_VALUES * MAX_PINS_PORTC)){
 			PORTC_INPUT_VALS[PORTC_INPUT_count].port_val=PINC;
 			PORTC_INPUT_VALS[PORTC_INPUT_count].time_reg_val = TCNT1 - 36735;
 			PORTC_INPUT_count++;
@@ -445,7 +449,7 @@ ISR(PCINT2_vect){
 }
 ISR(PCINT1_vect){
 	if((~(PORTA_CONTROL) & (0x3F))>0) {
-		if(PORTB_INPUT_count < MAX_VALUES){
+		if(PORTB_INPUT_count < (MAX_VALUES * MAX_PINS_PORTB)){
 			PORTB_INPUT_VALS[PORTB_INPUT_count].port_val=PINB;
 			PORTB_INPUT_VALS[PORTB_INPUT_count].time_reg_val = TCNT1 - 36735;
 			PORTB_INPUT_count++;
@@ -455,7 +459,7 @@ ISR(PCINT1_vect){
 
 ISR(PCINT0_vect){
 	if((~(PORTD_CONTROL) & 0x01)==0x01) {
-		if(PORTA_INPUT_count < MAX_VALUES){
+		if(PORTA_INPUT_count < (MAX_VALUES* MAX_PINS_PORTA)){
 			PORTA_INPUT_VALS[PORTA_INPUT_count].port_val=PINA;
 			PORTA_INPUT_VALS[PORTA_INPUT_count].time_reg_val = TCNT1 - 36735;
 			PORTA_INPUT_count++;
@@ -465,7 +469,7 @@ ISR(PCINT0_vect){
 
 ISR(PCINT3_vect){
 	if((~(PORTD_CONTROL) & 0x40)==0x40) {
-		if(PORTD_INPUT_count < MAX_VALUES){
+		if(PORTD_INPUT_count < (MAX_VALUES* MAX_PINS_PORTD)){
 			PORTD_INPUT_VALS[PORTD_INPUT_count].port_val=PIND;
 			PORTD_INPUT_VALS[PORTD_INPUT_count].time_reg_val = TCNT1 - 36735;
 			PORTD_INPUT_count++;
