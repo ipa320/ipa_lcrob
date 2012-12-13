@@ -20,7 +20,7 @@ struct TIME_KEEPER{
  *PORTA and PORTD are for output whereas PORTB and PORTC are for input
  *The board is programmed to use the external crystal of 18.432MHz and
  *the CLKDIV8 fuse is also programmed, causing effective frequency
- *equal to 2304000
+ *equal to 2304000.
  *In PORTA_CONTROL and PORTD_CONTROL 1 denotes ping and 0 denotes listen,
  *whereas MSB is unused.
  */
@@ -44,8 +44,6 @@ volatile uint8_t PORTD_INPUT_count=0;
 
 volatile uint16_t TIMER[MAX_VALUES];
 volatile uint8_t TIMER_count=0;
-
-volatile uint8_t LAST_VALUE=0;
 
 volatile uint8_t CYCLE_COMPLETE = 0;
 
@@ -91,17 +89,17 @@ void populateTIMER_SEND(uint8_t PORT_CONTROL, uint8_t CHANNEL_POSITION, volatile
 
 void printPORTA(){
 	//For PA6-PC7
-//	LAST_VALUE=0x80;
+//	POSITION ON PORT=0x80;
 	populateTIMER_SEND(PORTA_CONTROL, 0x40, PORTC_INPUT_VALS, PORTC_INPUT_count, 0x80, 0x06);
 
 	//For PA5-PB6
-	//LAST_VALUE = 0x40;
+	//POSITION ON PORT = 0x40;
 	populateTIMER_SEND(PORTA_CONTROL, 0x20, PORTB_INPUT_VALS, PORTB_INPUT_count, 0x40, 0x05);
 
 	//For PA[4:0]-PB[4:0]
 	uint8_t sensor_address = 0x04;
 	for(uint8_t COMMON_MASK = 0x10; COMMON_MASK >0; COMMON_MASK>>=1){
-	//	LAST_VALUE = COMMON_MASK;
+	//	POSITION ON PORT = COMMON_MASK;
 		populateTIMER_SEND(PORTA_CONTROL, COMMON_MASK, PORTB_INPUT_VALS, PORTB_INPUT_count, COMMON_MASK, sensor_address);
 		sensor_address--;
 	}
@@ -111,31 +109,16 @@ void printPORTD(){
 	//The last values are set assuming that the inputs were initially high
 
 	//For PD6-PD7
-	//LAST_VALUE = 0x80;
+	//POSITION ON PORT = 0x80;
 	populateTIMER_SEND(PORTD_CONTROL, 0x40, PORTD_INPUT_VALS, PORTD_INPUT_count, 0x80, 0x0D);
 
-	//For PD5-PC2
-	//LAST_VALUE = 0x04;
-	populateTIMER_SEND(PORTD_CONTROL, 0x20, PORTC_INPUT_VALS, PORTC_INPUT_count, 0x04, 0x0C);
-
-	//For PD4-PC3
-	//LAST_VALUE = 0x08;
-	populateTIMER_SEND(PORTD_CONTROL, 0x10, PORTC_INPUT_VALS, PORTC_INPUT_count, 0x08, 0x0B);
-
-	//For PD3-PC4
-	//LAST_VALUE = 0x10;
-	populateTIMER_SEND(PORTD_CONTROL, 0x08, PORTC_INPUT_VALS, PORTC_INPUT_count, 0x10, 0x0A);
-
-	//For PD2-PC5
-	//LAST_VALUE = 0x20;
-	populateTIMER_SEND(PORTD_CONTROL, 0x04, PORTC_INPUT_VALS, PORTC_INPUT_count, 0x20, 0x09);
-
-	//For PD1-PC6
-	//LAST_VALUE = 0x40;
-	populateTIMER_SEND(PORTD_CONTROL, 0x02, PORTC_INPUT_VALS, PORTC_INPUT_count, 0x40, 0x08);
+	//For PD[5:1]-PC[2:6]
+	uint8_t sensor_address = 0xC;
+	for (uint8_t count=2; count<7 ;count++)
+		populateTIMER_SEND(PORTD_CONTROL, (0x80>>count), PORTC_INPUT_VALS, PORTC_INPUT_count, (1 << count), sensor_address--);
 
 	//For PD0-PA7
-	//LAST_VALUE = 0x80;
+	//POSITION ON PORT = 0x80;
 	populateTIMER_SEND(PORTD_CONTROL, 0x01, PORTA_INPUT_VALS, PORTA_INPUT_count, 0x80, 0x07);
 }
 int main(void){
