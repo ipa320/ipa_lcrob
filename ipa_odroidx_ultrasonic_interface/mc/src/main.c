@@ -11,6 +11,8 @@
 #define MAX_INPUTS_PORTC 6
 #define MAX_INPUTS_PORTD 1
 
+#define MAX_SENSOR_CONFIGS 16
+
 struct TIME_KEEPER{
 	uint8_t port_val;
 	uint16_t time_reg_val;
@@ -46,6 +48,11 @@ volatile uint16_t TIMER[MAX_VALUES];
 volatile uint8_t TIMER_count=0;
 
 volatile uint8_t CYCLE_COMPLETE = 0;
+
+volatile uint16_t SENSOR_CONFIG[MAX_SENSOR_CONFIGS];
+volatile uint8_t TOTAL_SENSOR_CONFIGS=0;
+volatile uint8_t CURRENT_SENSOR_CONFIG=0;
+volatile uint8_t CONTROL_PORTS_SET=0;
 
 void print_TIMER(){
 	softuart_putchar(TIMER_count);
@@ -84,7 +91,6 @@ void populateTIMER_SEND(uint8_t PORT_CONTROL, uint8_t CHANNEL_POSITION, volatile
 		print_TIMER();
 	}
 	TIMER_count=0;
-
 }
 
 void printPORTA(){
@@ -137,33 +143,55 @@ int main(void){
 	PORTB = 0x00; //Disabling use of pull up resistors
 	PORTC = 0x00;
 
-	TCNT0 = 1;
-	TCCR0B |= (1 << CS01);
-
-	TIMSK0 |= (1 << TOIE0); // Enabling timer 1 overflow
-
 	softuart_init();
 
 	sei(); // Setting global interrupt
 
 	for(;;){
-		if(CYCLE_COMPLETE == 1){
-			printPORTA();
-			printPORTD();
+		if(TOTAL_SENSOR_CONFIGS > 0){
+			if(CONTROL_PORTS_SET==1){
+				if(CYCLE_COMPLETE == 1){
+					softuart_putchar(CURRENT_SENSOR_CONFIG);//Sending out current sensor configuration number.
+					printPORTA();
+					printPORTD();
 
-			//After All Values have been sent out to the master.
-			PORTA_INPUT_count=0;
-			PORTB_INPUT_count=0;
-			PORTC_INPUT_count=0;
-			PORTD_INPUT_count=0;
+					//After All Values have been sent out to the master.
+					PORTA_INPUT_count=0;
+					PORTB_INPUT_count=0;
+					PORTC_INPUT_count=0;
+					PORTD_INPUT_count=0;
 
-			CYCLE_COMPLETE = 0;
+					CONTROL_PORTS_SET =0;
+					CURRENT_SENSOR_CONFIG++;
+				}
+			}
+			else{
+				if(CURRENT_SENSOR_CONFIG >= TOTAL_SENSOR_CONFIGS){
+					TOTAL_SENSOR_CONFIGS = 0;
+					CURRENT_SENSOR_CONFIG = 0;
+				}
+				else{
+					PORTA_CONTROL = (uint8_t)(SENSOR_CONFIG[CURRENT_SENSOR_CONFIG] & 0x00FF);
+					PORTD_CONTROL = (uint8_t)(SENSOR_CONFIG[CURRENT_SENSOR_CONFIG] >> 8);
+					CONTROL_PORTS_SET=1;
 
-			TCNT0 = 254; // Initializing timer 0 to trigger.
-			TCCR0B |= (1 << CS01);
-			//	TCCR0B |= (1 << CS00);
-			TIFR0 |= (1 << TOV0); //Forced timer0 interrupt trigger.
-			TIMSK0 |= (1 << TOIE0);
+					CYCLE_COMPLETE = 0;
+
+					TCNT0 = 1;
+					TCCR0B |= (1 << CS01);
+					TIFR0 |= (1 << TOV0); //Forced timer0 interrupt trigger.
+					TIMSK0 |= (1 << TOIE0); // Enabling timer 1 overflow
+
+				}
+			}
+		}
+		else{
+			//Test Initialization Code (MUST BE REMOVED) --- START---
+			SENSOR_CONFIG[0]=0x1234;
+			SENSOR_CONFIG[1]=0x7351;
+			SENSOR_CONFIG[2]=0x007F;
+			TOTAL_SENSOR_CONFIGS = 3;
+			//Test Initialization Code (MUST BE REMOVED) ---- STOP ---
 		}
 	}
 }
