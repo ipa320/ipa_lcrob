@@ -4,7 +4,7 @@ import rospy
 
 from sensor_msgs.msg import Joy
 #from geometry_msgs.msg import Twist
-from asyncore import file_dispatcher, loop
+#from asyncore import file_dispatcher, loop
 from evdev import InputDevice, list_devices, categorize, ecodes, events, resolve_ecodes, AbsInfo
 
 devices = map(InputDevice, list_devices())
@@ -30,11 +30,12 @@ def factor(v, caps):
     
 
 dev.grab()
-class InputDeviceDispatcher(file_dispatcher):
+#class InputDeviceDispatcher(file_dispatcher):
+class InputDeviceDispatcher():
     def __init__(self, device):
 	rospy.init_node("evjoy_vel")
         self.device = device
-        file_dispatcher.__init__(self, device)
+        #file_dispatcher.__init__(self, device)
         self.deadman = False
         self.absz = 0.0
         self.absy = 0.0
@@ -66,5 +67,7 @@ class InputDeviceDispatcher(file_dispatcher):
 	cmd.buttons = [1 if self.deadman else 0 ]
 	self.pub.publish(cmd)	
 
-InputDeviceDispatcher(dev)
-loop()
+idd = InputDeviceDispatcher(dev)
+#loop()
+for event in dev.read_loop():
+	idd.handle_event(categorize(event))
