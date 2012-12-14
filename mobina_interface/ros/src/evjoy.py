@@ -5,13 +5,6 @@ import rospy
 from sensor_msgs.msg import Joy
 from evdev import InputDevice, list_devices, categorize, ecodes, events
 
-def factor(v):
-    if v < 128: value = (v-128)/128.0
-    else: value = (v-128)/127.0
-    if value < -1.0: value = -1.0
-    elif value > 1.0: value = 1.0
-    return value
-
 class evjoy:
     def __init__(self):
 	rospy.init_node("evjoy")
@@ -40,6 +33,7 @@ class evjoy:
 	buttons = rospy.get_param("~buttons",[])
 	self.buttons = dict( [(ecodes.ecodes[buttons[i]],i) for i in range(len(buttons)) ])
 	self.button_data = [0] * len(self.buttons)
+	self.nullzone = rospy.get_param("~nullzone",0.0)
 	self.debug = rospy.has_param("~debug")
 	
     def loop(self):
@@ -48,11 +42,18 @@ class evjoy:
 	    self.handle_event(event)
 	    if rospy.is_shutdown(): exit()
 	
+    def factor(self,v):
+	if v < 128: value = (v-128)/128.0
+	else: value = (v-128)/127.0
+	if value < -1.0: value = -1.0
+	elif value > 1.0: value = 1.0
+	elif abs(value) > self.nullzone: value = 0.0
+	return value
     def handle_event(self, event):
 	try:
 	    if event.type == ecodes.EV_ABS:
 		axis = self.axes[event.code]
-		self.axes_data[axis] = self.axes_sign[axis] * factor(event.value)
+		self.axes_data[axis] = self.axes_sign[axis] * self.factor(event.value)
 		self.publish()
 	    elif event.type == ecodes.EV_KEY:
 		self.button_data[self.buttons[event.code]] = 1 if event.value != 0 else 0
