@@ -24,6 +24,7 @@ class AVRInterface:
 
 	def set_output(self, ch, v):
 		assert (ch>=0 and ch<6)
+		if ch==0 or ch==5: return
 		self.write( (self.SET_OUTPUT|ch),[v])
 
 	def set_motor(self, motor, back, speed):
