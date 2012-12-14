@@ -73,12 +73,12 @@ class MobinaInterface:
 		self.input.name = "input"
 		self.input.values = [0,0, 0,0]
 
-		self.lights = [LightControl("light_controller", self, [1,4,0])]
+		self.lights = [LightControl("light_controller", self, [3,6,2])]
 		self.motors = [TrajectoryControl("motor0", self, 0)]
 
 	def set_val(self, pin, value):
 		#print "setval ",pin,value
-		self.output.values[pin+2] = value
+		self.output.values[pin] = value
 		self.pub_out.publish(self.output)
 
 	def get(self, pin):
