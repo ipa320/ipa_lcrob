@@ -30,7 +30,6 @@ class AVRInterface:
 
 	def set_motor(self, motor, back, speed):
 		self.write( (self.SET_MOTOR|motor|(back<<1)), [speed])
-		GPIO.usleep(500)
 
 	def get_analog(self, ch):
 		assert(ch<4 and ch>=0)
