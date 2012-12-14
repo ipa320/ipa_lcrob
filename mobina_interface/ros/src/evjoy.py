@@ -40,8 +40,7 @@ class evjoy:
 	buttons = rospy.get_param("~buttons",[])
 	self.buttons = dict( [(ecodes.ecodes[buttons[i]],i) for i in range(len(buttons)) ])
 	self.button_data = [0] * len(self.buttons)
-	
-	print self.axes
+	self.debug = rospy.has_param("~debug")
 	
     def loop(self):
 	self.dev.grab()
@@ -59,14 +58,14 @@ class evjoy:
 		self.button_data[self.buttons[event.code]] = 1 if event.value != 0 else 0
 		self.publish()
 	except KeyError:
-	    print categorize(event)
+	    if self.debug: print categorize(event)
 
     def publish(self):
 	cmd = Joy()
 	cmd.header.stamp = rospy.Time.now()
 	cmd.axes = self.axes_data
 	cmd.buttons = self.button_data
-	print cmd
+	if self.debug: print cmd
 	self.pub.publish(cmd)	
 
 if __name__ == "__main__":
