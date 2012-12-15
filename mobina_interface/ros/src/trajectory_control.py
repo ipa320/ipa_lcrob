@@ -80,7 +80,7 @@ class TrajectoryControl(object):
 
 		self.calibration_srv = rospy.Service(name+'/calibration', Empty, self.handle_calibration)
 		self._action_name = name+"/follow_joint_trajectory"
-		self._as = actionlib.SimpleActionServer(self._action_name, FollowFollowJointTrajectoryActionAction, execute_cb=self.execute_cb, auto_start=False)
+		self._as = actionlib.SimpleActionServer(self._action_name, FollowJointTrajectoryAction, execute_cb=self.execute_cb, auto_start=False)
 		self._as.start()
 
 	def start_test(self, pos):
@@ -158,6 +158,7 @@ class TrajectoryControl(object):
 		#assert( len(goal.trajectory.points[0].velocities)==1 )
 
 		pos = self.rad2pos(goal.trajectory.points[0].positions[0])
+		print "desired pos", pos
 		speed = 0
 		if len(goal.trajectory.points[0].velocities)==1:
 			max_vel = goal.trajectory.points[0].velocities[0]
@@ -167,6 +168,7 @@ class TrajectoryControl(object):
 			max_vel = 1
     
 		while abs(self.intf.get(self.conf_in)-pos)>self.tolerance and not rospy.is_shutdown():
+			print "pos ",self.intf.get(self.conf_in)
 			if (self.speed2val(speed)/abs(self.intf.get(self.conf_in)-pos))>=max_vel:
 				s = speed - max_vel
 				if s<0:
@@ -175,9 +177,9 @@ class TrajectoryControl(object):
 				s = speed + max_vel
 				if s>1:
 					s = 1
-			f = 1
+			f = -1
 			if self.intf.get(self.conf_in)-pos>0:
-				f=-1
+				f=1
 
 			if s!=speed:
 				speed = s

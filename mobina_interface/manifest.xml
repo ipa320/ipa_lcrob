@@ -13,7 +13,7 @@
   <depend package="std_srvs"/>
   <depend package="sensor_msgs"/>
   <depend package="visualization_msgs"/>
-  <depend package="pr2_controllers_msgs"/>
+  <depend package="control_msgs"/>
   <depend package="actionlib"/>
   <depend package="ipa_odroidx_interface"/>
 
