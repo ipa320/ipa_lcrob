@@ -9,21 +9,8 @@ import time
 class evjoy:
     def __init__(self):
 	rospy.init_node("evjoy")
-	
-	devices = map(InputDevice, list_devices())
 
-	self.dev = None
-	while not rospy.is_shutdown() and self.dev==None:
-		for d in devices:
-		    print d.name
-		    if "pad" in d.name.lower():
-			self.dev = d
-			break
-		if self.dev!=None: break
-		time.sleep(2)
-
-	assert(self.dev != None)
-	
+        self.dev = None
 	self.pub = rospy.Publisher('/joy', Joy)
 	
 	axes = rospy.get_param("~axes",[])
@@ -42,7 +29,24 @@ class evjoy:
 	self.buttons = dict( [(ecodes.ecodes[buttons[i]],i) for i in range(len(buttons)) ])
 	self.button_data = [0] * len(self.buttons)
 	self.nullzone = rospy.get_param("~nullzone",0.0)
-	self.debug = rospy.has_param("~debug")
+	self.debug = rospy.get_param("~debug",False)
+	
+	self.enumerate()
+
+    def enumerate(self):
+        self.dev = None
+        print "enumerating joystick..."
+	while not rospy.is_shutdown() and self.dev==None:
+                devices = map(InputDevice, list_devices())
+                for d in devices:
+                    print d.name
+                    if "pad" in d.name.lower():
+                        self.dev = d
+                        break
+                if self.dev!=None: break
+                time.sleep(2)
+
+        assert(self.dev != None)
 	
     def loop(self):
 	self.dev.grab()
