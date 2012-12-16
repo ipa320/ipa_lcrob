@@ -108,6 +108,6 @@ class LightControl:
 		self.pub_marker.publish(marker)
 
 	def LightCallback(self,color):
-		rospy.loginfo("Received new color: rgb = [%d, %d, %d] a = [%d]", color.r, color.g, color.b, color.a)
+		#rospy.loginfo("Received new color: rgb = [%d, %d, %d] a = [%d]", color.r, color.g, color.b, color.a)
 		self.setRGB(color)
 
