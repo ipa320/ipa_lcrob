@@ -55,6 +55,7 @@ roslib.load_manifest('mobina_interface')
 import rospy
 import actionlib
 import yaml
+import math
 
 from pr2_controllers_msgs.msg import *
 from std_srvs.srv import *
@@ -165,6 +166,7 @@ class TrajectoryControl(object):
 			f = 1
 			if self.intf.get(self.conf)-pos>0:
 				f=-1
+
 			if s!=speed:
 				self.intf.set_val(self.conf, f*speed)
 				speed = s
