@@ -142,11 +142,14 @@ class TrajectoryControl(object):
 		success = True
 
 		assert( len(goal.trajectory.points[0].positions)==1 )
-		assert( len(goal.trajectory.points[0].velocities)==1 )
+		#assert( len(goal.trajectory.points[0].velocities)==1 )
 
 		pos = self.rad2pos(goal.trajectory.points[0].positions[0])
 		speed = 0
-		max_vel = goal.trajectory.points[0].positions[0]
+		if len(goal.trajectory.points[0].velocities)==1:
+			max_vel = goal.trajectory.points[0].velocities[0]
+		else:
+			max_vel = 1/float(255)
 		if max_vel<1/float(255):
 			max_vel = 1
     
