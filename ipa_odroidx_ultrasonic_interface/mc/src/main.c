@@ -55,7 +55,6 @@ volatile uint8_t CURRENT_SENSOR_CONFIG=0;
 volatile uint8_t CONTROL_PORTS_SET=0;
 
 void print_TIMER(){
-	softuart_putchar(TIMER_count);
 	for (uint8_t count=0; count <TIMER_count; count++){
 		softuart_putchar((uint8_t)((TIMER[count] & 0xFF00)>> 8));
 		softuart_putchar((uint8_t)(TIMER[count] & 0x00FF));
@@ -86,11 +85,10 @@ void populateTIMER_SEND(uint8_t PORT_CONTROL, uint8_t CHANNEL_POSITION, volatile
 		}
 	}
 	//Sending the data out
+	softuart_putchar((sensor_address<<4) | TIMER_count); //Address + TIMER value
 	if (TIMER_count>0){
-		softuart_putchar((sensor_address<<4) | TIMER_count); //Address + TIMER value
 		print_TIMER();
 	}
-	TIMER_count=0;
 }
 
 void printPORTA(){
