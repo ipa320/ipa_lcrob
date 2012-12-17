@@ -125,8 +125,9 @@ class TrajectoryControl(object):
 	def changed(self):
 		return
 	
-	def speed2val(self, rad):
-		return rad	#TODO:
+	def rad2pos(self, rad):
+		return rad/math.pi*64000	#TODO:
+		
 
 	def speed2val(self, speed):
 		for i in range(0, len(self.calibration)-1):
