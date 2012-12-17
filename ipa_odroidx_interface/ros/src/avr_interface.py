@@ -29,7 +29,7 @@ class AVRInterface:
 
 	def set_output(self, ch, v):
 		assert (ch>=0 and ch<6)
-		if ch==0 or ch==5: return
+		if ch==2 or ch==5: return
 		self.lock.acquire()
 		self.write( (self.SET_OUTPUT|ch),[v])
 		self.lock.release()
