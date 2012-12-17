@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+
+        <!-- send ROBOT parameters to parameter server -->
+        <!--rosparam command="load" ns="/script_server/base" file="$(find mobina_interface)/ros/config/joint_configurations.yaml"/-->
+        <rosparam command="load" ns="/script_server/motor" file="$(find mobina_interface)/ros/config/joint_configurations.yaml"/>
+
+</launch>
+
