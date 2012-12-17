@@ -1,5 +1,5 @@
 # common params
-run_factor: 2.0
+run_factor: 1.5
 
 # buttons
 lower_neck_button: -1
@@ -23,7 +23,7 @@ left_right: -1 #pan--left/right
 # component configuration
 modules: {
   base: {
-    max_velocity: [1.0, 0.0, 2.0],
+    max_velocity: [0.35, 0.0, 3.5],
     max_acceleration: [1.0, 0.0, 2.0]
   },
 }
