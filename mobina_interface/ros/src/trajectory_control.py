@@ -74,7 +74,7 @@ class TrajectoryControl(object):
 			self.calibration = yaml.load(open(rospy.get_param(name+'/calibration')))
 
 		self.calibration_srv = rospy.Service(name+'/calibration', Empty, self.handle_calibration)
-		self._action_name = name
+		self._action_name = name+"/joint_trajectory_action"
 		self._as = actionlib.SimpleActionServer(self._action_name, JointTrajectoryAction, execute_cb=self.execute_cb, auto_start=False)
 		self._as.start()
 
