@@ -153,7 +153,7 @@ class TrajectoryControl(object):
 		if max_vel<1/float(255):
 			max_vel = 1
     
-		while abs(self.intf.get(self.conf)-pos)>self.tolerance:
+		while abs(self.intf.get(self.conf)-pos)>self.tolerance and not rospy.is_shutdown():
 			if self.speed2val(speed)/abs(self.intf.get(self.conf)-pos)>=max_vel:
 				s = speed - max_vel
 				if s<0:
