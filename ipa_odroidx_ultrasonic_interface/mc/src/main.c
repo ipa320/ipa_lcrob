@@ -95,7 +95,7 @@ void populateTIMER_SEND(uint8_t PORT_CONTROL, uint8_t CHANNEL_POSITION, volatile
 
 void printPORTA(){
 	//For PA6-PC7
-//	POSITION ON PORT=0x80;
+	//	POSITION ON PORT=0x80;
 	populateTIMER_SEND(PORTA_CONTROL, 0x40, PORTC_INPUT_VALS, PORTC_INPUT_count, 0x80, 0x06);
 
 	//For PA5-PB6
@@ -105,7 +105,7 @@ void printPORTA(){
 	//For PA[4:0]-PB[4:0]
 	uint8_t sensor_address = 0x04;
 	for(uint8_t COMMON_MASK = 0x10; COMMON_MASK >0; COMMON_MASK>>=1){
-	//	POSITION ON PORT = COMMON_MASK;
+		//	POSITION ON PORT = COMMON_MASK;
 		populateTIMER_SEND(PORTA_CONTROL, COMMON_MASK, PORTB_INPUT_VALS, PORTB_INPUT_count, COMMON_MASK, sensor_address);
 		sensor_address--;
 	}
@@ -192,6 +192,21 @@ int main(void){
 			SENSOR_CONFIG[2]=0x007F;
 			TOTAL_SENSOR_CONFIGS = 3;
 			//Test Initialization Code (MUST BE REMOVED) ---- STOP ---
+
+			//Reading config from serial port
+		/*	uint8_t number_of_config = 0;
+			number_of_config = softuart_getchar();
+			if(number_of_config >0){
+				uint16_t temp16 = 0;
+				uint8_t temp8 = 0;
+				for (uint8_t count = 0; count < number_of_config; count++){
+					temp16 = (softuart_getchar() << 8);
+					temp8 = softuart_getchar();
+					SENSOR_CONFIG[count] = (temp16 | temp8) ;
+				}
+				TOTAL_SENSOR_CONFIGS = number_of_config;
+				softuart_putchar(0x12);
+			} */
 		}
 	}
 }
