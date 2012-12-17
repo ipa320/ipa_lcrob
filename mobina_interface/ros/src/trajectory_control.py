@@ -138,7 +138,7 @@ class TrajectoryControl(object):
     
 	def execute_cb(self, goal):
 		# helper variables
-		r = rospy.Rate(100)
+		r = rospy.Rate(50)
 		success = True
 
 		assert( len(goal.trajectory.points[0].positions)==1 )
