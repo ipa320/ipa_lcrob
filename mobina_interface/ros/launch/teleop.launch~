@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-    <node pkg="mobina_interface" type="evjoy.py" name="evjoy" output="screen"/>
-
-    <node pkg="cob_teleop" type="cob_teleop" name="teleop_node" ns="teleop" output="screen">
-	<rosparam command="load" ns="/teleop" file="$(find mobina_interface)/ros/config/teleop.yaml"/>
-    </node>
-</launch>
-
