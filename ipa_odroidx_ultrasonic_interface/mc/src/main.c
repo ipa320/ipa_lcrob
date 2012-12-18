@@ -150,8 +150,8 @@ int main(void){
 			if(CONTROL_PORTS_SET==1){
 				if(CYCLE_COMPLETE == 1){
 					softuart_putchar(CURRENT_SENSOR_CONFIG);//Sending out current sensor configuration number.
-					printPORTA();
 					printPORTD();
+					printPORTA();
 
 					//After All Values have been sent out to the master.
 					PORTA_INPUT_count=0;
