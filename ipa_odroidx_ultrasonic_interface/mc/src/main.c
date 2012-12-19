@@ -146,7 +146,7 @@ int main(void){
 	sei(); // Setting global interrupt
 
 	for(;;){
-		if(TOTAL_SENSOR_CONFIGS > 0){
+		if(CURRENT_SENSOR_CONFIG < TOTAL_SENSOR_CONFIGS){
 			if(CONTROL_PORTS_SET==1){
 				if(CYCLE_COMPLETE == 1){
 					softuart_putchar(CURRENT_SENSOR_CONFIG);//Sending out current sensor configuration number.
@@ -164,47 +164,40 @@ int main(void){
 				}
 			}
 			else{
-				if(CURRENT_SENSOR_CONFIG >= TOTAL_SENSOR_CONFIGS){
-					TOTAL_SENSOR_CONFIGS = 0;
-					CURRENT_SENSOR_CONFIG = 0;
-				}
-				else{
-					PORTA_CONTROL = (uint8_t)(SENSOR_CONFIG[CURRENT_SENSOR_CONFIG] & 0x00FF);
-					PORTD_CONTROL = (uint8_t)(SENSOR_CONFIG[CURRENT_SENSOR_CONFIG] >> 8);
-					CONTROL_PORTS_SET=1;
+				PORTA_CONTROL = (uint8_t)(SENSOR_CONFIG[CURRENT_SENSOR_CONFIG] & 0x00FF);
+				PORTD_CONTROL = (uint8_t)(SENSOR_CONFIG[CURRENT_SENSOR_CONFIG] >> 8);
+				CONTROL_PORTS_SET=1;
 
-					CYCLE_COMPLETE = 0;
+				CYCLE_COMPLETE = 0;
 
-					TCNT0 = 1;
-					TCCR0B |= (1 << CS01);
-					TIFR0 |= (1 << TOV0); //Forced timer0 interrupt trigger.
-					TIMSK0 |= (1 << TOIE0); // Enabling timer 1 overflow
+				TCNT0 = 1;
+				TCCR0B |= (1 << CS01);
+				TIFR0 |= (1 << TOV0); //Forced timer0 interrupt trigger.
+				TIMSK0 |= (1 << TOIE0); // Enabling timer 1 overflow
 
-				}
+				
 			}
 		}
 		else{
-			//Test Initialization Code (MUST BE REMOVED) --- START---
-	//		SENSOR_CONFIG[0]=0x1234;
-	//		SENSOR_CONFIG[1]=0x7351;
-	//		SENSOR_CONFIG[2]=0x007F;
-	//		TOTAL_SENSOR_CONFIGS = 3;
-			//Test Initialization Code (MUST BE REMOVED) ---- STOP ---
-
-			//Reading config from serial port
-			uint8_t number_of_config = 0;
-			number_of_config = softuart_getchar();
-			if(number_of_config >0){
-				uint16_t temp16 = 0;
-				uint8_t temp8 = 0;
-				for (uint8_t count = 0; count < number_of_config; count++){
-					temp16 = (softuart_getchar() << 8);
-					temp8 = softuart_getchar();
-					SENSOR_CONFIG[count] = (temp16 | temp8) ;
+			if(softuart_kbhit()){
+				//Reading config from serial port
+				uint8_t number_of_config = 0;
+				number_of_config = softuart_getchar();
+				if(number_of_config >0){
+					uint16_t temp16 = 0;
+					uint8_t temp8 = 0;
+					for (uint8_t count = 0; count < number_of_config; count++){
+						temp16 = (softuart_getchar() << 8);
+						temp8 = softuart_getchar();
+						SENSOR_CONFIG[count] = (temp16 | temp8) ;
+					}
+					TOTAL_SENSOR_CONFIGS = number_of_config;
+					CURRENT_SENSOR_CONFIG = 0;
+					softuart_putchar(0x12);
 				}
-				TOTAL_SENSOR_CONFIGS = number_of_config;
+			}
+			else if(TOTAL_SENSOR_CONFIGS > 0){
 				CURRENT_SENSOR_CONFIG = 0;
-				softuart_putchar(0x12);
 			}
 		}
 	}
