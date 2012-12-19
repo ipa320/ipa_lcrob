@@ -185,14 +185,14 @@ int main(void){
 		}
 		else{
 			//Test Initialization Code (MUST BE REMOVED) --- START---
-			SENSOR_CONFIG[0]=0x1234;
-			SENSOR_CONFIG[1]=0x7351;
-			SENSOR_CONFIG[2]=0x007F;
-			TOTAL_SENSOR_CONFIGS = 3;
+	//		SENSOR_CONFIG[0]=0x1234;
+	//		SENSOR_CONFIG[1]=0x7351;
+	//		SENSOR_CONFIG[2]=0x007F;
+	//		TOTAL_SENSOR_CONFIGS = 3;
 			//Test Initialization Code (MUST BE REMOVED) ---- STOP ---
 
 			//Reading config from serial port
-		/*	uint8_t number_of_config = 0;
+			uint8_t number_of_config = 0;
 			number_of_config = softuart_getchar();
 			if(number_of_config >0){
 				uint16_t temp16 = 0;
@@ -203,8 +203,9 @@ int main(void){
 					SENSOR_CONFIG[count] = (temp16 | temp8) ;
 				}
 				TOTAL_SENSOR_CONFIGS = number_of_config;
+				CURRENT_SENSOR_CONFIG = 0;
 				softuart_putchar(0x12);
-			} */
+			}
 		}
 	}
 }
