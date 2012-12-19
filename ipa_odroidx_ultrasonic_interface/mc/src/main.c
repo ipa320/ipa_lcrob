@@ -125,6 +125,8 @@ void printPORTD(){
 	//POSITION ON PORT = 0x80;
 	populateTIMER_SEND(PORTD_CONTROL, 0x01, PORTA_INPUT_VALS, PORTA_INPUT_count, 0x80, 0x07);
 }
+
+
 int main(void){
 	//Setting PORTA and PORTD as output
 	DDRA = 0x7F;
@@ -142,6 +144,18 @@ int main(void){
 	PORTC = 0x00;
 
 	softuart_init();
+
+	//prescalers
+	TCCR0B |= (1 << CS01);
+	TCCR1B |= (1 << CS11);
+
+	// Place to enable PCINT
+	//
+
+	PCMSK0 |= 0x80;
+	PCMSK1 |= 0x5F;
+	PCMSK2 |= 0xFE;
+	PCMSK3 |= 0x80;
 
 	sei(); // Setting global interrupt
 
@@ -171,11 +185,9 @@ int main(void){
 				CYCLE_COMPLETE = 0;
 
 				TCNT0 = 1;
-				TCCR0B |= (1 << CS01);
 				TIFR0 |= (1 << TOV0); //Forced timer0 interrupt trigger.
 				TIMSK0 |= (1 << TOIE0); // Enabling timer 1 overflow
 
-				
 			}
 		}
 		else{
@@ -208,19 +220,16 @@ ISR(TIMER0_OVF_vect){ // Timer 0 is dedicated for Pinging and listening.
 		PORTD = 0x7F;
 		TCNT0 = 160; // Setting for 330us
 		PING_STAGE = 1;
-		TCCR0B &= ~(1 << CS00);
-		TCCR0B &= ~(1 << CS02);
-		TCCR0B |= (1 << CS01);
 	}
 	else if(PING_STAGE == 1){
-		PORTA = ~(PORTA_CONTROL) & (0x7F);
-		PORTD = ~(PORTD_CONTROL) & (0x7F);
+		PORTA = (~PORTA_CONTROL) & (0x7F);
+		PORTD = (~PORTD_CONTROL) & (0x7F);
 		TCNT0 = 154; // Setting for 350us -0.02% error
 		PING_STAGE = 2;
 	}
 	else if(PING_STAGE == 2){
-		PORTA = PORTA_CONTROL;
-		PORTD = PORTD_CONTROL;
+		PORTA = PORTA_CONTROL&0x7F;
+		PORTD = PORTD_CONTROL&0x7F;
 		TCNT0 = 177; // Setting for 270us -0.02% error
 		PING_STAGE = 3;
 	}
@@ -228,38 +237,18 @@ ISR(TIMER0_OVF_vect){ // Timer 0 is dedicated for Pinging and listening.
 		PORTA = 0x00;
 		PORTD = 0x00;
 		//Disabling timer0 to setup timer1 to enable data reading from sensors.
-		TCCR0B &= ~(1 << CS01);
-		TCCR0B &= ~(1 << CS00);
-		TCCR0B &= ~(1 << CS02);
 		TIMSK0 &= ~(1 << TOIE0);
 
 		//Setting up timer1 for 100ms
 		TCNT1 = 36735;
-		TCCR1B |= (1 << CS11);
-		TIMSK |= (1 << TOIE1);
-
-		// Place to enable PCINT
-		//
-
-		//For PORTA
-		PCMSK0 |= 0x80;
-
-		//For PORTB
-		PCMSK1 |= 0x5F;
-
-		//For PORTC
-		PCMSK2 |= 0xFE;
-
-		//For  PORTD
-		PCMSK3 |= 0x80;
+		TIMSK1 |= (1 << TOIE1);
 
 		PCICR |= 0x0F;
 	}	
 }
 ISR(TIMER1_OVF_vect){
 	//Disabling timer1
-	TCCR1B &= ~(1 << CS11);
-	TIMSK &= ~(1 << TOIE1);
+	TIMSK1 &= ~(1 << TOIE1);
 
 	PING_STAGE = 0;
 
@@ -267,19 +256,17 @@ ISR(TIMER1_OVF_vect){
 	CYCLE_COMPLETE = 1;
 
 	//Disbaling all PCINTs
-	PCMSK0 = 0x00;
-	PCMSK1 = 0x00;
-	PCMSK2 = 0x00;
 	PCICR &= 0xF0;
 }
 
-ISR(PCINT2_vect){
-	if(PORTC_INPUT_count < (MAX_VALUES * MAX_INPUTS_PORTC)){
-		PORTC_INPUT_VALS[PORTC_INPUT_count].port_val=PINC;
-		PORTC_INPUT_VALS[PORTC_INPUT_count].time_reg_val = TCNT1 - 36735;
-		PORTC_INPUT_count++;
+ISR(PCINT0_vect){
+	if(PORTA_INPUT_count < (MAX_VALUES * MAX_INPUTS_PORTA)){
+		PORTA_INPUT_VALS[PORTA_INPUT_count].port_val=PINA;
+		PORTA_INPUT_VALS[PORTA_INPUT_count].time_reg_val = TCNT1 - 36735;
+		PORTA_INPUT_count++;
 	}
 }
+
 ISR(PCINT1_vect){
 	if(PORTB_INPUT_count < (MAX_VALUES * MAX_INPUTS_PORTB)){
 		PORTB_INPUT_VALS[PORTB_INPUT_count].port_val=PINB;
@@ -288,11 +275,11 @@ ISR(PCINT1_vect){
 	}
 }
 
-ISR(PCINT0_vect){
-	if(PORTA_INPUT_count < (MAX_VALUES * MAX_INPUTS_PORTA)){
-		PORTA_INPUT_VALS[PORTA_INPUT_count].port_val=PINA;
-		PORTA_INPUT_VALS[PORTA_INPUT_count].time_reg_val = TCNT1 - 36735;
-		PORTA_INPUT_count++;
+ISR(PCINT2_vect){
+	if(PORTC_INPUT_count < (MAX_VALUES * MAX_INPUTS_PORTC)){
+		PORTC_INPUT_VALS[PORTC_INPUT_count].port_val=PINC;
+		PORTC_INPUT_VALS[PORTC_INPUT_count].time_reg_val = TCNT1 - 36735;
+		PORTC_INPUT_count++;
 	}
 }
 
