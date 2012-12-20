@@ -13,7 +13,7 @@
 
 #define MAX_SENSOR_CONFIGS 16
 
-struct TIME_KEEPER{
+struct TIME_KEEPER{ //struct for storing input port value and TIMER1 value in ISR associated with PCINTs
 	uint8_t port_val;
 	uint16_t time_reg_val;
 };
@@ -24,69 +24,78 @@ struct TIME_KEEPER{
  *the CLKDIV8 fuse is also programmed, causing effective frequency
  *equal to 2304000.
  *In PORTA_CONTROL and PORTD_CONTROL 1 denotes ping and 0 denotes listen,
- *whereas MSB is unused.
+ *whereas MSB is unused. Max value for a port should be 0x7F
+ *NOTE:TIMER2 IN USE BY SOFTUART.
  */
 
-volatile  uint8_t PING_STAGE=0;
+volatile  uint8_t PING_STAGE=0; //For denoting different stages of a ping or listening pulse, from 0-3
 
 volatile unsigned char PORTA_CONTROL=0x00;
 volatile unsigned char PORTD_CONTROL=0x00;
 
 volatile struct TIME_KEEPER PORTA_INPUT_VALS[MAX_VALUES * MAX_INPUTS_PORTA];
-volatile uint8_t PORTA_INPUT_count=0;
+volatile uint8_t PORTA_INPUT_count=0;// Counter for Input value for PORTA
 
 volatile struct TIME_KEEPER PORTB_INPUT_VALS[MAX_VALUES * MAX_INPUTS_PORTB];
-volatile uint8_t PORTB_INPUT_count=0;
+volatile uint8_t PORTB_INPUT_count=0;// Counter for Input value for PORTB
 
 volatile struct TIME_KEEPER PORTC_INPUT_VALS[MAX_VALUES * MAX_INPUTS_PORTC];
-volatile uint8_t PORTC_INPUT_count=0;
+volatile uint8_t PORTC_INPUT_count=0;// Counter for Input value for PORTC
 
 volatile struct TIME_KEEPER PORTD_INPUT_VALS[MAX_VALUES * MAX_INPUTS_PORTD];
-volatile uint8_t PORTD_INPUT_count=0;
+volatile uint8_t PORTD_INPUT_count=0;// Counter for Input value for PORTD
 
-volatile uint16_t TIMER[MAX_VALUES];
+volatile uint16_t TIMER[MAX_VALUES]; //For recording TIMER 1 due edge change.
 volatile uint8_t TIMER_count=0;
 
 volatile uint8_t CYCLE_COMPLETE = 0;
 
-volatile uint16_t SENSOR_CONFIG[MAX_SENSOR_CONFIGS];
+volatile uint16_t SENSOR_CONFIG[MAX_SENSOR_CONFIGS]; //For storing sensor configurations sent by the master
 volatile uint8_t TOTAL_SENSOR_CONFIGS=0;
 volatile uint8_t CURRENT_SENSOR_CONFIG=0;
 volatile uint8_t CONTROL_PORTS_SET=0;
 
-void print_TIMER(){
+void print_TIMER(){ //Send the set timer values to the master, higher byte first.
 	for (uint8_t count=0; count <TIMER_count; count++){
 		softuart_putchar((uint8_t)((TIMER[count] & 0xFF00)>> 8));
 		softuart_putchar((uint8_t)(TIMER[count] & 0x00FF));
 	}
 }
-void populateTIMER_SEND(uint8_t PORT_CONTROL, uint8_t CHANNEL_POSITION, volatile struct TIME_KEEPER * time_keeper, uint8_t INPUT_count, uint8_t last_value, uint8_t sensor_address){
-	uint8_t PING_CHECK=0;
-	uint8_t last_value_temp=last_value;
+void populateTIMER_SEND(uint8_t PORT_CONTROL, uint8_t CHANNEL_POSITION, volatile struct TIME_KEEPER * time_keeper, uint8_t INPUT_count, uint8_t INPUT_POSITION, uint8_t SENSOR_ADDRESS){
+	/* This function is for populating the variable TIMER and sending it to the master (Check doc/pin_mapping.ods for correct PORT_CONTROL, CHANNEL_POSITION, INPUT_POSITION and SENSOR_ADDRESS).
+	 * PORT_CONTROL: Is either set to PORTA_CONTROL or PORTD_CONTROL, based on the input pin to be checked. 
+	 * time_keeper: Pointer to the TIME_KEEPER structure the channel input pin is located in.(PORT[A-D]_TIMER_VALS)
+	 * INPUT_count: The PORT[A-D]_INPUT_count associated with time_keeper.
+	 * INPUT_POSITION: Position of the channel's input pin on the associated input port.
+	 * SENSOR_ADDRESS: Sensor address assigned to the sensor.
+	 */
+
+	uint8_t PING_CHECK=0; //For storing, if timer value for a rising edge has been written in the variable TIMER
+	uint8_t last_value_temp=INPUT_POSITION; //Is used to check for falling edges.
 	TIMER_count=0;
-	for(uint8_t count=0; count < INPUT_count; count++){ 
+	for(uint8_t count=0; count < INPUT_count; count++){ //For all input values.
 		if((~(PORT_CONTROL) & CHANNEL_POSITION) == CHANNEL_POSITION){//If listening
-			if(((last_value & time_keeper[count].port_val)==0x00) && (last_value_temp==last_value)){
+			if(((INPUT_POSITION & time_keeper[count].port_val)==0x00) && (last_value_temp==INPUT_POSITION)){ //Checks for falling edge.
 				if(TIMER_count < MAX_VALUES)
 					TIMER[TIMER_count++] = time_keeper[count].time_reg_val;
 			}
-			last_value_temp = (last_value & time_keeper[count].port_val);
+			last_value_temp = (INPUT_POSITION & time_keeper[count].port_val); //Assign value to last_value_temp before looping.
 		}
 		else { // Pinging
-			if(((last_value & time_keeper[count].port_val) == last_value) && (PING_CHECK==0)){
-				TIMER[TIMER_count++] = time_keeper[count].time_reg_val;
+			if(((INPUT_POSITION & time_keeper[count].port_val) == INPUT_POSITION) && (PING_CHECK==0)){ //checks for rising edge.
+				TIMER[TIMER_count++] = time_keeper[count].time_reg_val; 
 				PING_CHECK = 1;
 			}
-			else if (((last_value & time_keeper[count].port_val)==0x00) && (last_value_temp==last_value) && (PING_CHECK==1)){
+			else if (((INPUT_POSITION & time_keeper[count].port_val)==0x00) && (last_value_temp==INPUT_POSITION) && (PING_CHECK==1)){ //After the first rising edge has been recoded, check for consecutive falling edges.
 				if(TIMER_count < MAX_VALUES)
 					TIMER[TIMER_count++] = time_keeper[count].time_reg_val;
 			}
-			last_value_temp = (last_value & time_keeper[count].port_val);
+			last_value_temp = (INPUT_POSITION & time_keeper[count].port_val);
 		}
 	}
 	//Sending the data out
-	softuart_putchar((sensor_address<<4) | TIMER_count); //Address + TIMER value
-	if (TIMER_count>0){
+	softuart_putchar((SENSOR_ADDRESS<<4) | TIMER_count); //Address + TIMER value
+	if (TIMER_count>0){ //If any timer value recorded.
 		print_TIMER();
 	}
 }
@@ -160,9 +169,9 @@ int main(void){
 	sei(); // Setting global interrupt
 
 	for(;;){
-		if(CURRENT_SENSOR_CONFIG < TOTAL_SENSOR_CONFIGS){
-			if(CONTROL_PORTS_SET==1){
-				if(CYCLE_COMPLETE == 1){
+		if(CURRENT_SENSOR_CONFIG < TOTAL_SENSOR_CONFIGS){ //Traversing through each sensor config sequentially.
+			if(CONTROL_PORTS_SET==1){ // If current config has been loaded.
+				if(CYCLE_COMPLETE == 1){ //After PORT[A-D]_TIMER_VALS have been populated.
 					softuart_putchar(CURRENT_SENSOR_CONFIG);//Sending out current sensor configuration number.
 					printPORTD();
 					printPORTA();
@@ -173,7 +182,7 @@ int main(void){
 					PORTC_INPUT_count=0;
 					PORTD_INPUT_count=0;
 
-					CONTROL_PORTS_SET =0;
+					CONTROL_PORTS_SET =0; //To load the new configuration.
 					CURRENT_SENSOR_CONFIG++;
 				}
 			}
@@ -184,19 +193,19 @@ int main(void){
 
 				CYCLE_COMPLETE = 0;
 
-				TCNT0 = 1;
+				TCNT0 = 1; //Loading random overflow value.
 				TIFR0 |= (1 << TOV0); //Forced timer0 interrupt trigger.
 				TIMSK0 |= (1 << TOIE0); // Enabling timer 1 overflow
 
 			}
 		}
 		else{
-			if(softuart_kbhit()){
+			if(softuart_kbhit()){ //To check if any new configuration is received from the master.
 				//Reading config from serial port
 				uint8_t number_of_config = 0;
-				number_of_config = softuart_getchar();
+				number_of_config = softuart_getchar(); //Should be less than 16, however no error detection.
 				if(number_of_config >0){
-					uint16_t temp16 = 0;
+					uint16_t temp16 = 0; // 16bit variable to store configuration input from the master.
 					uint8_t temp8 = 0;
 					for (uint8_t count = 0; count < number_of_config; count++){
 						temp16 = (softuart_getchar() << 8);
@@ -205,11 +214,11 @@ int main(void){
 					}
 					TOTAL_SENSOR_CONFIGS = number_of_config;
 					CURRENT_SENSOR_CONFIG = 0;
-					softuart_putchar(0x12);
+					softuart_putchar(0x12); //Sending acknowledgement back to the master.
 				}
 			}
 			else if(TOTAL_SENSOR_CONFIGS > 0){
-				CURRENT_SENSOR_CONFIG = 0;
+				CURRENT_SENSOR_CONFIG = 0; // Resetting the configuration
 			}
 		}
 	}
@@ -239,7 +248,7 @@ ISR(TIMER0_OVF_vect){ // Timer 0 is dedicated for Pinging and listening.
 		//Disabling timer0 to setup timer1 to enable data reading from sensors.
 		TIMSK0 &= ~(1 << TOIE0);
 
-		softuart_disable();
+//		softuart_disable(); // Not sure if works or not.
 
 		//Setting up timer1 for 100ms
 		TCNT1 = 36735;
@@ -260,13 +269,13 @@ ISR(TIMER1_OVF_vect){
 	//Disbaling all PCINTs
 	PCICR &= 0xF0;
 
-	softuart_enable();
+//	softuart_enable(); //Not sure if works or not 
 }
 
 ISR(PCINT0_vect){
 	if(PORTA_INPUT_count < (MAX_VALUES * MAX_INPUTS_PORTA)){
 		PORTA_INPUT_VALS[PORTA_INPUT_count].port_val=PINA;
-		PORTA_INPUT_VALS[PORTA_INPUT_count].time_reg_val = TCNT1 - 36735;
+		PORTA_INPUT_VALS[PORTA_INPUT_count].time_reg_val = TCNT1 - 36735; // Subtracting the 100ms offset before recording the Timer1 value.
 		PORTA_INPUT_count++;
 	}
 }
