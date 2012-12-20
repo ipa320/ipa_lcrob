@@ -359,5 +359,10 @@ void softuart_puts_p( const char *prg_s )
 	}
 }
 
+void softuart_disable( void ) {
+	SOFTUART_T_INTCTL_REG |= SOFTUART_CMPINT_EN_MASK;
+}
 
-
+void softuart_enable( void ) {
+	SOFTUART_T_INTCTL_REG &= ~SOFTUART_CMPINT_EN_MASK;
+}

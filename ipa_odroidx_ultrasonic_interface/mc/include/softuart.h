@@ -124,6 +124,9 @@ void softuart_puts( const char *s );
 // to the serial port. example: softuart_puts_p(PSTR("test"))
 void softuart_puts_p( const char *prg_s );
 
+void softuart_disable( void );
+void softuart_enable( void );
+
 // Helper-Macro - "automatically" inserts PSTR
 // when used: include avr/pgmspace.h before this include-file
 #define softuart_puts_P(s___) softuart_puts_p(PSTR(s___))
