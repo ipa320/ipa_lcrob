@@ -239,6 +239,8 @@ ISR(TIMER0_OVF_vect){ // Timer 0 is dedicated for Pinging and listening.
 		//Disabling timer0 to setup timer1 to enable data reading from sensors.
 		TIMSK0 &= ~(1 << TOIE0);
 
+		softuart_disable();
+
 		//Setting up timer1 for 100ms
 		TCNT1 = 36735;
 		TIMSK1 |= (1 << TOIE1);
@@ -257,6 +259,8 @@ ISR(TIMER1_OVF_vect){
 
 	//Disbaling all PCINTs
 	PCICR &= 0xF0;
+
+	softuart_enable();
 }
 
 ISR(PCINT0_vect){
