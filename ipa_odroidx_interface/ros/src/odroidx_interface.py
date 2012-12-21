@@ -76,11 +76,12 @@ class AVRControl:
 
 		self.pub_marker = rospy.Publisher("state", ChannelFloat32)
 		rospy.Subscriber("command", ChannelFloat32, self.setCallback, queue_size=1)
+
 	def setCallback(self, data):
 		assert(len(data.values)==8)
 		for i in range(0,2):
-			assert (data.values[i]>=0 and data.values[i]<=1)
-			self.intf.set_motor(i, data.values[i]<0, int(data.values[i]*255))
+			assert (data.values[i]>=-1 and data.values[i]<=1)
+			self.intf.set_motor(i, data.values[i]<0, int(abs(data.values[i])*255))
 		for i in range(2,8):
 			assert (data.values[i]>=0 and data.values[i]<=1)
 			self.intf.set_output(i-2, int(data.values[i]*255))
