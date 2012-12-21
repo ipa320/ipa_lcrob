@@ -59,9 +59,7 @@ from avr_interface import AVRInterface
 
 class AVRControl:
 	def __init__(self):
-		self.ns_global_prefix = "/odroidx_controller"
-		self.pub_marker = rospy.Publisher("state", ChannelFloat32)
-		rospy.Subscriber("command", ChannelFloat32, self.setCallback)
+		self.ns_global_prefix = "/odroidx_interface"
 
 		if not rospy.has_param(self.ns_global_prefix + "/polling_interval"):
 			self.polling_interval = 1
@@ -71,11 +69,13 @@ class AVRControl:
 		if not rospy.has_param(self.ns_global_prefix + "/analog_channels"):
 			self.analog_ch = []
 		else:
-			self.analog_ch = map(int, rospy.get_param(self.ns_global_prefix + "/dev").split(","))
+			self.analog_ch = map(int, str(rospy.get_param(self.ns_global_prefix + "/analog_channels")).split(","))
 
 		self.intf = AVRInterface()
 		self.intf.setup()
 
+		self.pub_marker = rospy.Publisher("state", ChannelFloat32)
+		rospy.Subscriber("command", ChannelFloat32, self.setCallback, queue_size=1)
 	def setCallback(self, data):
 		assert(len(data.values)==8)
 		for i in range(0,2):
