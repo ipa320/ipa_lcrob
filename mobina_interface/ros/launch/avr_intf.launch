@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+
+    <include file="$(find mobina_interface)/ros/launch/upload_params.launch" />
+
+    <node pkg="ipa_odroidx_interface" type="odroidx_interface.py" name="odroidx_interface" output="screen">
+         <param name="analog_channels" value="0" />
+         <param name="polling_interval" value="50" />
+    </node>
+    <node pkg="mobina_interface" type="mobina.py" name="mobina" output="screen"/>
+
+</launch>
