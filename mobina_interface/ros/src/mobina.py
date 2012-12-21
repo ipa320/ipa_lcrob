@@ -61,7 +61,7 @@ from sensor_msgs.msg import ChannelFloat32
 
 class MobinaInterface:
 	def __init__(self):
-		self.pub_out = rospy.Publisher("command", ChannelFloat32)
+		self.pub_out = rospy.Publisher("command", ChannelFloat32, tcp_nodelay=True)
 		rospy.Subscriber("state", ChannelFloat32, self.InputCallback)
 
 		self.output = ChannelFloat32()
