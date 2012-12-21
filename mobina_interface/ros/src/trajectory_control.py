@@ -59,25 +59,37 @@ import math
 
 from pr2_controllers_msgs.msg import *
 from std_srvs.srv import *
+from trajectory_msgs.msg import *
+
+from thread import start_new_thread
 
 class TrajectoryControl(object):
 	# create messages that are used to publish feedback/result
 	_feedback = JointTrajectoryFeedback()
 	_result   = JointTrajectoryResult()
 
-	def __init__(self, name, intf, conf):
+	def __init__(self, name, intf, conf_out, conf_in):
 		self.intf = intf
-		self.conf = conf
-		self.calibration = [ [0,0], [1,0.1] ]
-		self.tolerance = rospy.get_param(name+'/tolerance', 0.02)
+		self.conf_out = conf_out
+		self.conf_in  = conf_in
+		self.calibration = [ [0,0.0006], [1,0.0006] ]
+		self.tolerance = rospy.get_param(name+'/tolerance', 0.005)
 
 		if rospy.has_param(name+'/calibration'):
 			self.calibration = yaml.load(open(rospy.get_param(name+'/calibration')))
 
 		self.calibration_srv = rospy.Service(name+'/calibration', Empty, self.handle_calibration)
-		self._action_name = name+"/joint_trajectory_action"
+		self._action_name = name+"/follow_joint_trajectory"
 		self._as = actionlib.SimpleActionServer(self._action_name, JointTrajectoryAction, execute_cb=self.execute_cb, auto_start=False)
 		self._as.start()
+
+	def start_test(self, pos):
+		goal = JointTrajectoryGoal()
+		pt = JointTrajectoryPoint()
+		pt.positions=[pos]
+		goal.trajectory = JointTrajectory()
+		goal.trajectory.points = [pt]
+		start_new_thread(self.execute_cb, (goal,))
 
 	def handle_calibration(self, req):
 		pos  = [0.1, 0.9]
@@ -100,24 +112,24 @@ class TrajectoryControl(object):
 	def move(self, pos, speed, pos2):
 		start = False
 		end = False
-		while abs(self.intf.get(self.conf)-pos)>self.tolerance:
+		while abs(self.intf.get(self.conf_in)-pos)>self.tolerance:
 			if self._as.is_preempt_requested():
 				rospy.loginfo('%s: Preempted' % self._action_name)
 				self._as.set_preempted()
 				success = False
 				break
 
-			if self.intf.get(self.conf)>=pos2[0] and self.intf.get(self.conf)<=pos2[1]:
+			if self.intf.get(self.conf_in)>=pos2[0] and self.intf.get(self.conf_in)<=pos2[1]:
 				if not start:
-					start = [rospy.get_time(),self.intf.get(self.conf)]
+					start = [rospy.get_time(),self.intf.get(self.conf_in)]
 				else:
-					end = [rospy.get_time(),self.intf.get(self.conf)]
+					end = [rospy.get_time(),self.intf.get(self.conf_in)]
 			f = 1
-			if self.intf.get(self.conf)-pos>0:
+			if self.intf.get(self.conf_in)-pos>0:
 				f=-1
-			self.intf.set_val(self.conf, f*speed)
+			self.intf.set_val(self.conf_out, f*speed)
 
-		self.intf.set_val(self.conf, 0)
+		self.intf.set_val(self.conf_out, 0)
 
 		print start, end
 
@@ -127,7 +139,7 @@ class TrajectoryControl(object):
 		return
 	
 	def rad2pos(self, rad):
-		return rad/math.pi*64000	#TODO:
+		return rad/(2*math.pi)		#TODO:
 		
 
 	def speed2val(self, speed):
@@ -154,8 +166,8 @@ class TrajectoryControl(object):
 		if max_vel<1/float(255):
 			max_vel = 1
     
-		while abs(self.intf.get(self.conf)-pos)>self.tolerance and not rospy.is_shutdown():
-			if self.speed2val(speed)/abs(self.intf.get(self.conf)-pos)>=max_vel:
+		while abs(self.intf.get(self.conf_in)-pos)>self.tolerance and not rospy.is_shutdown():
+			if (self.speed2val(speed)/abs(self.intf.get(self.conf_in)-pos))>=max_vel:
 				s = speed - max_vel
 				if s<0:
 					s = 1/float(255)
@@ -164,14 +176,14 @@ class TrajectoryControl(object):
 				if s>1:
 					s = 1
 			f = 1
-			if self.intf.get(self.conf)-pos>0:
+			if self.intf.get(self.conf_in)-pos>0:
 				f=-1
 
 			if s!=speed:
-				self.intf.set_val(self.conf, f*speed)
 				speed = s
+				self.intf.set_val(self.conf_out, f*speed)
 			r.sleep()
-		self.intf.set_val(self.conf, 0)
+		self.intf.set_val(self.conf_out, 0)
       
 		if success:
 			self._as.set_succeeded(self._result)
