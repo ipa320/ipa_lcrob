@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <vector>
 #include "ros/ros.h"
+#include "ipa_odroidx_ultrasonic_interface/UARTDriver.h"
 
 #define PINGING_SENSOR 	-1
 #define SENSOR_NOT_USED 255
@@ -63,7 +64,10 @@ int generateConfigString(std::vector< std::vector<int> >config_vector,unsigned c
 		{
 			if((*list_it)[i]==PINGING_SENSOR)
 			{
-				temp_mask|=(1<<i);
+				if (i<7)
+					temp_mask|=(1<<i); //For first port
+				else
+					temp_mask|=(1<<(i+1)); // For second port
 			}
 		}
 		temp_config_string[count++] = (temp_mask & 0xff00) >> 8;
@@ -85,11 +89,14 @@ int main(int argc, char ** argv)
 		return(EXIT_FAILURE);
 	}
 	ROS_INFO("configurations found.");
+
+	CommPortDriver * comm_port = new UARTDriver("/dev/ttyUSB0");
+
 	nh_.getParam("us_driver/configurations", config_list_);
 	ROS_ASSERT(config_list_.getType() == XmlRpc::XmlRpcValue::TypeArray);
 
 	std::vector <std::vector<int> > config_vector_ = generateConfigVector(config_list_);
-	ROS_INFO("%d", config_vector_.size());
+	ROS_INFO("%d", (int)config_vector_.size());
 	for (int i=0; i<14; i++){
 		ROS_INFO("%d", config_vector_[0][i]);
 	}
@@ -104,5 +111,13 @@ int main(int argc, char ** argv)
 		ROS_INFO("0x%02x", config_string_[i]);
 	}
 
+	comm_port->writeBytes(config_string_, config_string_length_);
+	unsigned char * buffer = new unsigned char[100];
+	while(ros::ok())
+	{
+		comm_port->readBytes(buffer, 1);
+		ROS_INFO("%02x", buffer[0]);
+	}
+	delete comm_port;
 	return 0;
 }

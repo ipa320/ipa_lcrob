@@ -12,7 +12,7 @@
 #include <fcntl.h>
 #include "ros/ros.h"
 #include "ipa_odroidx_ultrasonic_interface/UARTDriver.h"
-UARTDriver::UARTDriver(char * device_filename, int baud_rate)
+UARTDriver::UARTDriver(const char * device_filename, int baud_rate)
 {
 	ROS_INFO("Opening device file: %s", device_filename);
 	this->fd_ = open(device_filename, O_RDWR | O_NOCTTY | O_SYNC);
@@ -39,7 +39,7 @@ UARTDriver::UARTDriver(char * device_filename, int baud_rate)
 	//Setting up the new configuration.
 	tcsetattr(this->fd_, TCSANOW, &(this->new_config_));
 	tcsetattr(this->fd_, TCSAFLUSH, &(this->new_config_));
-	ROS_INFO("Sleeping for four seconds for waiting to apply settings.");
+	ROS_INFO("Sleeping for four seconds to ensure settings are applied.");
 	sleep(4);
 }
 

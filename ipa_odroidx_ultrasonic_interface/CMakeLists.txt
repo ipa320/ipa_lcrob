@@ -27,6 +27,7 @@ rosbuild_genmsg()
 #rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 rosbuild_add_executable(us_driver ros/src/us_driver.cpp)
+target_link_libraries(us_driver CommPortDriver)
 #target_link_libraries(example ${PROJECT_NAME})
 
 rosbuild_add_library(CommPortDriver ros/src/UARTDriver.cpp)

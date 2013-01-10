@@ -10,10 +10,10 @@
 #include <unistd.h>
 #include <termios.h>
 #include "ipa_odroidx_ultrasonic_interface/CommPortDriver.h"
-class UARTDriver:CommPortDriver
+class UARTDriver:public CommPortDriver
 {
 	public:
-		UARTDriver(char * device_filename, int baud_rate = 2400);
+		UARTDriver(const char * device_filename, int baud_rate = 2400);
 		ssize_t readBytes(void * buf, size_t count);
 		ssize_t writeBytes(void * buf, size_t count);
 		~UARTDriver();
