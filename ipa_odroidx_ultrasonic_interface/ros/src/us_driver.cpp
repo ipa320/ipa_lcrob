@@ -45,6 +45,34 @@ std::vector <std::vector<int> > generateConfigVector(XmlRpc::XmlRpcValue config_
 	}
 	return config;
 }
+int generateConfigString(std::vector< std::vector<int> >config_vector,unsigned char * config_string)
+{
+	unsigned char temp_config_string[100];
+	int config_string_length=config_vector.size()*2+1; //setting up length of config string
+
+	if(config_vector.size()==0)
+		return 0;
+	temp_config_string[0]=(unsigned int)(config_vector.size()) & 0xff;
+	int count=1;
+	for (std::vector< std::vector<int> >::iterator list_it = config_vector.begin(); list_it != config_vector.end(); list_it++)
+	{
+		int temp_mask=0;
+		if((*list_it).size()==0)
+			return 0;
+		for (int i=0; i<14; i++)
+		{
+			if((*list_it)[i]==PINGING_SENSOR)
+			{
+				temp_mask|=(1<<i);
+			}
+		}
+		temp_config_string[count++] = (temp_mask & 0xff00) >> 8;
+		temp_config_string[count++] = (temp_mask & 0xff);
+	}
+	memcpy(config_string, temp_config_string, config_string_length); // copying contents of temp config onto config string before return.
+	return config_string_length;
+}
+
 int main(int argc, char ** argv)
 {
 	ros::init(argc, argv, "us_driver");
@@ -65,5 +93,16 @@ int main(int argc, char ** argv)
 	for (int i=0; i<14; i++){
 		ROS_INFO("%d", config_vector_[0][i]);
 	}
+
+	unsigned char config_string_[100]; // Must be declared before use.
+	int config_string_length_ = 0;
+
+	config_string_length_ = generateConfigString(config_vector_, config_string_);
+	ROS_INFO("config_string_length_ = %d", config_string_length_);
+	for (int i= 0; i<config_string_length_; i++)
+	{
+		ROS_INFO("0x%02x", config_string_[i]);
+	}
+
 	return 0;
 }
