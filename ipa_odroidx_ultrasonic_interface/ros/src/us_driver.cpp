@@ -5,13 +5,13 @@
 #define PINGING_SENSOR 	-1
 #define SENSOR_NOT_USED 255
 
-/*generateConfig stores the pinging sensors, to which pinging sensor is a listening
+/*generateConfigVector stores the pinging sensors, to which pinging sensor is a listening
  * sensor bound to in a cycle and which sensors are not used at all.
  * In the output, the pinging sensors are represented by PINGING_SENSOR, location of
  * each listening sensor holds the address of its corresponding pinging sensor
  * and the sensors not used at all are represented by SENSOR_NOT_USED.
  */
-std::vector <std::vector<int> > generateConfig(XmlRpc::XmlRpcValue config_list)
+std::vector <std::vector<int> > generateConfigVector(XmlRpc::XmlRpcValue config_list)
 {
 	std::vector<std::vector<int> > config;
 	XmlRpc::XmlRpcValue current_cycle;
@@ -53,17 +53,17 @@ int main(int argc, char ** argv)
 	ros::init(argc, argv, "us_driver");
 	if(!nh_.hasParam("us_driver/configurations"))
 	{
-		ROS_ERROR("Param configurations not found.");
+		ROS_ERROR("Sensor configurations not found.");
 		return(EXIT_FAILURE);
 	}
 	ROS_INFO("configurations found.");
 	nh_.getParam("us_driver/configurations", config_list_);
 	ROS_ASSERT(config_list_.getType() == XmlRpc::XmlRpcValue::TypeArray);
 
-	std::vector <std::vector<int> > config = generateConfig(config_list_);
-	ROS_INFO("%d", config.size());
+	std::vector <std::vector<int> > config_vector_ = generateConfigVector(config_list_);
+	ROS_INFO("%d", config_vector_.size());
 	for (int i=0; i<14; i++){
-		ROS_INFO("%d", config[0][i]);
+		ROS_INFO("%d", config_vector_[0][i]);
 	}
 	return 0;
 }
