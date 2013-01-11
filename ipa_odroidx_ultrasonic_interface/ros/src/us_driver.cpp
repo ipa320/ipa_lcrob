@@ -26,6 +26,7 @@ std::vector <std::vector<int> > generateConfigVector(XmlRpc::XmlRpcValue config_
 		for (int j=0; j<14; j++)
 			cycle_vector[j]=SENSOR_NOT_USED;
 
+		//better to keep it dynamic
 		for (int j = 0; j<14; j++){
 			char str_index[3] = {'\0','\0', '\0'}; // for storing int to hex conv. 
 			sprintf(str_index,"%d", j); // Unsure if yamlcpp parser reads hexadecimal values
@@ -60,6 +61,7 @@ int generateConfigString(std::vector< std::vector<int> >config_vector,unsigned c
 		int temp_mask=0;
 		if((*list_it).size()==0)
 			return 0;
+		//better to keep it dynamic
 		for (int i=0; i<14; i++)
 		{
 			if((*list_it)[i]==PINGING_SENSOR)
