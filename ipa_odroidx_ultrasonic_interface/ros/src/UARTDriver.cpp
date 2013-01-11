@@ -41,6 +41,7 @@ UARTDriver::UARTDriver(const char * device_filename, int baud_rate)
 	tcsetattr(this->fd_, TCSAFLUSH, &(this->new_config_));
 	ROS_INFO("Sleeping for four seconds to ensure settings are applied.");
 	sleep(4);
+	tcflush(this->fd_, TCIFLUSH);
 }
 
 ssize_t UARTDriver::readBytes(void * buf, size_t count)
