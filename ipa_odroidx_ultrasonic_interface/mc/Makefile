@@ -5,7 +5,7 @@ TARGET = src/main
 
 # list of modules
 SRC = src/
-MODULES = $(TARGET) src/softuart
+MODULES = $(TARGET) src/softuart src/helper
 
 # list of additional libraries to link against
 LIBS = 

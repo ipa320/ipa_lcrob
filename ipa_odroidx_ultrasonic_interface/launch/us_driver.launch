@@ -1,0 +1,6 @@
+<launch>
+	<node name="us_driver" pkg="ipa_odroidx_ultrasonic_interface" type="us_driver" output="screen">
+		<rosparam file="$(find ipa_odroidx_ultrasonic_interface)/ros/config/sample.yaml" command="load" />
+	</node>
+</launch>
+
