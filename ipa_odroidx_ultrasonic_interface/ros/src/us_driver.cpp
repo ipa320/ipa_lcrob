@@ -6,6 +6,8 @@
 #define PINGING_SENSOR 	-1
 #define SENSOR_NOT_USED 255
 
+enum ACK_RECEIVED {NO, MAYBE, YES}; // Three states of ACK 
+
 /*generateConfigVector stores the pinging sensors, to which pinging sensor is a listening
  * sensor bound to in a cycle and which sensors are not used at all.
  * In the output, the pinging sensors are represented by PINGING_SENSOR, location of
@@ -84,6 +86,7 @@ int main(int argc, char ** argv)
 	ros::init(argc, argv, "us_driver");
 	ros::NodeHandle nh_;
 	XmlRpc::XmlRpcValue config_list_;
+	std::map<int, std::vector< int > > input_map_;
 	ros::init(argc, argv, "us_driver");
 	if(!nh_.hasParam("us_driver/configurations"))
 	{
@@ -92,7 +95,7 @@ int main(int argc, char ** argv)
 	}
 	ROS_INFO("configurations found.");
 
-	CommPortDriver * comm_port = new UARTDriver("/dev/ttyUSB0");
+	CommPortDriver * comm_port_ = new UARTDriver("/dev/ttyUSB0");
 
 	nh_.getParam("us_driver/configurations", config_list_);
 	ROS_ASSERT(config_list_.getType() == XmlRpc::XmlRpcValue::TypeArray);
@@ -112,14 +115,93 @@ int main(int argc, char ** argv)
 	{
 		ROS_INFO("0x%02x", config_string_[i]);
 	}
+	ROS_INFO(" ");
+	ROS_ASSERT(comm_port_->writeBytes(config_string_, config_string_length_)==config_string_length_);
+	unsigned char * buffer_ = new unsigned char[100];
 
-	comm_port->writeBytes(config_string_, config_string_length_);
-	unsigned char * buffer = new unsigned char[100];
+	ACK_RECEIVED ack_received_ = NO;
+	bool ack_stage_2 = false;
+	int sequence_number= -1;
 	while(ros::ok())
 	{
-		comm_port->readBytes(buffer, 1);
-		ROS_INFO("%02x", buffer[0]);
+		comm_port_->readBytes(buffer_, 1);
+		ROS_INFO("%02x", buffer_[0]);
+		if(ack_received_ == NO)
+		{
+			ROS_INFO("ACK NO");
+			if(buffer_[0] == 0x12)
+				ack_received_ = MAYBE;
+		}
+		else if(ack_received_ == MAYBE)
+		{
+			ROS_INFO("ACK MAYBE");
+			if(ack_stage_2 == false)
+			{
+				if (buffer_[0] == 0x00)
+				{
+					ROS_INFO("ack_stage_2 = true");
+					ack_stage_2 = true;
+					sequence_number = 0;
+				}
+				else
+					ack_received_ = NO;
+			}
+			else if ((buffer_[0] & 0xf0) == 0xd0)
+			{
+				ack_received_ = YES;
+			}
+		}
+		if(ack_received_==YES) //ack reception confirmed.
+		{
+//			ROS_INFO("ACK YES");
+//			ROS_INFO("0x%02x", buffer_[0]);
+			if(sequence_number == -1) //previous cycle complete.
+			{
+				sequence_number = buffer_[0];
+				ROS_INFO("sequence_number: 0x%x", sequence_number);
+			}
+			else
+			{
+				for (int i=0; i< 14; i++)
+				{
+					if (i>0){
+						comm_port_->readBytes(buffer_,1);
+					}
+					int total_sensor_readings = (buffer_[0] & 0x0f) ;
+//					ROS_INFO("sensor address: %x, total_sensor_readings: %d",(buffer_[0] & 0xf0) >> 4, total_sensor_readings);
+					if(total_sensor_readings > 0)
+					{
+						int current_sensor_address = (buffer_[0] & 0xf0) >> 4;
+						for (int j = 0; j < total_sensor_readings; j++)
+						{
+							int temp_reading = 0;
+							comm_port_->readBytes(buffer_, 1);
+							temp_reading= (buffer_[0]<<8 & 0xff00);
+							comm_port_->readBytes(buffer_, 1);
+							temp_reading |= (buffer_[0] & 0xff);
+							input_map_[current_sensor_address].push_back(temp_reading & 0xffff);
+//							ROS_INFO("Readings read: %d", input_map_[current_sensor_address].size());
+						}
+					}
+				}
+				for (std::map<int, std::vector<int> >::iterator map_it = input_map_.begin(); map_it != input_map_.end(); map_it++)
+				{
+					ROS_INFO("Sensor address: %d", map_it->first);
+					ROS_INFO("----");
+					for (std::vector<int>::iterator reading_list_it = (*map_it).second.begin(); reading_list_it != (*map_it).second.end(); reading_list_it++)
+					{
+						ROS_INFO("0x%04x", (*reading_list_it) & 0xffff);
+					}
+					ROS_INFO("----");
+				}
+
+
+				//To indicate that one complete cycle has been processed.
+				input_map_.clear();
+				sequence_number = -1;
+			}
+		}
 	}
-	delete comm_port;
+	delete comm_port_;
 	return 0;
 }
