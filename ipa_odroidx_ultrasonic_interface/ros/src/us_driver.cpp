@@ -5,6 +5,7 @@
 
 #define PINGING_SENSOR 	-1
 #define SENSOR_NOT_USED 255
+#define MAX_SENSORS 14
 
 enum ACK_RECEIVED {NO, MAYBE, YES}; // Three states of ACK 
 
@@ -24,12 +25,12 @@ std::vector <std::vector<int> > generateConfigVector(XmlRpc::XmlRpcValue config_
 	{
 		ROS_ASSERT(config_list[i].getType() == XmlRpc::XmlRpcValue::TypeStruct);
 		std::vector<int> cycle_vector; //For holding configuration for each cycle.
-		cycle_vector.resize(14);
-		for (int j=0; j<14; j++)
+		cycle_vector.resize(MAX_SENSORS);
+		for (int j=0; j<MAX_SENSORS; j++)
 			cycle_vector[j]=SENSOR_NOT_USED;
 
 		//better to keep it dynamic
-		for (int j = 0; j<14; j++){
+		for (int j = 0; j<MAX_SENSORS; j++){
 			char str_index[3] = {'\0','\0', '\0'}; // for storing int to hex conv. 
 			sprintf(str_index,"%d", j); // Unsure if yamlcpp parser reads hexadecimal values
 			if(config_list[i].hasMember(str_index))
@@ -64,7 +65,7 @@ int generateConfigString(std::vector< std::vector<int> >config_vector,unsigned c
 		if((*list_it).size()==0)
 			return 0;
 		//better to keep it dynamic
-		for (int i=0; i<14; i++)
+		for (int i=0; i<MAX_SENSORS; i++)
 		{
 			if((*list_it)[i]==PINGING_SENSOR)
 			{
@@ -102,7 +103,7 @@ int main(int argc, char ** argv)
 
 	std::vector <std::vector<int> > config_vector_ = generateConfigVector(config_list_);
 	ROS_INFO("%d", (int)config_vector_.size());
-	for (int i=0; i<14; i++){
+	for (int i=0; i<MAX_SENSORS; i++){
 		ROS_INFO("%d", config_vector_[0][i]);
 	}
 
@@ -162,7 +163,7 @@ int main(int argc, char ** argv)
 			}
 			else
 			{
-				for (int i=0; i< 14; i++)
+				for (int i=0; i< MAX_SENSORS; i++)
 				{
 					if (i>0){
 						comm_port_->readBytes(buffer_,1);
