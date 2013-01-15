@@ -173,6 +173,7 @@ int main(int argc, char ** argv)
 		return(EXIT_FAILURE);
 	}
 	ROS_INFO("configurations found.");
+	ros::Publisher pub = nh_.advertise<ipa_odroidx_ultrasonic_interface::ExRangeArray>("msg_array", 5);
 
 	CommPortDriver * comm_port_ = new UARTDriver("/dev/ttyUSB0");
 
@@ -274,7 +275,7 @@ int main(int argc, char ** argv)
 					ROS_INFO("----");
 				}
 				
-				ipa_odroidx_ultrasonic_interface::ExRangeArray a = generateExRangeArray(input_map_, config_vector_, sequence_number);
+				ipa_odroidx_ultrasonic_interface::ExRangeArray ex_range_array = generateExRangeArray(input_map_, config_vector_, sequence_number);
 				ROS_INFO("Printing ExRangeArray");
 				ROS_INFO("----------");
 				for (unsigned int i = 0; i<a.measurements.size(); i++)
@@ -282,6 +283,7 @@ int main(int argc, char ** argv)
 					ROS_INFO("Sender: %d, Receiver: %d, Range: %f", a.measurements[i].sender_ch, a.measurements[i].receiver_ch, a.measurements[i].measurement.range);
 				}
 				ROS_INFO("----------");
+				pub.publish(ex_range_array);
 				//After one complete cycle has been processed.
 				input_map_.clear();
 				sequence_number = -1;
