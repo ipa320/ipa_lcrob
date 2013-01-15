@@ -278,9 +278,9 @@ int main(int argc, char ** argv)
 				ipa_odroidx_ultrasonic_interface::ExRangeArray ex_range_array = generateExRangeArray(input_map_, config_vector_, sequence_number);
 				ROS_INFO("Printing ExRangeArray");
 				ROS_INFO("----------");
-				for (unsigned int i = 0; i<a.measurements.size(); i++)
+				for (unsigned int i = 0; i<ex_range_array.measurements.size(); i++)
 				{
-					ROS_INFO("Sender: %d, Receiver: %d, Range: %f", a.measurements[i].sender_ch, a.measurements[i].receiver_ch, a.measurements[i].measurement.range);
+					ROS_INFO("Sender: %d, Receiver: %d, Range: %f", ex_range_array.measurements[i].sender_ch, ex_range_array.measurements[i].receiver_ch, ex_range_array.measurements[i].measurement.range);
 				}
 				ROS_INFO("----------");
 				pub.publish(ex_range_array);
