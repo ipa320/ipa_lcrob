@@ -9,6 +9,8 @@
 
 #define PINGING_SENSOR 	-1
 #define SENSOR_NOT_USED 255
+#define PINGING_AND_LISTENING_SENSOR -2
+
 #define MAX_SENSORS 14
 
 #define MAX_RANGE 10 //in meters
@@ -52,8 +54,7 @@ std::vector <std::vector<int> > generateConfigVector(XmlRpc::XmlRpcValue config_
 				ROS_ASSERT(current_cycle.size()>0);
 				//Assign address of pinging sensor to each listening sensor
 				for (int k = 0; k<current_cycle.size(); k++){
-					if (static_cast<int>(current_cycle[k])!=j)
-						cycle_vector[static_cast<int>(current_cycle[k])]=j;
+					cycle_vector[static_cast<int>(current_cycle[k])]=((static_cast<int>(current_cycle[k])!=j)?j:PINGING_AND_LISTENING_SENSOR);
 				}
 			}
 		}
@@ -89,7 +90,7 @@ int generateConfigString(std::vector< std::vector<int> >config_vector,unsigned c
 		//better to keep it dynamic
 		for (int i=0; i<MAX_SENSORS; i++)
 		{
-			if((*list_it)[i]==PINGING_SENSOR)
+			if(((*list_it)[i]==PINGING_SENSOR) || ((*list_it)[i]==PINGING_AND_LISTENING_SENSOR))
 			{
 				if (i<7)
 					temp_mask|=(1<<i); //For first port
@@ -128,7 +129,7 @@ ipa_odroidx_ultrasonic_interface::ExRangeArray generateExRangeArray(std::map<int
 	{
 		if(config_vector[sequence_number][i]!=SENSOR_NOT_USED)
 		{
-			if(config_vector[sequence_number][i]==PINGING_SENSOR)
+			if(config_vector[sequence_number][i]==PINGING_AND_LISTENING_SENSOR)
 			{
 				if(input_map.count(i)) //Received any reading 
 				{
