@@ -178,7 +178,7 @@ int main(int argc, char ** argv)
 		return(EXIT_FAILURE);
 	}
 	ROS_INFO("configurations found.");
-	ros::Publisher pub = nh_.advertise<ipa_odroidx_ultrasonic_interface::ExRangeArray>("msg_array", 5);
+	ros::Publisher pub = nh_.advertise<ipa_odroidx_ultrasonic_interface::ExRangeArray>("us_reading", 5);
 
 	CommPortDriver * comm_port_ = new UARTDriver("/dev/ttyUSB0");
 
