@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <sstream>
 #include <vector>
 #include "ros/ros.h"
 #include "ipa_odroidx_ultrasonic_interface/UARTDriver.h"
@@ -103,12 +104,15 @@ int generateConfigString(std::vector< std::vector<int> >config_vector,unsigned c
 	return config_string_length;
 }
 
-ipa_odroidx_ultrasonic_interface::ExRange setupExRangeMeasurement()
+ipa_odroidx_ultrasonic_interface::ExRange setupExRangeMeasurement(int sensor_address)
 {
+	std::ostringstream ss_sensor;
 	ipa_odroidx_ultrasonic_interface::ExRange temp_range;
 	temp_range.measurement.radiation_type = sensor_msgs::Range::ULTRASOUND;
 	temp_range.measurement.min_range = MIN_RANGE;
 	temp_range.measurement.max_range = MAX_RANGE;
+	ss_sensor<<"us"<<sensor_address;
+	temp_range.measurement.header.frame_id = ss_sensor.str();
 	return temp_range;
 }
 
@@ -131,7 +135,7 @@ ipa_odroidx_ultrasonic_interface::ExRangeArray generateExRangeArray(std::map<int
 					if(input_map[i].size()>=2) // Considering the first reading after the ping.
 					{
 						// Setting up Range msg first.
-						ipa_odroidx_ultrasonic_interface::ExRange temp_range = setupExRangeMeasurement();
+						ipa_odroidx_ultrasonic_interface::ExRange temp_range = setupExRangeMeasurement(i);
 						temp_range.measurement.range = get_distance(get_time(input_map[i][1]), get_time(input_map[i][0]));
 						temp_range.sender_ch = i;
 						temp_range.receiver_ch = i;
@@ -147,7 +151,7 @@ ipa_odroidx_ultrasonic_interface::ExRangeArray generateExRangeArray(std::map<int
 					{
 						if(input_map[config_vector[sequence_number][i]].size()>0) // To check if corresponding pinging sensor has base value
 						{
-							ipa_odroidx_ultrasonic_interface::ExRange temp_range = setupExRangeMeasurement();
+							ipa_odroidx_ultrasonic_interface::ExRange temp_range = setupExRangeMeasurement(i);
 							temp_range.measurement.range = get_distance(get_time(input_map[i][0]), get_time(input_map[config_vector[sequence_number][i]][0]));
 							temp_range.sender_ch = config_vector[sequence_number][i];
 							temp_range.receiver_ch = i;
