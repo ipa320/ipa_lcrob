@@ -112,20 +112,20 @@ class TrajectoryControl(object):
 	def move(self, pos, speed, pos2):
 		start = False
 		end = False
-		while abs(self.intf.get(self.conf_in)-pos)>self.tolerance:
+		while abs(self.getpos()-pos)>self.tolerance:
 			if self._as.is_preempt_requested():
 				rospy.loginfo('%s: Preempted' % self._action_name)
 				self._as.set_preempted()
 				success = False
 				break
 
-			if self.intf.get(self.conf_in)>=pos2[0] and self.intf.get(self.conf_in)<=pos2[1]:
+			if self.getpos()>=pos2[0] and self.getpos()<=pos2[1]:
 				if not start:
-					start = [rospy.get_time(),self.intf.get(self.conf_in)]
+					start = [rospy.get_time(),self.getpos()]
 				else:
-					end = [rospy.get_time(),self.intf.get(self.conf_in)]
+					end = [rospy.get_time(),self.getpos()]
 			f = 1
-			if self.intf.get(self.conf_in)-pos>0:
+			if self.getpos()-pos>0:
 				f=-1
 			self.intf.set_val(self.conf_out, f*speed)
 
@@ -140,6 +140,12 @@ class TrajectoryControl(object):
 	
 	def rad2pos(self, rad):
 		return rad/(2*math.pi)		#TODO:
+
+	def getpos(self):
+		p = self.intf.get(self.conf_in)
+		if p<0.5:
+			p+=1
+		return p
 		
 
 	def speed2val(self, speed):
@@ -158,7 +164,7 @@ class TrajectoryControl(object):
 		#assert( len(goal.trajectory.points[0].velocities)==1 )
 
 		pos = self.rad2pos(goal.trajectory.points[0].positions[0])
-		print "desired pos", pos
+		#print "desired pos", pos
 		speed = 0
 		if len(goal.trajectory.points[0].velocities)==1:
 			max_vel = goal.trajectory.points[0].velocities[0]
@@ -167,9 +173,9 @@ class TrajectoryControl(object):
 		if max_vel<1/float(255):
 			max_vel = 1
     
-		while abs(self.intf.get(self.conf_in)-pos)>self.tolerance and not rospy.is_shutdown():
-			print "pos ",self.intf.get(self.conf_in)
-			if (self.speed2val(speed)/abs(self.intf.get(self.conf_in)-pos))>=max_vel:
+		while abs(self.getpos()-pos)>self.tolerance and not rospy.is_shutdown():
+			#print "pos ",self.getpos()
+			if (self.speed2val(speed)/abs(self.getpos()-pos))>=max_vel:
 				s = speed - max_vel
 				if s<0:
 					s = 1/float(255)
@@ -178,7 +184,7 @@ class TrajectoryControl(object):
 				if s>1:
 					s = 1
 			f = -1
-			if self.intf.get(self.conf_in)-pos>0:
+			if self.getpos()-pos>0:
 				f=1
 
 			if s!=speed:

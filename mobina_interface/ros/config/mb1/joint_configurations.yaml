@@ -1,9 +1,10 @@
 joint_names: ["tray"]
 
 # single positions
-home: [[0]]
+home: [[5.8]]
 
-displayup: [[1]]
+displayup: [[1.5]]
+displaydown: [[5.65]]
 
 # trajectories
 #scan: [one_rot,home]
