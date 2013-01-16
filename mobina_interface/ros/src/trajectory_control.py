@@ -57,7 +57,7 @@ import actionlib
 import yaml
 import math
 
-from pr2_controllers_msgs.msg import *
+from control_msgs.msg import *
 from std_srvs.srv import *
 from trajectory_msgs.msg import *
 
@@ -65,8 +65,8 @@ from thread import start_new_thread
 
 class TrajectoryControl(object):
 	# create messages that are used to publish feedback/result
-	_feedback = JointTrajectoryFeedback()
-	_result   = JointTrajectoryResult()
+	_feedback = FollowJointTrajectoryActionFeedback()
+	_result   = FollowJointTrajectoryActionResult()
 
 	def __init__(self, name, intf, conf_out, conf_in):
 		self.intf = intf
@@ -80,14 +80,14 @@ class TrajectoryControl(object):
 
 		self.calibration_srv = rospy.Service(name+'/calibration', Empty, self.handle_calibration)
 		self._action_name = name+"/follow_joint_trajectory"
-		self._as = actionlib.SimpleActionServer(self._action_name, JointTrajectoryAction, execute_cb=self.execute_cb, auto_start=False)
+		self._as = actionlib.SimpleActionServer(self._action_name, FollowFollowJointTrajectoryActionAction, execute_cb=self.execute_cb, auto_start=False)
 		self._as.start()
 
 	def start_test(self, pos):
-		goal = JointTrajectoryGoal()
-		pt = JointTrajectoryPoint()
+		goal = FollowJointTrajectoryActionGoal()
+		pt = FollowJointTrajectoryActionPoint()
 		pt.positions=[pos]
-		goal.trajectory = JointTrajectory()
+		goal.trajectory = FollowJointTrajectoryAction()
 		goal.trajectory.points = [pt]
 		start_new_thread(self.execute_cb, (goal,))
 
