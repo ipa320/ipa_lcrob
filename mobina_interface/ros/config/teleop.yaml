@@ -28,7 +28,7 @@ modules: {
   },
   tray: {
     joint_names: ['tray_joint'],
-    joint_step: [0.1]
+    joint_step: [0.4]
   },
 }
 

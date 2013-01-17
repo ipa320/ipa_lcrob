@@ -84,7 +84,7 @@ class TrajectoryControl(object):
 		self.joint_msg.position = [0.0]
 		self.joint_msg.velocity = [0.0]
 
-		rospy.Subscriber(name+'/command_vel', JointVelocities, on_vel)
+		rospy.Subscriber(name+'/command_vel', JointVelocities, self.on_vel)
 
 		self.joint_pub = rospy.Publisher('joint_states', JointState)
 		self.calibration_srv = rospy.Service(name+'/calibration', Empty, self.handle_calibration)
