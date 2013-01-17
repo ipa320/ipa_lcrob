@@ -4,7 +4,7 @@ run_factor: 1.5
 # buttons
 lower_neck_button: -1
 upper_neck_button: -1
-tray_button: -1
+tray_button: 2
 arm_joint12_button: -1
 arm_joint34_button: -1
 arm_joint56_button: -1
@@ -17,7 +17,7 @@ base_safety_button: -1
 axis_vx: 0
 axis_vy: -1
 axis_vth: 1
-up_down: -1 #tray--up/down; tilt--front/back, here we just name up_down
+up_down: 2 #tray--up/down; tilt--front/back, here we just name up_down
 left_right: -1 #pan--left/right
 
 # component configuration
