@@ -13,7 +13,7 @@ class evjoy:
 	devices = map(InputDevice, list_devices())
 
 	self.dev = None
-	while self.dev==None:
+	while not rospy.is_shutdown() and self.dev==None:
 		for d in devices:
 		    print d.name
 		    if "pad" in d.name.lower():
