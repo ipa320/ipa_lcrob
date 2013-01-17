@@ -69,7 +69,7 @@ class TrajectoryControl(object):
 	_feedback = FollowJointTrajectoryActionFeedback()
 	_result   = FollowJointTrajectoryResult()
 
-	def __init__(self, name, intf, conf_out, conf_in):
+	def __init__(self, name, joint_name, intf, conf_out, conf_in):
 		self.intf = intf
 		self.conf_out = conf_out
 		self.conf_in  = conf_in
@@ -80,7 +80,7 @@ class TrajectoryControl(object):
 			self.calibration = yaml.load(open(rospy.get_param(name+'/calibration')))
 
 		self.joint_msg = JointState()
-		self.joint_msg.name = [name+'_joint']
+		self.joint_msg.name = [joint_name]
 		self.joint_msg.position = [0.0]
 		self.joint_msg.velocity = [0.0]
 

@@ -74,7 +74,7 @@ class MobinaInterface:
 		self.input.values = [0,0, 0,0]
 
 		self.lights = [LightControl("light_controller", self, [3,6,2])]
-		self.motors = [TrajectoryControl("tray_controller", self, 0, 0)]
+		self.motors = [TrajectoryControl("tray_controller", "tray_joint", self, 0, 0)]
 
 	def set_val(self, pin, value):
 		#print "setval ",pin,value
