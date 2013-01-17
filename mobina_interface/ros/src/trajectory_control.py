@@ -66,7 +66,7 @@ from thread import start_new_thread
 class TrajectoryControl(object):
 	# create messages that are used to publish feedback/result
 	_feedback = FollowJointTrajectoryActionFeedback()
-	_result   = FollowJointTrajectoryActionResult()
+	_result   = FollowJointTrajectoryResult()
 
 	def __init__(self, name, intf, conf_out, conf_in):
 		self.intf = intf
@@ -192,7 +192,7 @@ class TrajectoryControl(object):
 				self.intf.set_val(self.conf_out, f*speed)
 			r.sleep()
 		self.intf.set_val(self.conf_out, 0)
-      
+		self._result.error_code = 0
 		if success:
 			self._as.set_succeeded(self._result)
       
