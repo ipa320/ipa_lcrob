@@ -11,8 +11,8 @@ group1:
     [init,trigger,init],
     [recover,trigger,recover]]
 group3:
-  group_name: motor
-  component_name: motor
+  group_name: tray
+  component_name: tray
   buttons: [[stop,trigger,stop],
     [init,trigger,init],
     [recover,trigger,recover],
