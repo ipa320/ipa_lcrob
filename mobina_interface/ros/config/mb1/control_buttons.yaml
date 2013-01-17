@@ -18,4 +18,5 @@ group3:
     [recover,trigger,recover],
     [home,move,home],
     [displayup,move,displayup],
+    [displaydown,move,displaydown],
   ]
