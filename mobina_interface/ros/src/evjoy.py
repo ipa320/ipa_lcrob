@@ -27,10 +27,13 @@ class evjoy:
 	
 	axes = rospy.get_param("~axes",[])
 	self.axes_sign = [1.0] * len(axes)
+	self.axes_factor = [True] * len(axes)
 	for i in range(len(axes)):
 	    if axes[i].startswith('!'):
 		self.axes_sign[i] = -1.0
-		axes[i] = axes[i][1:]	    
+		axes[i] = axes[i][1:]	 
+	    if axes[i].startswith('/'):
+		self.axes_factor[i] = False
 	self.axes = dict( [(ecodes.ecodes[axes[i]],i) for i in range(len(axes)) ])
 	self.axes_data = [0.0] * len(self.axes)
 	buttons = rospy.get_param("~buttons",[])
@@ -45,18 +48,21 @@ class evjoy:
 	    self.handle_event(event)
 	    if rospy.is_shutdown(): exit()
 	
-    def factor(self,v):
+    def factor(self,axis, v):
+	if not self.axis_factor[axis]:
+		return v
 	if v < 128: value = (v-128)/128.0
 	else: value = (v-128)/127.0
 	if value < -1.0: value = -1.0
 	elif value > 1.0: value = 1.0
 	elif abs(value) < self.nullzone: value = 0.0
 	return value
+
     def handle_event(self, event):
 	try:
 	    if event.type == ecodes.EV_ABS:
 		axis = self.axes[event.code]
-		self.axes_data[axis] = self.axes_sign[axis] * self.factor(event.value)
+		self.axes_data[axis] = self.axes_sign[axis] * self.factor(axis, event.value)
 		self.publish()
 	    elif event.type == ecodes.EV_KEY:
 		self.button_data[self.buttons[event.code]] = 1 if event.value != 0 else 0
