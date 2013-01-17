@@ -1,9 +1,10 @@
 <?xml version="1.0"?>
 <launch>
     <node pkg="mobina_interface" type="evjoy.py" name="evjoy" output="screen">
-	<rosparam param="axes">['!ABS_Y','!ABS_Z',ABS_HAT0X]</rosparam>
+	<rosparam param="axes">['!ABS_Y','!ABS_Z',~ABS_HAT0X,~ABS_HAT0Y]</rosparam>
 	<rosparam param="buttons">[BTN_Z,BTN_TR]</rosparam>
 	<param name="nullzone" type="double" value="0.12"/>
+	<param name="debug" type="bool" value="true"/>
     </node>
 
     <node pkg="cob_teleop" type="cob_teleop" name="teleop_node" ns="teleop" output="screen">
