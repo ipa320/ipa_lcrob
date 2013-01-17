@@ -61,7 +61,7 @@ from control_msgs.msg import *
 from std_srvs.srv import *
 from trajectory_msgs.msg import *
 from sensor_msgs.msg import JointState
-
+from brics_actuator.msg import JointVelocities
 from thread import start_new_thread
 
 class TrajectoryControl(object):
@@ -83,6 +83,8 @@ class TrajectoryControl(object):
 		self.joint_msg.name = [joint_name]
 		self.joint_msg.position = [0.0]
 		self.joint_msg.velocity = [0.0]
+
+		rospy.Subscriber(name+'/command_vel', JointVelocities, on_vel)
 
 		self.joint_pub = rospy.Publisher('joint_states', JointState)
 		self.calibration_srv = rospy.Service(name+'/calibration', Empty, self.handle_calibration)
@@ -161,7 +163,11 @@ class TrajectoryControl(object):
 				f = (speed-self.calibration[i][0])/(self.calibration[i+1][0]-self.calibration[i][0])
 				return f*(self.calibration[i+1][1]-self.calibration[i][1]) + self.calibration[i][1]
 		return self.calibration[len(self.calibration)-1][1]
-    
+
+	def on_vel(self, vel):
+		if len(vel.velocities)==1: self.intf.set_val(self.conf_out, vel.velocities[0].value)
+		else: rospy.logwarn("only one joint in "+self._action_name)
+
 	def execute_cb(self, goal):
 		# helper variables
 		r = rospy.Rate(50)
