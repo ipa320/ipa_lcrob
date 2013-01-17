@@ -4,6 +4,7 @@ import rospy
 
 from sensor_msgs.msg import Joy
 from evdev import InputDevice, list_devices, categorize, ecodes, events
+import time
 
 class evjoy:
     def __init__(self):
@@ -12,11 +13,13 @@ class evjoy:
 	devices = map(InputDevice, list_devices())
 
 	self.dev = None
-	for d in devices:
-	    print d.name
-	    if "pad" in d.name.lower():
-		self.dev = d
-		break
+	while self.dev==None:
+		for d in devices:
+		    print d.name
+		    if "pad" in d.name.lower():
+			self.dev = d
+			break
+		if self.dev==None: time.sleep(2)
 
 	assert(self.dev != None)
 	
