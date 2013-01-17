@@ -19,7 +19,8 @@ class evjoy:
 		    if "pad" in d.name.lower():
 			self.dev = d
 			break
-		if self.dev==None: time.sleep(2)
+		if self.dev!=None: break
+		time.sleep(2)
 
 	assert(self.dev != None)
 	
@@ -32,8 +33,9 @@ class evjoy:
 	    if axes[i].startswith('!'):
 		self.axes_sign[i] = -1.0
 		axes[i] = axes[i][1:]	 
-	    if axes[i].startswith('/'):
+	    if axes[i].startswith('~'):
 		self.axes_factor[i] = False
+		axes[i] = axes[i][1:]	
 	self.axes = dict( [(ecodes.ecodes[axes[i]],i) for i in range(len(axes)) ])
 	self.axes_data = [0.0] * len(self.axes)
 	buttons = rospy.get_param("~buttons",[])
@@ -49,7 +51,7 @@ class evjoy:
 	    if rospy.is_shutdown(): exit()
 	
     def factor(self,axis, v):
-	if not self.axis_factor[axis]:
+	if not self.axes_factor[axis]:
 		return v
 	if v < 128: value = (v-128)/128.0
 	else: value = (v-128)/127.0
