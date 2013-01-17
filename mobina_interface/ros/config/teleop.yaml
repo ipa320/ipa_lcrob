@@ -12,6 +12,10 @@ arm_joint7_button: -1
 deadman_button: 0
 run_button: 1
 base_safety_button: -1
+led_r_button: 3
+led_g_button: 4
+led_b_button: 5
+led_step: 0.1
 
 # axes
 axis_vx: 0
@@ -28,7 +32,7 @@ modules: {
   },
   tray: {
     joint_names: ['tray_joint'],
-    joint_step: [0.4]
+    joint_step: [1.0]
   },
 }
 
