@@ -92,6 +92,8 @@ class MobinaInterface:
 	def publish_marker(self):
 		for l in self.lights:
 			l.publish_marker()
+		for m in self.motors:
+			m.publish()
 
 if __name__ == '__main__':
 	rospy.init_node('mobina')

@@ -60,6 +60,7 @@ import math
 from control_msgs.msg import *
 from std_srvs.srv import *
 from trajectory_msgs.msg import *
+from sensor_msgs.msg import JointState
 
 from thread import start_new_thread
 
@@ -78,6 +79,12 @@ class TrajectoryControl(object):
 		if rospy.has_param(name+'/calibration'):
 			self.calibration = yaml.load(open(rospy.get_param(name+'/calibration')))
 
+		self.joint_msg = JointState()
+		self.joint_msg.name = [name+'_joint']
+		self.joint_msg.position = [0.0]
+		self.joint_msg.velocity = [0.0]
+
+		self.joint_pub = rospy.Publisher('joint_states', JointState)
 		self.calibration_srv = rospy.Service(name+'/calibration', Empty, self.handle_calibration)
 		self._action_name = name+"/follow_joint_trajectory"
 		self._as = actionlib.SimpleActionServer(self._action_name, FollowJointTrajectoryAction, execute_cb=self.execute_cb, auto_start=False)
@@ -189,10 +196,17 @@ class TrajectoryControl(object):
 
 			if s!=speed:
 				speed = s
+				self.joint_msg.velocity = [f*speed]
 				self.intf.set_val(self.conf_out, f*speed)
 			r.sleep()
+
 		self.intf.set_val(self.conf_out, 0)
+		self.joint_msg.velocity = [0.0]
 		self._result.error_code = 0
 		if success:
 			self._as.set_succeeded(self._result)
-      
+
+	def publish(self):
+		self.joint_msg.header.stamp = rospy.Time.now()
+		self.joint_msg.position = [self.getpos()]
+		self.joint_pub.publish(self.joint_msg)
