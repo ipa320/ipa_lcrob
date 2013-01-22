@@ -62,7 +62,7 @@ std::vector <std::vector<int> > generateConfigVector(XmlRpc::XmlRpcValue config_
 	}
 	return config;
 }
-float get_time(int timer_value)
+float get_time(unsigned int timer_value)
 {
 	return (((float)(TIMER_PRESCALER)/(float)(F_CPU)) * timer_value);
 }
@@ -152,11 +152,20 @@ ipa_odroidx_ultrasonic_interface::ExRangeArray generateExRangeArray(std::map<int
 					{
 						if(input_map[config_vector[sequence_number][i]].size()>0) // To check if corresponding pinging sensor has base value
 						{
-							ipa_odroidx_ultrasonic_interface::ExRange temp_range = setupExRangeMeasurement(i);
-							temp_range.measurement.range = get_distance(get_time(input_map[i][0]), get_time(input_map[config_vector[sequence_number][i]][0]));
-							temp_range.sender_ch = config_vector[sequence_number][i];
-							temp_range.receiver_ch = i;
-							measurement_array.measurements.push_back(temp_range);
+							unsigned int valid_value_index = 0; // for pointing to a value which is greater than the base value of the pinging sensor so that no negetive value is observed.
+							for (; valid_value_index < input_map[i].size(); valid_value_index++)
+							{
+								if (input_map[i][valid_value_index]>=input_map[config_vector[sequence_number][i]][0])
+									break;
+							}
+							if (valid_value_index<input_map[i].size())
+							{
+								ipa_odroidx_ultrasonic_interface::ExRange temp_range = setupExRangeMeasurement(i);
+								temp_range.measurement.range = get_distance(get_time(input_map[i][valid_value_index]), get_time(input_map[config_vector[sequence_number][i]][0]));
+								temp_range.sender_ch = config_vector[sequence_number][i];
+								temp_range.receiver_ch = i;
+								measurement_array.measurements.push_back(temp_range);
+							}
 						}
 					}
 				}
