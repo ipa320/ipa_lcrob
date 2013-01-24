@@ -5,9 +5,11 @@ import rospy
 from sensor_msgs.msg import Joy
 from evdev import InputDevice, list_devices, categorize, ecodes, events
 import time
+import threading
 
-class evjoy:
+class evjoy(threading.Thread):
     def __init__(self):
+	threading.Thread.__init__(self)
 	rospy.init_node("evjoy")
 
         self.dev = None
@@ -31,7 +33,8 @@ class evjoy:
 	self.nullzone = rospy.get_param("~nullzone",0.0)
 	self.debug = rospy.get_param("~debug",False)
 	
-	self.enumerate()
+	self.recveived = False
+	self.start()
 
     def enumerate(self):
         self.dev = None
@@ -67,10 +70,12 @@ class evjoy:
     def handle_event(self, event):
 	try:
 	    if event.type == ecodes.EV_ABS:
+		self.recveived = True
 		axis = self.axes[event.code]
 		self.axes_data[axis] = self.axes_sign[axis] * self.factor(axis, event.value)
 		self.publish()
 	    elif event.type == ecodes.EV_KEY:
+		self.recveived = True
 		self.button_data[self.buttons[event.code]] = 1 if event.value != 0 else 0
 		self.publish()
 	except KeyError:
@@ -82,7 +87,15 @@ class evjoy:
 	cmd.axes = self.axes_data
 	cmd.buttons = self.button_data
 	if self.debug: print cmd
-	self.pub.publish(cmd)	
+	self.pub.publish(cmd)
+
+     def run(self):
+	while True:
+		if not self.recveived:
+			self.enumerate()
+		else
+			break
+		time.sleep(5)
 
 if __name__ == "__main__":
     ev = evjoy()
