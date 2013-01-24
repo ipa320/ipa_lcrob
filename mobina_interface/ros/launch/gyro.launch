@@ -3,7 +3,7 @@
     
     <node pkg="imu_filter_madgwick" type="imu_filter_madgwick" name="imu_filter_madgwick" output="screen">
          <param name="use_mag" value="true" />
-         <param name="fixed_frame" value="blub" />
+         <param name="fixed_frame" value="gyro_link" />
          <param name="gain" value="0.1" />
     </node>
 
