@@ -152,7 +152,7 @@ class TrajectoryControl(object):
 
 	def getpos(self):
 		p = self.intf.get(self.conf_in)
-		if p<0.5:
+		if p<0.2:
 			p+=1
 		return p
 		
