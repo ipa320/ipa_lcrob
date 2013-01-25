@@ -1,0 +1,15 @@
+<package>
+  <description brief="mobina_states">
+
+     mobina_states
+
+  </description>
+  <author>josh</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/mobina_states</url>
+  <depend package="rospy"/>
+
+</package>
+
+
