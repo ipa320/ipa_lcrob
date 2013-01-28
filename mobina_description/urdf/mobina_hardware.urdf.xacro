@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
-<robot name="turtlebot_hardware" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="mobina_hardware" xmlns:xacro="http://ros.org/wiki/xacro">
   <property name="M_PI" value="3.14159"/>
   <property name="M_SCALE" value="0.001"/>
 
-  <xacro:macro name="turtlebot_spacer" params="parent number x_loc y_loc z_loc">
+  <xacro:macro name="mobina_spacer" params="parent number x_loc y_loc z_loc">
     <joint name="spacer_${number}_joint" type="fixed">
       <origin xyz="${x_loc} ${y_loc} ${z_loc}" rpy="0 0 0" />
       <parent link="${parent}"/>
@@ -22,7 +22,7 @@
       <visual>
         <origin xyz=" 0 0 0 " rpy="0 0 0" />
         <geometry>
-          <mesh filename="package://turtlebot_description/meshes/68-02403-125_Spacer.dae" scale="${M_SCALE} ${M_SCALE} ${M_SCALE}"/>
+          <mesh filename="package://mobina_description/meshes/68-02403-125_Spacer.dae" scale="${M_SCALE} ${M_SCALE} ${M_SCALE}"/>
         </geometry>
       </visual>
 
@@ -35,7 +35,7 @@
     </link>
   </xacro:macro>
 
-  <xacro:macro name="turtlebot_standoff_1in" params="parent number x_loc y_loc z_loc">
+  <xacro:macro name="mobina_standoff_1in" params="parent number x_loc y_loc z_loc">
     <joint name="standoff_1in_${number}_joint" type="fixed">
       <origin xyz="${x_loc} ${y_loc} ${z_loc}" rpy="0 0 0" />
       <parent link="${parent}"/>
@@ -54,7 +54,7 @@
       <visual>
         <origin xyz=" 0 0 0 " rpy="0 0 0" />
         <geometry>
-          <mesh filename="package://turtlebot_description/meshes/68-04552-1000-RA_Turtlebot_M-F_Standoff.dae" scale="${M_SCALE} ${M_SCALE} ${M_SCALE}"/>
+          <mesh filename="package://mobina_description/meshes/68-04552-1000-RA_mobina_M-F_Standoff.dae" scale="${M_SCALE} ${M_SCALE} ${M_SCALE}"/>
         </geometry>
       </visual>
 
@@ -67,7 +67,7 @@
     </link>
   </xacro:macro>
 
-  <xacro:macro name="turtlebot_standoff_2in" params="parent number x_loc y_loc z_loc">
+  <xacro:macro name="mobina_standoff_2in" params="parent number x_loc y_loc z_loc">
     <joint name="standoff_2in_${number}_joint" type="fixed">
       <origin xyz="${x_loc} ${y_loc} ${z_loc}" rpy="0 0 0" />
       <parent link="${parent}"/>
@@ -86,7 +86,7 @@
       <visual>
         <origin xyz=" 0 0 0 " rpy="0 0 0" />
         <geometry>
-          <mesh filename="package://turtlebot_description/meshes/68-04552-2000-RA_Turtlebot_M-F_Standoff.dae" scale="${M_SCALE} ${M_SCALE} ${M_SCALE}"/>
+          <mesh filename="package://mobina_description/meshes/68-04552-2000-RA_mobina_M-F_Standoff.dae" scale="${M_SCALE} ${M_SCALE} ${M_SCALE}"/>
         </geometry>
       </visual>
 
@@ -100,7 +100,7 @@
   </xacro:macro>
 
 
-  <xacro:macro name="turtlebot_standoff_8in" params="parent number x_loc y_loc z_loc">
+  <xacro:macro name="mobina_standoff_8in" params="parent number x_loc y_loc z_loc">
     <joint name="standoff_8in_${number}_joint" type="fixed">
       <origin xyz="${x_loc} ${y_loc} ${z_loc}" rpy="0 0 0" />
       <parent link="${parent}"/>
@@ -119,7 +119,7 @@
       <visual>
         <origin xyz=" 0 0 0 " rpy="0 0 0" />
         <geometry>
-          <mesh filename="package://turtlebot_description/meshes/68-02421-8000-RA_Turtlebot_F-F_Standoff.dae" scale="${M_SCALE} ${M_SCALE} ${M_SCALE}"/>
+          <mesh filename="package://mobina_description/meshes/68-02421-8000-RA_mobina_F-F_Standoff.dae" scale="${M_SCALE} ${M_SCALE} ${M_SCALE}"/>
         </geometry>
       </visual>
 
@@ -132,7 +132,7 @@
     </link>
   </xacro:macro>
 
-  <xacro:macro name="turtlebot_standoff_kinect" params="parent number x_loc y_loc z_loc">
+  <xacro:macro name="mobina_standoff_kinect" params="parent number x_loc y_loc z_loc">
     <joint name="standoff_kinect_${number}_joint" type="fixed">
       <origin xyz="${x_loc} ${y_loc} ${z_loc}" rpy="0 0 0" />
       <parent link="${parent}"/>
@@ -151,7 +151,7 @@
       <visual>
         <origin xyz=" 0 0 0 " rpy="0 0 0" />
         <geometry>
-          <mesh filename="package://turtlebot_description/meshes/68-04556-RA_Kinect_Standoff_Assy.3ds" scale="${M_SCALE} ${M_SCALE} ${M_SCALE}"/>
+          <mesh filename="package://mobina_description/meshes/68-04556-RA_Kinect_Standoff_Assy.3ds" scale="${M_SCALE} ${M_SCALE} ${M_SCALE}"/>
         </geometry>
       </visual>
 
