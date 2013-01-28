@@ -74,10 +74,13 @@ class TrajectoryControl(object):
 		self.conf_out = conf_out
 		self.conf_in  = conf_in
 		self.calibration = [ [0,0.0006], [1,0.0006] ]
+		self.calibration_pos = [ [0,0], [1,1] ]
 		self.tolerance = rospy.get_param(name+'/tolerance', 0.005)
 
 		if rospy.has_param(name+'/calibration'):
-			self.calibration = yaml.load(open(rospy.get_param(name+'/calibration')))
+			y = yaml.load(open(rospy.get_param(name+'/calibration')))
+			if 'calibration_vel' in y: self.calibration = y['calibration_vel']
+			if 'calibration_pos' in y: self.calibration_pos = y['calibration_pos']
 
 		self.joint_msg = JointState()
 		self.joint_msg.name = [joint_name]
@@ -148,13 +151,21 @@ class TrajectoryControl(object):
 		return
 	
 	def rad2pos(self, rad):
-		return rad/(2*math.pi)		#TODO:
+		j = 0
+		for c in self.calibration_pos:
+			if rad>=c[0]: break
+			j+=1
+		if j>=len(self.calibration_pos): j-=1
+		return (self.calibration_pos[j+1][1]-self.calibration_pos[j][1])*(rad-self.calibration_pos[j][0])/(self.calibration_pos[j+1][0]-self.calibration_pos[j][0])+self.calibration_pos[j][1]
 
 	def getpos(self):
 		p = self.intf.get(self.conf_in)
-		if p<0.2:
-			p+=1
-		return p
+		j = 0
+		for c in self.calibration_pos:
+			if p>=c[1]: break
+			j+=1
+		if j>=len(self.calibration_pos): j-=1
+		return (self.calibration_pos[j+1][0]-self.calibration_pos[j][0])*(rad-self.calibration_pos[j][1])/(self.calibration_pos[j+1][1]-self.calibration_pos[j][1])+self.calibration_pos[j][0]
 		
 
 	def speed2val(self, speed):
