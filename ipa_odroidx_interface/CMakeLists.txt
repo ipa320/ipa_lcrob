@@ -45,5 +45,5 @@ if (NOT EXISTS "${AVRLIB_DOWNLOAD_PATH}")
     execute_process(COMMAND unzip -o "${AVRLIB_DOWNLOAD_PATH}" -d "${AVRLIB_EXTRACTED_DIR}")
 endif()
 
-execute_process(COMMAND bash -c "cd ../mc && make && sudo make load")
+#execute_process(COMMAND bash -c "cd ../mc && make && sudo make load")
 
