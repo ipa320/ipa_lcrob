@@ -1,17 +1,17 @@
 <?xml version="1.0"?>
-<robot name="turtlebot_hardware" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="mobina_hardware" xmlns:xacro="http://ros.org/wiki/xacro">
   <property name="M_PI" value="3.14159"/>
 
-  <include filename="$(find turtlebot_description)/urdf/gazebo.urdf.xacro"/>
-  <include filename="$(find turtlebot_description)/urdf/turtlebot_calibration.xacro" />
+  <include filename="$(find mobina_description)/urdf/gazebo.urdf.xacro"/>
+  <include filename="$(find mobina_description)/urdf/mobina_calibration.xacro" />
 
-<!-- Macro for ASUS Xtion PRO on Turtlebot. Uses Kinect frame names, but they have moved -->
+<!-- Macro for ASUS Xtion PRO on mobina. Uses Kinect frame names, but they have moved -->
 
-<xacro:macro name="turtlebot_xtion_pro">
+<xacro:macro name="mobina_xtion_pro">
   <joint name="base_camera_joint" type="fixed">
-    <origin xyz="${turtlebot_calib_cam_x} ${turtlebot_calib_cam_y} 0.124"
-            rpy="${turtlebot_calib_cam_rr} ${turtlebot_calib_cam_rp} ${turtlebot_calib_cam_ry}" />
-    <parent link="${turtlebot_camera_parent_name}" />
+    <origin xyz="${mobina_calib_cam_x} ${mobina_calib_cam_y} 0.124"
+            rpy="${mobina_calib_cam_rr} ${mobina_calib_cam_rp} ${mobina_calib_cam_ry}" />
+    <parent link="${mobina_camera_parent_name}" />
     <child link="camera_link" />
   </joint>
 
@@ -27,7 +27,7 @@
     <visual>
       <origin xyz=" 0 0 0 " rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://turtlebot_description/meshes/kinect.dae"/>
+        <mesh filename="package://mobina_description/meshes/kinect.dae"/>
       </geometry>
     </visual>
 
@@ -105,7 +105,7 @@
   </link>
 
   <!-- RGBD sensor for simulation -->
-  <turtlebot_sim_asus_xtion/>
+  <mobina_sim_asus_xtion/>
 </xacro:macro>
 
 </robot>
