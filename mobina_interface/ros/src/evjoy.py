@@ -52,6 +52,7 @@ class evjoy(threading.Thread):
         assert(self.dev != None)
 	
     def loop(self):
+	if self.dev==None: return
 	self.dev.grab()
 	for event in self.dev.read_loop():
 	    self.handle_event(event)
@@ -99,4 +100,8 @@ class evjoy(threading.Thread):
 
 if __name__ == "__main__":
     ev = evjoy()
-    ev.loop()
+    while not rospy.is_shutdown():
+       try:
+           ev.loop()
+       except Exception as e:
+           print e
