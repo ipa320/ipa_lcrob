@@ -102,6 +102,12 @@ ISR(TIMER0_OVF_vect){ // Timer 0 is dedicated for Pinging and listening.
 		PORTD = (~PORTD_CONTROL) & (0x7F);
 		TCNT0 = 154; // Setting for 350us -0.02% error
 		PING_STAGE = 2;
+
+		//Setting up timer1 for 100ms
+		TCNT1 = 36735;
+		TIMSK1 |= (1 << TOIE1);
+
+		PCICR |= 0x0F; // Enabling input interrupts.
 	}
 	else if(PING_STAGE == 2){
 		PORTA = 0x00;
@@ -111,11 +117,6 @@ ISR(TIMER0_OVF_vect){ // Timer 0 is dedicated for Pinging and listening.
 
 //		softuart_disable(); // Not sure if works or not.
 
-		//Setting up timer1 for 100ms
-		TCNT1 = 36735;
-		TIMSK1 |= (1 << TOIE1);
-
-		PCICR |= 0x0F;
 	}	
 }
 ISR(TIMER1_OVF_vect){
