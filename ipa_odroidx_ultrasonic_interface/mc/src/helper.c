@@ -45,9 +45,9 @@ void populateTIMER_SEND(uint8_t PORT_CONTROL, uint8_t CHANNEL_POSITION, volatile
 
 	uint8_t last_value_temp=INPUT_POSITION; //Is used to check for falling edges.
 	TIMER_count=0;
-	for(uint8_t count=0; (count < INPUT_count) && (TIMER_count < 0xf); count++){ //For all input values while making sure that we have a maximum of 16 timer values. More than that will corrupt the sensor address value.
+	for(uint8_t count=0; count < INPUT_count; count++){ //For all input values while making sure that we have a maximum of 16 timer values. More than that will corrupt the sensor address value.
 		if(((INPUT_POSITION & time_keeper[count].port_val)==0x00) && (last_value_temp==INPUT_POSITION)){ //Checks for falling edge.
-			if(TIMER_count < MAX_VALUES)
+			if (TIMER_count <MAX_VALUES_SENT)
 				TIMER[TIMER_count++] = time_keeper[count].time_reg_val;
 		}
 		last_value_temp = (INPUT_POSITION & time_keeper[count].port_val); //Assign value to last_value_temp before looping.
