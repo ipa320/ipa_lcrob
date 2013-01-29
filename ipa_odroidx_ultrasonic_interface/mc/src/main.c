@@ -104,12 +104,6 @@ ISR(TIMER0_OVF_vect){ // Timer 0 is dedicated for Pinging and listening.
 		PING_STAGE = 2;
 	}
 	else if(PING_STAGE == 2){
-		PORTA = PORTA_CONTROL&0x7F;
-		PORTD = PORTD_CONTROL&0x7F;
-		TCNT0 = 177; // Setting for 270us -0.02% error
-		PING_STAGE = 3;
-	}
-	else if(PING_STAGE == 3){
 		PORTA = 0x00;
 		PORTD = 0x00;
 		//Disabling timer0 to setup timer1 to enable data reading from sensors.
