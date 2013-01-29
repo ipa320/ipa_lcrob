@@ -89,11 +89,11 @@ class evjoy(threading.Thread):
 	if self.debug: print cmd
 	self.pub.publish(cmd)
 
-     def run(self):
+    def run(self):
 	while True:
 		if not self.recveived:
 			self.enumerate()
-		else
+		else:
 			break
 		time.sleep(5)
 

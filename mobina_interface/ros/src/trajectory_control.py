@@ -165,7 +165,7 @@ class TrajectoryControl(object):
 			if p>=c[1]: break
 			j+=1
 		if j>=len(self.calibration_pos): j-=1
-		return (self.calibration_pos[j+1][0]-self.calibration_pos[j][0])*(rad-self.calibration_pos[j][1])/(self.calibration_pos[j+1][1]-self.calibration_pos[j][1])+self.calibration_pos[j][0]
+		return (self.calibration_pos[j+1][0]-self.calibration_pos[j][0])*(p-self.calibration_pos[j][1])/(self.calibration_pos[j+1][1]-self.calibration_pos[j][1])+self.calibration_pos[j][0]
 		
 
 	def speed2val(self, speed):
