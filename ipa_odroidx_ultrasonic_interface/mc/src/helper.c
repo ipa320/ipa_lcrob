@@ -46,7 +46,7 @@ void populateTIMER_SEND(uint8_t PORT_CONTROL, uint8_t CHANNEL_POSITION, volatile
 	uint8_t PING_CHECK=0; //For storing, if timer value for a rising edge has been written in the variable TIMER
 	uint8_t last_value_temp=INPUT_POSITION; //Is used to check for falling edges.
 	TIMER_count=0;
-	for(uint8_t count=0; count < INPUT_count; count++){ //For all input values.
+	for(uint8_t count=0; (count < INPUT_count) && (TIMER_count < 0xf); count++){ //For all input values while making sure that we have a maximum of 16 timer values. More than that will corrupt the sensor address value.
 		if((~(PORT_CONTROL) & CHANNEL_POSITION) == CHANNEL_POSITION){//If listening
 			if(((INPUT_POSITION & time_keeper[count].port_val)==0x00) && (last_value_temp==INPUT_POSITION)){ //Checks for falling edge.
 				if(TIMER_count < MAX_VALUES)
