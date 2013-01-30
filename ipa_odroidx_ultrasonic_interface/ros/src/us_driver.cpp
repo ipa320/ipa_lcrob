@@ -222,7 +222,7 @@ int main(int argc, char ** argv)
 	//	ROS_INFO("%02x", buffer_[0]);
 		if(ack_received_ == NO)
 		{
-			ROS_INFO("ACK NO");
+			ROS_INFO("ACK NO (0x%02x)", buffer_[0]);
 			if(buffer_[0] == 0x12)
 				ack_received_ = MAYBE;
 		}
