@@ -125,7 +125,7 @@ ipa_odroidx_ultrasonic_interface::ExRangeArray generateExRangeArray(std::map<int
 	//Traverse over all sensors to check if they are used in this config
 	//and calculate relative distance from the assigned pinging sensor
 	//in case they are.
- 	for(unsigned int i = 0; i< config_vector[sequence_number].size(); i++)
+	for(unsigned int i = 0; i< config_vector[sequence_number].size(); i++)
 	{
 		if(config_vector[sequence_number][i]!=SENSOR_NOT_USED)
 		{
@@ -215,7 +215,12 @@ int main(int argc, char ** argv)
 
 	ACK_RECEIVED ack_received_ = NO;
 	bool ack_stage_2 = false;
-	int sequence_number= -1;
+	int sequence_number = -1;
+	int sensor_count = 0;
+	int total_sensor_readings = -1;
+	int current_sensor_address = -1;
+	int current_sensor_reading = 0;
+	int temp_reading = -1;
 	while(ros::ok())
 	{
 		comm_port_->readBytes(buffer_, 1);
@@ -244,6 +249,11 @@ int main(int argc, char ** argv)
 			{
 				ack_received_ = YES;
 			}
+			else
+			{
+				ack_received_ = NO;
+				ack_stage_2 = false;
+			}
 		}
 		if(ack_received_==YES) //ack reception confirmed.
 		{
@@ -256,51 +266,69 @@ int main(int argc, char ** argv)
 			}
 			else
 			{
-				for (int i=0; i< MAX_SENSORS; i++)
+				if(sensor_count < MAX_SENSORS)
 				{
-					if (i>0){
-						comm_port_->readBytes(buffer_,1);
-					}
-					int total_sensor_readings = (buffer_[0] & 0x0f) ;
-//					ROS_INFO("sensor address: %x, total_sensor_readings: %d",(buffer_[0] & 0xf0) >> 4, total_sensor_readings);
-					if(total_sensor_readings > 0)
+					if (total_sensor_readings == -1)
 					{
-						int current_sensor_address = (buffer_[0] & 0xf0) >> 4;
-						for (int j = 0; j < total_sensor_readings; j++)
+						current_sensor_address = (buffer_[0] & 0xf0) >> 4;
+						total_sensor_readings = (buffer_[0] & 0x0f) ;
+//						ROS_INFO("sensor address: %x, total_sensor_readings: %d",current_sensor_address, total_sensor_readings);
+						if(total_sensor_readings == 0)
 						{
-							int temp_reading = 0;
-							comm_port_->readBytes(buffer_, 1);
-							temp_reading= (buffer_[0]<<8 & 0xff00);
-							comm_port_->readBytes(buffer_, 1);
-							temp_reading |= (buffer_[0] & 0xff);
-							input_map_[current_sensor_address].push_back(temp_reading & 0xffff);
-//							ROS_INFO("Readings read: %d", input_map_[current_sensor_address].size());
+							sensor_count++;
+							total_sensor_readings = -1;
+							current_sensor_address = -1;
+						}
+					}
+					else{
+						if(current_sensor_reading < total_sensor_readings)
+						{
+							if (temp_reading == -1)
+								temp_reading= (buffer_[0]<<8 & 0xff00);
+							else
+							{
+								temp_reading |= (buffer_[0] & 0xff);
+								input_map_[current_sensor_address].push_back(temp_reading & 0xffff);
+								temp_reading = -1;
+								current_sensor_reading++;
+							}
+						}
+						if(current_sensor_reading >= total_sensor_readings)
+						{
+							current_sensor_reading = 0;
+							total_sensor_readings = -1;
+							current_sensor_address = -1;
+							sensor_count++;
 						}
 					}
 				}
-				for (std::map<int, std::vector<int> >::iterator map_it = input_map_.begin(); map_it != input_map_.end(); map_it++)
+				if(sensor_count >= MAX_SENSORS)
 				{
-					ROS_INFO("Sensor address: %d", map_it->first);
-					ROS_INFO("----");
-					for (std::vector<int>::iterator reading_list_it = (*map_it).second.begin(); reading_list_it != (*map_it).second.end(); reading_list_it++)
+					for (std::map<int, std::vector<int> >::iterator map_it = input_map_.begin(); map_it != input_map_.end(); map_it++)
 					{
-						ROS_INFO("0x%04x", (*reading_list_it) & 0xffff);
+						ROS_INFO("Sensor address: %d", map_it->first);
+						ROS_INFO("----");
+						for (std::vector<int>::iterator reading_list_it = (*map_it).second.begin(); reading_list_it != (*map_it).second.end(); reading_list_it++)
+						{
+							ROS_INFO("0x%04x", (*reading_list_it) & 0xffff);
+						}
+						ROS_INFO("----");
 					}
-					ROS_INFO("----");
+
+					ipa_odroidx_ultrasonic_interface::ExRangeArray ex_range_array = generateExRangeArray(input_map_, config_vector_, sequence_number);
+					ROS_INFO("Printing ExRangeArray");
+					ROS_INFO("----------");
+					for (unsigned int i = 0; i<ex_range_array.measurements.size(); i++)
+					{
+						ROS_INFO("Sender: %d, Receiver: %d, Range: %f", ex_range_array.measurements[i].sender_ch, ex_range_array.measurements[i].receiver_ch, ex_range_array.measurements[i].measurement.range);
+					}
+					ROS_INFO("----------");
+					pub.publish(ex_range_array);
+					//After one complete cycle has been processed.
+					input_map_.clear();
+					sequence_number = -1;
+					sensor_count = 0;
 				}
-				
-				ipa_odroidx_ultrasonic_interface::ExRangeArray ex_range_array = generateExRangeArray(input_map_, config_vector_, sequence_number);
-				ROS_INFO("Printing ExRangeArray");
-				ROS_INFO("----------");
-				for (unsigned int i = 0; i<ex_range_array.measurements.size(); i++)
-				{
-					ROS_INFO("Sender: %d, Receiver: %d, Range: %f", ex_range_array.measurements[i].sender_ch, ex_range_array.measurements[i].receiver_ch, ex_range_array.measurements[i].measurement.range);
-				}
-				ROS_INFO("----------");
-				pub.publish(ex_range_array);
-				//After one complete cycle has been processed.
-				input_map_.clear();
-				sequence_number = -1;
 			}
 		}
 	}
