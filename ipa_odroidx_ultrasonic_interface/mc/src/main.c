@@ -1,8 +1,10 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/wdt.h>
 #include "helper.h"
 #include "softuart.h"
 int main(void){
+	MCUSR = 0; //Setting Reset Status Register to 0 (In case the watchdog timer restarts the controller).
 
 	//Setting PORTA and PORTD as output
 	DDRA = 0x7F;
@@ -75,8 +77,13 @@ int main(void){
 					uint16_t temp16 = 0; // 16bit variable to store configuration input from the master.
 					uint8_t temp8 = 0;
 					for (uint8_t count = 0; count < number_of_config; count++){
-						temp16 = (softuart_getchar() << 8);
-						temp8 = softuart_getchar();
+						wdt_enable(WDTO_4S); //Sets the watchdog timer for a timeout of 4 seconds. 
+							temp16 = (softuart_getchar() << 8);
+						wdt_disable(); //Disables the watchdog timer if the completes successfully.
+						
+						wdt_enable(WDTO_4S);
+							temp8 = softuart_getchar();
+						wdt_disable();
 						SENSOR_CONFIG[count] = (temp16 | temp8) ;
 					}
 					TOTAL_SENSOR_CONFIGS = number_of_config;
