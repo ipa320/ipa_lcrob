@@ -158,7 +158,7 @@ ipa_odroidx_ultrasonic_interface::ExRangeArray generateExRangeArray(std::map<int
 							unsigned int valid_value_index = 0; // for pointing to a value which is greater than the base value of the pinging sensor so that no negetive value is observed.
 							for (; valid_value_index < input_map[i].size(); valid_value_index++)
 							{
-								if (input_map[i][valid_value_index]>=input_map[config_vector[sequence_number][i]][0])
+								if (input_map[i][valid_value_index]>input_map[config_vector[sequence_number][i]][0])
 									break;
 							}
 							if (valid_value_index<input_map[i].size())
