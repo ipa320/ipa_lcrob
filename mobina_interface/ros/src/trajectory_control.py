@@ -158,8 +158,11 @@ class TrajectoryControl(object):
 		if j>=len(self.calibration_pos): j-=1
 		return (self.calibration_pos[j+1][1]-self.calibration_pos[j][1])*(rad-self.calibration_pos[j][0])/(self.calibration_pos[j+1][0]-self.calibration_pos[j][0])+self.calibration_pos[j][1]
 
+	def _getpos(self):
+		return self.intf.get(self.conf_in)
+
 	def getpos(self):
-		p = self.intf.get(self.conf_in)
+		p = self._getpos()
 		j = 0
 		for c in self.calibration_pos:
 			if p>=c[1]: break
@@ -197,12 +200,12 @@ class TrajectoryControl(object):
 		if max_vel<1/float(255):
 			max_vel = 1
     
-		while abs(self.getpos()-pos)>self.tolerance and not rospy.is_shutdown():
+		while abs(self._getpos()-pos)>self.tolerance and not rospy.is_shutdown():
 			if self._as.is_preempt_requested():
 				success=False
 				break
 			#print "pos ",self.getpos()
-			if (self.speed2val(speed)/abs(self.getpos()-pos))>=max_vel:
+			if (self.speed2val(speed)/abs(self._getpos()-pos))>=max_vel:
 				s = speed - max_vel
 				if s<0:
 					s = 1/float(255)
@@ -211,7 +214,7 @@ class TrajectoryControl(object):
 				if s>1:
 					s = 1
 			f = -1
-			if self.getpos()-pos>0:
+			if self._getpos()-pos>0:
 				f=1
 
 			if s!=speed:
