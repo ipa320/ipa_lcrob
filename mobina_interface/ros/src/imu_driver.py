@@ -10,6 +10,7 @@ class AndroidConnection:
 	def __init__(self, port=38300):
 		os.system("adb start-server")
 		os.system("adb wait-for-device")
+		os.system("adb shell am force-stop com.example.extendeddevice")
 		os.system("adb shell am start -n com.example.extendeddevice/de.fraunhofer.ipa.Main")
 		os.system("adb forward tcp:"+str(port)+" tcp:"+str(port))
 		self.port = port
@@ -38,6 +39,7 @@ class AndroidConnection:
 		if not self.connected: self.connect()
 		try:
 			r = self.s.recv(1024)
+			#print len(r), r
 			if len(r)>0: self.last_recv = time.clock()
 			elif (time.clock()-self.last_recv)>10:
 				self.close()
@@ -71,6 +73,7 @@ def talker():
     mag = Vector3Stamped()
     last = ""
 
+    imu.header.frame_id = mag.header.frame_id = "/tablet"
     imu.angular_velocity_covariance    = [0.1,0,0,  0,0.1,0, 0,0,0.1]
     imu.linear_acceleration_covariance = [0.1,0,0,  0,0.1,0, 0,0,0.1]
 
