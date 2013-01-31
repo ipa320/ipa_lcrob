@@ -10,7 +10,7 @@ class AndroidConnection:
 	def __init__(self, port=38300):
 		os.system("adb start-server")
 		os.system("adb wait-for-device")
-		os.system("adb adb shell am start -n de.fraunhofer.ipa/cde.fraunhofer.ipa.Main")
+		os.system("adb adb shell am start -n com.example.extendeddevice/de.fraunhofer.ipa.Main")
 		os.system("adb forward tcp:"+str(port)+" tcp:"+str(port))
 		self.port = port
 		self.connected = False

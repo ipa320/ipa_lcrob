@@ -52,7 +52,7 @@ class evjoy(threading.Thread):
         assert(self.dev != None)
 	
     def loop(self):
-	if self.dev==None: return
+	if not self.dev!=None: return
 	self.dev.grab()
 	for event in self.dev.read_loop():
 	    self.handle_event(event)
