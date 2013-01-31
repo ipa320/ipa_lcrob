@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <sstream>
 #include <vector>
+#include <signal.h>
 #include "ros/ros.h"
 #include "ipa_odroidx_ultrasonic_interface/UARTDriver.h"
 #include "ipa_odroidx_ultrasonic_interface/ExRange.h"
@@ -19,6 +20,8 @@
 #define SPEED_OF_SOUND 343.2 // meters per second taken from http://en.wikipedia.org/wiki/Speed_of_sound
 #define TIMER_PRESCALER 8
 #define F_CPU 2304000
+
+int TIMEOUT_OCCURED =0;
 
 enum ACK_RECEIVED {NO, MAYBE, YES}; // Three states of ACK 
 
@@ -174,6 +177,10 @@ ipa_odroidx_ultrasonic_interface::ExRangeArray generateExRangeArray(std::map<int
 	}
 	return measurement_array;
 }
+void sigalrm_timeout(int sig)
+{
+	TIMEOUT_OCCURED = 1;
+}
 int main(int argc, char ** argv)
 {
 	ros::init(argc, argv, "us_driver");
@@ -221,9 +228,31 @@ int main(int argc, char ** argv)
 	int current_sensor_address = -1;
 	int current_sensor_reading = 0;
 	int temp_reading = -1;
+	struct sigaction sact;
+	sigemptyset(&sact.sa_mask);
+	sact.sa_flags = 0;
+	sact.sa_handler  = sigalrm_timeout;
+	sigaction(SIGALRM, &sact, NULL);
 	while(ros::ok())
 	{
+		alarm(10);
 		comm_port_->readBytes(buffer_, 1);
+		alarm(0);
+		if (TIMEOUT_OCCURED)
+		{
+			ROS_INFO("TIMEOUT!!!! Sending configuration string again.");
+			ROS_ASSERT(comm_port_->writeBytes(config_string_, config_string_length_)==config_string_length_);
+			ack_received_ = NO;
+			ack_stage_2 = false;
+			sequence_number = -1;
+			sensor_count = 0;
+			total_sensor_readings = -1;
+			current_sensor_address = -1;
+			current_sensor_reading = 0;
+			temp_reading = -1;
+			TIMEOUT_OCCURED = 0;
+			continue;
+		}
 	//	ROS_INFO("%02x", buffer_[0]);
 		if(ack_received_ == NO)
 		{
