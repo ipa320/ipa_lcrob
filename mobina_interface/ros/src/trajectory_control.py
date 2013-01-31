@@ -198,6 +198,9 @@ class TrajectoryControl(object):
 			max_vel = 1
     
 		while abs(self.getpos()-pos)>self.tolerance and not rospy.is_shutdown():
+			if self._as.is_preempt_requested():
+				success=False
+				break
 			#print "pos ",self.getpos()
 			if (self.speed2val(speed)/abs(self.getpos()-pos))>=max_vel:
 				s = speed - max_vel
