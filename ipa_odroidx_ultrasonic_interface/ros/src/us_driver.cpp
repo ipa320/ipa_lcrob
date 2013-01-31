@@ -3,6 +3,7 @@
 #include <vector>
 #include <signal.h>
 #include "ros/ros.h"
+#include "ros/xmlrpc_manager.h"
 #include "ipa_odroidx_ultrasonic_interface/UARTDriver.h"
 #include "ipa_odroidx_ultrasonic_interface/ExRange.h"
 #include "ipa_odroidx_ultrasonic_interface/ExRangeArray.h"
@@ -22,6 +23,13 @@
 #define F_CPU 2304000
 
 int TIMEOUT_OCCURED =0;
+
+sig_atomic_t volatile g_request_shutdown = 0; //To implement custom SIGINT handler 
+
+void sigint_received(int sig)
+{
+	g_request_shutdown = 1;
+}
 
 enum ACK_RECEIVED {NO, MAYBE, YES}; // Three states of ACK 
 
@@ -181,6 +189,20 @@ void sigalrm_timeout(int sig)
 {
 	TIMEOUT_OCCURED = 1;
 }
+// Replacement "shutdown" XMLRPC callback
+void shutdownCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
+{
+	int num_params = 0;
+	if (params.getType() == XmlRpc::XmlRpcValue::TypeArray)
+		num_params = params.size();
+	if (num_params > 1)
+	{
+		std::string reason = params[1];
+		ROS_WARN("Shutdown request received. Reason: [%s]", reason.c_str());
+		g_request_shutdown = 1; // Set flag
+	}
+	result = ros::xmlrpc::responseInt(1, "", 0);
+}
 int main(int argc, char ** argv)
 {
 	ros::init(argc, argv, "us_driver");
@@ -233,7 +255,8 @@ int main(int argc, char ** argv)
 	sact.sa_flags = 0;
 	sact.sa_handler  = sigalrm_timeout;
 	sigaction(SIGALRM, &sact, NULL);
-	while(ros::ok())
+	signal(SIGINT, sigint_received);
+	while(!g_request_shutdown)
 	{
 		alarm(10);
 		comm_port_->readBytes(buffer_, 1);
@@ -360,7 +383,10 @@ int main(int argc, char ** argv)
 				}
 			}
 		}
+		ros::spinOnce();
+		usleep(1000); // Test value
 	}
 	delete comm_port_;
+	ros::shutdown();
 	return 0;
 }

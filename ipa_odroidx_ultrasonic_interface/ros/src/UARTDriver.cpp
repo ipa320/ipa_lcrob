@@ -62,6 +62,7 @@ ssize_t UARTDriver::writeBytes(void * buf, size_t count)
 UARTDriver::~UARTDriver()
 {
 	//Setting up original serial port configuration again.
+	ROS_INFO("Loading original serial port settings.");
 	tcsetattr(this->fd_, TCSANOW, &(this->old_config_));
 	close(this->fd_);
 }
