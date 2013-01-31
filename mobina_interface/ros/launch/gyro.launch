@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <launch>
     
-    <node pkg="mobina_interface" type="imu_driver.py" name="imu_driver" output="screen">
+    <node pkg="mobina_interface" type="imu_driver.py" name="imu_driver" output="screen" />
 
     <node pkg="imu_filter_madgwick" type="imu_filter_node" name="imu_filter_madgwick" output="screen">
          <param name="use_mag" value="true" />
-         <param name="fixed_frame" value="gyro_link" />
+         <param name="fixed_frame" value="/odom" />
          <param name="gain" value="0.1" />
     </node>
 
