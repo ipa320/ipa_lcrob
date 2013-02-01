@@ -4,6 +4,7 @@
 
   <!-- Macro for mobina body. Including Gazebo extensions, but does not include Kinect -->
   <include filename="$(find mobina_description)/urdf/gazebo.urdf.xacro"/>
+  <include filename="$(find mobina_description)/urdf/mobina_calibration.xacro" />
 
   <property name="base_x" value="0.33" />
   <property name="base_y" value="0.33" />
@@ -97,6 +98,12 @@
     <child link="tray_base_link"/>
   </joint>
 
+  <joint name="base_tray_axis_joint" type="fixed">
+    <origin xyz="0.0 0.0 0.319" rpy="${mobina_calib_beta} 1.57079 0" />        
+    <parent link="base_link"/>
+    <child link="tray_axis_link" />
+  </joint>
+
 
   <link name="left_cliff_sensor_link">
     <inertial>
@@ -153,12 +160,6 @@
     <origin xyz="0.07 0.14 0.01" rpy="0 1.57079 0" />        
     <parent link="base_link"/>
     <child link="left_cliff_sensor_link" />
-  </joint>
-
-  <joint name="base_tray_axis_joint" type="fixed">
-    <origin xyz="0.0 0.0 0.319" rpy="0 1.57079 0" />        
-    <parent link="base_link"/>
-    <child link="tray_axis_link" />
   </joint>
 
   <joint name="base_right_cliff_sensor_joint" type="fixed">
@@ -342,7 +343,7 @@
   </link>
 
 
-  <joint name="plate_0_joint" type="fixed">
+  <!--joint name="plate_0_joint" type="fixed">
     <origin xyz="-0.04334 0  0.06775704" rpy="0 0 0" />
     <parent link="base_link"/>
     <child link="plate_0_link" />
@@ -481,7 +482,7 @@
         <box size="0.288 0.315 0.006401"/>
       </geometry>
     </collision>
-  </link>
+  </link-->
   
   <!-- Simulation sensors -->
   <mobina_sim_imu/>
