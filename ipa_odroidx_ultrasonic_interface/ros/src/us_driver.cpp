@@ -125,6 +125,7 @@ ipa_odroidx_ultrasonic_interface::ExRange setupExRangeMeasurement(int sensor_add
 	temp_range.measurement.max_range = MAX_RANGE;
 	ss_sensor<<"us"<<sensor_address;
 	temp_range.measurement.header.frame_id = ss_sensor.str();
+	temp_range.measurement.header.stamp = ros::Time::now();
 	return temp_range;
 }
 
