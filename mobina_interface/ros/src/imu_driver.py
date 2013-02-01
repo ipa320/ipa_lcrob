@@ -8,7 +8,7 @@ import socket, math, os, time
 
 class AndroidConnection:
 	def __init__(self, port=38300):
-		os.system("adb start-server")
+		os.system("cd /home/mobina/adb/adb_git; adb start-server")
 		os.system("adb wait-for-device")
 		os.system("adb shell am force-stop com.example.extendeddevice")
 		os.system("adb shell am start -n com.example.extendeddevice/de.fraunhofer.ipa.Main")

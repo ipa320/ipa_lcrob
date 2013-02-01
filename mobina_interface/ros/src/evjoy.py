@@ -34,6 +34,7 @@ class evjoy(threading.Thread):
 	self.debug = rospy.get_param("~debug",False)
 	
 	self.recveived = False
+	time.sleep(20)
 	self.start()
 
     def enumerate(self):

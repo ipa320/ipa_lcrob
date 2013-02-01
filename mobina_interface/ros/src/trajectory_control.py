@@ -192,19 +192,19 @@ class TrajectoryControl(object):
 
 		pos = self.rad2pos(goal.trajectory.points[0].positions[0])
 		#print "desired pos", pos
-		speed = 0
+		speed = oldf= 0
 		if len(goal.trajectory.points[0].velocities)==1:
 			max_vel = goal.trajectory.points[0].velocities[0]
 		else:
 			max_vel = 1/float(255)
 		if max_vel<1/float(255):
-			max_vel = 1
+			max_vel = 0.1
     
 		while abs(self._getpos()-pos)>self.tolerance and not rospy.is_shutdown():
 			if self._as.is_preempt_requested():
 				success=False
 				break
-			#print "pos ",self.getpos()
+			#print "pos ",self._getpos(), pos
 			if (self.speed2val(speed)/abs(self._getpos()-pos))>=max_vel:
 				s = speed - max_vel
 				if s<0:
@@ -217,8 +217,9 @@ class TrajectoryControl(object):
 			if self._getpos()-pos>0:
 				f=1
 
-			if s!=speed:
+			if s!=speed or oldf!=f:
 				speed = s
+				oldf = f
 				self.joint_msg.velocity = [f*speed]
 				self.intf.set_val(self.conf_out, f*speed)
 			r.sleep()
