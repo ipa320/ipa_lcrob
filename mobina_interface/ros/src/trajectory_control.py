@@ -198,7 +198,7 @@ class TrajectoryControl(object):
 		else:
 			max_vel = 1/float(255)
 		if max_vel<1/float(255):
-			max_vel = 1
+			max_vel = 0.1
     
 		while abs(self._getpos()-pos)>self.tolerance and not rospy.is_shutdown():
 			if self._as.is_preempt_requested():
