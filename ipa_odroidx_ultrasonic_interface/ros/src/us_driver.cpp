@@ -384,7 +384,7 @@ int main(int argc, char ** argv)
 			}
 		}
 		ros::spinOnce();
-		usleep(1000); // Test value
+//		usleep(1000); // Test value
 	}
 	delete comm_port_;
 	ros::shutdown();
