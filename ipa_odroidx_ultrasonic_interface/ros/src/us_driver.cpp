@@ -14,6 +14,8 @@
 #define PINGING_AND_LISTENING_SENSOR -2
 
 #define MAX_SENSORS 14
+#define MAX_CONFIGURATIONS 16
+#define MAX_SENSOR_READINGS 15
 
 #define MAX_RANGE 10 //in meters
 #define MIN_RANGE 0.5 // in meters, not sure
@@ -226,6 +228,12 @@ int main(int argc, char ** argv)
 
 	std::vector <std::vector<int> > config_vector_ = generateConfigVector(config_list_);
 	ROS_INFO("%d", (int)config_vector_.size());
+	if(config_vector_.size()>MAX_CONFIGURATIONS)
+	{
+		ROS_ERROR("Cannot have more than %d configurations.", MAX_CONFIGURATIONS);
+		return(EXIT_FAILURE);
+	}
+
 	for (int i=0; i<MAX_SENSORS; i++){
 		ROS_INFO("%d", config_vector_[0][i]);
 	}
@@ -251,12 +259,14 @@ int main(int argc, char ** argv)
 	int current_sensor_address = -1;
 	int current_sensor_reading = 0;
 	int temp_reading = -1;
+	int no_ack_count = 0;
 	struct sigaction sact;
 	sigemptyset(&sact.sa_mask);
 	sact.sa_flags = 0;
 	sact.sa_handler  = sigalrm_timeout;
 	sigaction(SIGALRM, &sact, NULL);
 	signal(SIGINT, sigint_received);
+
 	while(!g_request_shutdown)
 	{
 		alarm(10);
@@ -275,7 +285,14 @@ int main(int argc, char ** argv)
 			current_sensor_reading = 0;
 			temp_reading = -1;
 			TIMEOUT_OCCURED = 0;
+			no_ack_count = 0;
 			continue;
+		}
+		if (no_ack_count> ((((MAX_SENSOR_READINGS*2)+1)*MAX_SENSORS)*MAX_CONFIGURATIONS+1))
+		{
+			ROS_ERROR("Cannot send data on serial port, node shutting down.");
+			sleep(5);
+			raise(SIGINT);
 		}
 	//	ROS_INFO("%02x", buffer_[0]);
 		if(ack_received_ == NO)
@@ -283,6 +300,8 @@ int main(int argc, char ** argv)
 			ROS_INFO("ACK NO (0x%02x)", buffer_[0]);
 			if(buffer_[0] == 0x12)
 				ack_received_ = MAYBE;
+			else
+				no_ack_count++;
 		}
 		else if(ack_received_ == MAYBE)
 		{
