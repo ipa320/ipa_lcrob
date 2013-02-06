@@ -89,6 +89,8 @@ int main(void){
 					TOTAL_SENSOR_CONFIGS = number_of_config;
 					CURRENT_SENSOR_CONFIG = 0;
 					softuart_putchar(0x12); //Sending acknowledgement back to the master.
+					softuart_putchar(0x7f &(((PIND & 0x80) >> 1) | ((PINC & 0x04) <<3) | ((PINC & 0x08) <<1) | ((PINC & 0x10) >> 1) | ((PINC & 0x20) >> 3) | ((PINC & 0x40) >>5) | ((PINA & 0x80)>>7)));
+					softuart_putchar(0x7f &(((PINC & 0x80) >> 1) | (((PINB & 0x40)>>1) |(PINB & 0x1f))));
 				}
 			}
 			else if(TOTAL_SENSOR_CONFIGS > 0){

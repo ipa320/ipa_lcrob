@@ -261,6 +261,7 @@ int main(int argc, char ** argv)
 	int temp_reading = -1;
 	int no_ack_count = 0;
 	struct sigaction sact;
+	unsigned int connected_sensors = 0xffff;
 	sigemptyset(&sact.sa_mask);
 	sact.sa_flags = 0;
 	sact.sa_handler  = sigalrm_timeout;
@@ -286,6 +287,7 @@ int main(int argc, char ** argv)
 			temp_reading = -1;
 			TIMEOUT_OCCURED = 0;
 			no_ack_count = 0;
+			connected_sensors = 0xffff;
 			continue;
 		}
 		if (no_ack_count> ((((MAX_SENSOR_READINGS*2)+1)*MAX_SENSORS)*MAX_CONFIGURATIONS+1))
@@ -294,7 +296,7 @@ int main(int argc, char ** argv)
 			sleep(5);
 			raise(SIGINT);
 		}
-	//	ROS_INFO("%02x", buffer_[0]);
+//		ROS_INFO("%02x", buffer_[0]);
 		if(ack_received_ == NO)
 		{
 			ROS_INFO("ACK NO (0x%02x)", buffer_[0]);
@@ -306,7 +308,15 @@ int main(int argc, char ** argv)
 		else if(ack_received_ == MAYBE)
 		{
 			ROS_INFO("ACK MAYBE");
-			if(ack_stage_2 == false)
+			if (connected_sensors == 0xffff)
+			{
+				connected_sensors = ((buffer_[0] <<8) & 0xff00) | 0xff;
+			}
+			else if ((connected_sensors & 0x00ff) == 0xff)
+			{
+				connected_sensors = (connected_sensors & 0xff00) | (buffer_[0] & 0xff);
+			}
+			else if(ack_stage_2 == false)
 			{
 				if (buffer_[0] == 0x00)
 				{
@@ -315,16 +325,21 @@ int main(int argc, char ** argv)
 					sequence_number = 0;
 				}
 				else
+				{
 					ack_received_ = NO;
+					connected_sensors = 0xffff;
+				}
 			}
 			else if ((buffer_[0] & 0xf0) == 0xd0)
 			{
+				ROS_INFO("Connected sensor: 0x%04x", connected_sensors);
 				ack_received_ = YES;
 			}
 			else
 			{
 				ack_received_ = NO;
 				ack_stage_2 = false;
+				connected_sensors = 0xffff;
 			}
 		}
 		if(ack_received_==YES) //ack reception confirmed.
@@ -334,7 +349,7 @@ int main(int argc, char ** argv)
 			if(sequence_number == -1) //previous cycle complete.
 			{
 				sequence_number = buffer_[0];
-				ROS_INFO("sequence_number: 0x%x", sequence_number);
+				ROS_INFO("sequence_number: 0x%02x", sequence_number);
 			}
 			else
 			{
