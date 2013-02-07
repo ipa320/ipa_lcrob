@@ -69,7 +69,7 @@ class Turtlebot_SetMode(smach.State):
 			outcomes=['succeeded','failed'])
 
 	def execute(self, userdata):
-	    set_operation_mode = "/turtlebot/set_operation_mode"
+	    srv_name = "/turtlebot_node/set_operation_mode"
 	    rospy.wait_for_service(srv_name)
 	    try:
 		add_two_ints = rospy.ServiceProxy(srv_name, SetTurtlebotMode)

@@ -13,20 +13,32 @@ from mobina_states import Turtlebot_SetMode
 
 # main
 def main():
-	rospy.init_node('search_dock')
+	mode = -1
+
+	if len(sys.argv)==2:
+		s = sys.argv[1]
+		if s=="passive": mode = 1
+		elif s=="safe": mode = 2
+		elif s=="full": mode = 3
+		elif s=="dock": mode = 4
+
+	if mode==-1:
+		print "please specify mode as argument"
+		print "possible modes are:"
+		print "\tpassive"
+		print "\tsafe"
+		print "\tfull"
+		print "\tdock"
+		exit()
+
+	rospy.init_node('set_mode')
 
 	# create a SMACH state machine
 	SM_REHACARE = smach.StateMachine(outcomes=['succeeded','failed'])
 
 	# open the container
 	with SM_REHACARE:
-		#TODO: move to some pose
-
-		# add states to the container
-		smach.StateMachine.add('PASSIVE', Turtlebot_SetMode(1),
-			transitions={'succeeded':'SEARCH_DOCK', 'failed':'failed'})
-
-		smach.StateMachine.add('SEARCH_DOCK', Turtlebot_SetMode(4),
+		smach.StateMachine.add('SET_MODE', Turtlebot_SetMode(mode),
 			transitions={'succeeded':'succeeded', 'failed':'failed'})
 
 #------------------------------------------------------------------------------------------#
