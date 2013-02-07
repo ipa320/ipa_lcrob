@@ -212,13 +212,17 @@ int main(int argc, char ** argv)
 	ros::NodeHandle nh_;
 	XmlRpc::XmlRpcValue config_list_;
 	std::map<int, std::vector< int > > input_map_;
+	bool debug_ = false;
 	ros::init(argc, argv, "us_driver");
 	if(!nh_.hasParam("us_driver/configurations"))
 	{
 		ROS_ERROR("Sensor configurations not found.");
 		return(EXIT_FAILURE);
 	}
-	ROS_INFO("configurations found.");
+	if(nh_.hasParam("us_driver/debug"))
+		nh_.getParam("us_driver/debug", debug_);
+		
+	ROS_INFO("Configurations found.");
 	ros::Publisher pub = nh_.advertise<ipa_odroidx_ultrasonic_interface::ExRangeArray>("us_reading", 5);
 
 	CommPortDriver * comm_port_ = new UARTDriver("/dev/ttyUSB0");
@@ -227,27 +231,31 @@ int main(int argc, char ** argv)
 	ROS_ASSERT(config_list_.getType() == XmlRpc::XmlRpcValue::TypeArray);
 
 	std::vector <std::vector<int> > config_vector_ = generateConfigVector(config_list_);
-	ROS_INFO("%d", (int)config_vector_.size());
+	if(debug_)
+		ROS_INFO("%d", (int)config_vector_.size());
 	if(config_vector_.size()>MAX_CONFIGURATIONS)
 	{
 		ROS_ERROR("Cannot have more than %d configurations.", MAX_CONFIGURATIONS);
 		return(EXIT_FAILURE);
 	}
-
-	for (int i=0; i<MAX_SENSORS; i++){
-		ROS_INFO("%d", config_vector_[0][i]);
-	}
+	if (debug_)
+		for (int i=0; i<MAX_SENSORS; i++){
+			ROS_INFO("%d", config_vector_[0][i]);
+		}
 
 	unsigned char config_string_[100]; // Must be declared before use.
 	int config_string_length_ = 0;
 
 	config_string_length_ = generateConfigString(config_vector_, config_string_);
-	ROS_INFO("config_string_length_ = %d", config_string_length_);
-	for (int i= 0; i<config_string_length_; i++)
+	if (debug_)
 	{
-		ROS_INFO("0x%02x", config_string_[i]);
+		ROS_INFO("config_string_length_ = %d", config_string_length_);
+		for (int i= 0; i<config_string_length_; i++)
+		{
+			ROS_INFO("0x%02x", config_string_[i]);
+		}
+		ROS_INFO(" ");
 	}
-	ROS_INFO(" ");
 	ROS_ASSERT(comm_port_->writeBytes(config_string_, config_string_length_)==config_string_length_);
 	unsigned char * buffer_ = new unsigned char[100];
 
@@ -278,15 +286,15 @@ int main(int argc, char ** argv)
 		alarm(0);
 		if (TIMEOUT_OCCURED)
 		{
-			if (timeout_count >=10)
+			if (timeout_count >=5)
 			{
-				ROS_ERROR("Timeout occured 10 times consecutively, restarting node.");
+				ROS_ERROR("Timeout occured 5 times consecutively, restarting node.");
 				sleep(5);
 				raise(SIGINT);
 			}
 			else
 			{
-				ROS_INFO("TIMEOUT!!!! Sending configuration string again.");
+				ROS_WARN("TIMEOUT!!!! Sending configuration string again.");
 				ROS_ASSERT(comm_port_->writeBytes(config_string_, config_string_length_)==config_string_length_);
 				ack_received_ = NO;
 				ack_stage_2 = false;
@@ -310,10 +318,9 @@ int main(int argc, char ** argv)
 			sleep(5);
 			raise(SIGINT);
 		}
-		//		ROS_INFO("%02x", buffer_[0]);
 		if(ack_received_ == NO)
 		{
-			ROS_INFO("ACK NO (0x%02x)", buffer_[0]);
+			if (debug_)ROS_INFO("ACK NO (0x%02x)", buffer_[0]);
 			if(buffer_[0] == 0x12)
 				ack_received_ = MAYBE;
 			else
@@ -321,7 +328,8 @@ int main(int argc, char ** argv)
 		}
 		else if(ack_received_ == MAYBE)
 		{
-			ROS_INFO("ACK MAYBE");
+			if (debug_)
+				ROS_INFO("ACK MAYBE");
 			if (connected_sensors == 0xffff)
 			{
 				connected_sensors = ((buffer_[0] <<8) & 0xff00) | 0xff;
@@ -334,7 +342,8 @@ int main(int argc, char ** argv)
 			{
 				if (buffer_[0] == 0x00)
 				{
-					ROS_INFO("ack_stage_2 = true");
+					if(debug_)
+						ROS_INFO("ack_stage_2 = true");
 					ack_stage_2 = true;
 					sequence_number = 0;
 				}
@@ -346,7 +355,8 @@ int main(int argc, char ** argv)
 			}
 			else if ((buffer_[0] & 0xf0) == 0xd0)
 			{
-				ROS_INFO("Connected sensor: 0x%04x", connected_sensors);
+				if(debug_)
+					ROS_INFO("Connected sensor: 0x%04x", connected_sensors);
 				for (unsigned int count = 0; count < config_vector_.size(); count++)
 				{
 					for (int i=0; i<MAX_SENSORS; i++)
@@ -397,7 +407,8 @@ int main(int argc, char ** argv)
 			if(sequence_number == -1) //previous cycle complete.
 			{
 				sequence_number = buffer_[0];
-				ROS_INFO("sequence_number: 0x%02x", sequence_number);
+				if (debug_)
+					ROS_INFO("sequence_number: 0x%02x", sequence_number);
 			}
 			else
 			{
@@ -439,26 +450,31 @@ int main(int argc, char ** argv)
 				}
 				if(sensor_count >= MAX_SENSORS)
 				{
-					for (std::map<int, std::vector<int> >::iterator map_it = input_map_.begin(); map_it != input_map_.end(); map_it++)
-					{
-						ROS_INFO("Sensor address: %d", map_it->first);
-						ROS_INFO("----");
-						for (std::vector<int>::iterator reading_list_it = (*map_it).second.begin(); reading_list_it != (*map_it).second.end(); reading_list_it++)
+					if(debug_)
+						for (std::map<int, std::vector<int> >::iterator map_it = input_map_.begin(); map_it != input_map_.end(); map_it++)
 						{
-							ROS_INFO("0x%04x", (*reading_list_it) & 0xffff);
+							ROS_INFO("Sensor address: %d", map_it->first);
+							ROS_INFO("----");
+							for (std::vector<int>::iterator reading_list_it = (*map_it).second.begin(); reading_list_it != (*map_it).second.end(); reading_list_it++)
+							{
+								ROS_INFO("0x%04x", (*reading_list_it) & 0xffff);
+							}
+							ROS_INFO("----");
 						}
-						ROS_INFO("----");
-					}
 
 					ipa_odroidx_ultrasonic_interface::ExRangeArray ex_range_array = generateExRangeArray(input_map_, config_vector_, sequence_number);
-					ROS_INFO("Printing ExRangeArray");
-					ROS_INFO("----------");
-					for (unsigned int i = 0; i<ex_range_array.measurements.size(); i++)
+					if(debug_)
 					{
-						ROS_INFO("Sender: %d, Receiver: %d, Range: %f", ex_range_array.measurements[i].sender_ch, ex_range_array.measurements[i].receiver_ch, ex_range_array.measurements[i].measurement.range);
+						ROS_INFO("Printing ExRangeArray");
+						ROS_INFO("----------");
+						for (unsigned int i = 0; i<ex_range_array.measurements.size(); i++)
+						{
+							ROS_INFO("Sender: %d, Receiver: %d, Range: %f", ex_range_array.measurements[i].sender_ch, ex_range_array.measurements[i].receiver_ch, ex_range_array.measurements[i].measurement.range);
+						}
+						ROS_INFO("----------");
 					}
-					ROS_INFO("----------");
-					pub.publish(ex_range_array);
+					if (ex_range_array.measurements.size()>0)
+						pub.publish(ex_range_array);
 					//After one complete cycle has been processed.
 					input_map_.clear();
 					sequence_number = -1;
