@@ -10,11 +10,7 @@
     <arg name="debug" value="$(arg debug)" />
   </include>
 
-  <arg if="$(arg debug)" name="launch_prefix" value="xterm -rv -e gdb -ex run -args"/>
-  <arg unless="$(arg debug)" name="launch_prefix" value=""/>
-
-  <node pkg="openni_camera" type="openni_node" name="openni_node1" output="screen" launch-prefix="$(arg launch_prefix)" respawn="true">
-
+  <node pkg="nodelet" type="nodelet" name="openni_launch" args="load openni_camera/OpenNINodelet /$(arg manager)" respawn="true">
     <param name="rgb_frame_id" value="camera_rgb_optical_frame" />
     <param name="depth_frame_id" value="camera_depth_optical_frame" />
     <param name="depth_registration" value="false" />
@@ -27,22 +23,27 @@
     <rosparam command="load" />
   </node>
 
+  <!-- throttling -->
+  <arg name="throttled" default="false" />
+
   <!-- Fake Laser -->
   <node pkg="nodelet" type="nodelet" name="kinect_laser" args="load pointcloud_to_laserscan/CloudToScan /$(arg manager)" respawn="true">
     <param name="output_frame_id" value="/camera_depth_frame"/>
     <!-- heights are in the (optical?) frame of the kinect -->
     <param name="min_height" value="-0.15"/>
     <param name="max_height" value="0.15"/>
-    <remap from="cloud" to="/camera/depth/points"/>
+    <remap from="cloud" to="/cloud_throttled" if="$(arg throttled)"/>
+    <remap from="cloud" to="/camera/depth/points" unless="$(arg throttled)"/>
   </node>
 
   <!-- Fake Laser (narrow one, for localization -->
   <node pkg="nodelet" type="nodelet" name="kinect_laser_narrow" args="load pointcloud_to_laserscan/CloudToScan /$(arg manager)" respawn="true">
     <param name="output_frame_id" value="/camera_depth_frame"/>
     <!-- heights are in the (optical?) frame of the kinect -->
-    <param name="min_height" value="-0.025"/>
-    <param name="max_height" value="0.025"/>
-    <remap from="cloud" to="/camera/depth/points"/>
+    <param name="min_height" value="0.025"/>
+    <param name="max_height" value="0.125"/>
+    <remap from="cloud" to="/cloud_throttled" if="$(arg throttled)"/>
+    <remap from="cloud" to="/camera/depth/points" unless="$(arg throttled)"/>
     <remap from="scan" to="/narrow_scan"/>
   </node>
 
