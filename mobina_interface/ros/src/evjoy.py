@@ -6,6 +6,7 @@ from sensor_msgs.msg import Joy
 from evdev import InputDevice, list_devices, categorize, ecodes, events
 import time
 import threading
+from subprocess import Popen, PIPE
 
 class evjoy(threading.Thread):
     def __init__(self):
@@ -33,8 +34,13 @@ class evjoy(threading.Thread):
 	self.nullzone = rospy.get_param("~nullzone",0.0)
 	self.debug = rospy.get_param("~debug",False)
 	
+        print "waiting for joystick..."
+	p1 = Popen(["dmesg"], stdout=PIPE)
+	p2 = Popen(["grep", "hid_logitech"], stdin=p1.stdout, stdout=PIPE)
+	while len(p2.communicate())<1:
+		time.sleep(1)
+
 	self.recveived = False
-	time.sleep(20)
 	self.start()
 
     def enumerate(self):
