@@ -263,6 +263,7 @@ int main(int argc, char ** argv)
 	struct sigaction sact;
 	unsigned int connected_sensors = 0xffff;
 	int timeout_count = 0;
+	int zero_count = 0;
 	sigemptyset(&sact.sa_mask);
 	sact.sa_flags = 0;
 	sact.sa_handler  = sigalrm_timeout;
@@ -380,6 +381,17 @@ int main(int argc, char ** argv)
 		}
 		if(ack_received_==YES) //ack reception confirmed.
 		{
+			if (zero_count>100)
+			{
+				ROS_ERROR("Cannot read data from serial port properly, restarting node.");
+				sleep(5);
+				raise(SIGINT);
+			}
+
+			if (buffer_[0] == 0)
+				zero_count++;
+			else 
+				zero_count=0;
 			//	ROS_INFO("ACK YES");
 			//	ROS_INFO("0x%02x", buffer_[0]);
 			if(sequence_number == -1) //previous cycle complete.
