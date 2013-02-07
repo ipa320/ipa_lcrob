@@ -37,7 +37,7 @@
 // function prototypes
 
 // SPI interface initializer
-void softSpiInit(/*void (*func)(void)*/);
+void softSpiInit(void);
 
 void softSpiClear(void);
 

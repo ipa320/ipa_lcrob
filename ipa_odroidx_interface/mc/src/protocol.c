@@ -7,7 +7,7 @@
 #include "global.h"		// include our global settings
 
 #include "a2d.h"		// include A/D converter function library
-#include "timer.h"		// include timer function library (timing, PWM, etc)
+#include "timerx8.h"		// include timer function library (timing, PWM, etc)
 #include "soft_spi.h"		
 
 #undef WATCH_MOTOR
@@ -54,7 +54,7 @@ void set_motor_speed(u08 channel, u08 speed) {
 }
 
 #ifdef WATCH_MOTOR
-
+#error
 //check soft-limits before moving
 u08 set_motor_direction(u08 channel, u08 dir) {
 	u16 ad = a2dConvert10bit(0);
@@ -159,7 +159,8 @@ void init(void) {
 	a2dInit();
 
 	// initialize the timer system
-	timerInit();
+	//timerInit();
+	sei();
 
 	outb(DDRB, 0x06);
 	outb(DDRC, 0x30);
@@ -168,10 +169,10 @@ void init(void) {
 	timer1PWMInit(8); //8 bit resolution
 
 	timer1PWMAOn();
-	timer1PWMASet(255);
+	timer1PWMASet(0);
 
 	timer1PWMBOn();
-	timer1PWMBSet(255);
+	timer1PWMBSet(0);
 
 	a2dSetPrescaler(ADC_PRESCALE_DIV8);
 	a2dSetReference(ADC_REFERENCE_AVCC);
@@ -182,6 +183,7 @@ void init(void) {
 	//timerAttach(TIMER2OVERFLOW_INT, soft_pwm);
 
 #ifdef WATCH_MOTOR
+#error
 	//check if motor went too far  for security
 	//timer0SetPrescaler();
 	timerAttach(TIMER0OVERFLOW_INT, check_motor);
