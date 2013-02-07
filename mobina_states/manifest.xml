@@ -13,7 +13,7 @@
   <depend package="smach"/>
   <depend package="mobina_interface"/>
   <depend package="turtlebot_node"/>
-
+  <depend package="cob_generic_states_experimental"/>
 </package>
 
 
