@@ -70,17 +70,19 @@ class TrajectoryControl(object):
 	_result   = FollowJointTrajectoryResult()
 
 	def __init__(self, name, joint_name, intf, conf_out, conf_in):
+		pname = '/odroidx_interface'
 		self.intf = intf
 		self.conf_out = conf_out
 		self.conf_in  = conf_in
-		self.calibration = [ [0,0.0006], [1,0.0006] ]
+		self.calibration = [ [0,0.004], [1,0.002] ]
 		self.calibration_pos = [ [0,0], [1,1] ]
-		self.tolerance = rospy.get_param(name+'/tolerance', 0.005)
+		self.tolerance = rospy.get_param(pname+'/tolerance', 0.005)
 
-		if rospy.has_param(name+'/calibration'):
-			y = yaml.load(open(rospy.get_param(name+'/calibration')))
+		if rospy.has_param(pname+'/calibration'):
+			y = yaml.load(open(rospy.get_param(pname+'/calibration')))
 			if 'calibration_vel' in y: self.calibration = y['calibration_vel']
 			if 'calibration_pos' in y: self.calibration_pos = y['calibration_pos']
+		else: rospy.logwarn("no calibration set: "+pname+'/calibration')
 
 		self.joint_msg = JointState()
 		self.joint_msg.name = [joint_name]
@@ -155,7 +157,7 @@ class TrajectoryControl(object):
 		for c in self.calibration_pos:
 			if rad>=c[0]: break
 			j+=1
-		if j>=len(self.calibration_pos): j-=1
+		if j>=len(self.calibration_pos)-1: j=len(self.calibration_pos)-2
 		return (self.calibration_pos[j+1][1]-self.calibration_pos[j][1])*(rad-self.calibration_pos[j][0])/(self.calibration_pos[j+1][0]-self.calibration_pos[j][0])+self.calibration_pos[j][1]
 
 	def _getpos(self):
@@ -167,7 +169,7 @@ class TrajectoryControl(object):
 		for c in self.calibration_pos:
 			if p>=c[1]: break
 			j+=1
-		if j>=len(self.calibration_pos): j-=1
+		if j>=len(self.calibration_pos)-1: j=len(self.calibration_pos)-2
 		return (self.calibration_pos[j+1][0]-self.calibration_pos[j][0])*(p-self.calibration_pos[j][1])/(self.calibration_pos[j+1][1]-self.calibration_pos[j][1])+self.calibration_pos[j][0]
 		
 
@@ -193,6 +195,7 @@ class TrajectoryControl(object):
 		pos = self.rad2pos(goal.trajectory.points[0].positions[0])
 		#print "desired pos", pos
 		speed = oldf= 0
+		min_speed = 0.1
 		if len(goal.trajectory.points[0].velocities)==1:
 			max_vel = goal.trajectory.points[0].velocities[0]
 		else:
@@ -200,8 +203,10 @@ class TrajectoryControl(object):
 		if max_vel<1/float(255):
 			max_vel = 0.1
     
+		print "start"
+		start = rospy.get_time()
 		while abs(self._getpos()-pos)>self.tolerance and not rospy.is_shutdown():
-			if self._as.is_preempt_requested():
+			if (rospy.get_time()-start)>10 or self._as.is_preempt_requested():
 				success=False
 				break
 			#print "pos ",self._getpos(), pos
@@ -213,6 +218,8 @@ class TrajectoryControl(object):
 				s = speed + max_vel
 				if s>1:
 					s = 1
+			if s<min_speed: s = min_speed
+
 			f = -1
 			if self._getpos()-pos>0:
 				f=1
@@ -223,6 +230,7 @@ class TrajectoryControl(object):
 				self.joint_msg.velocity = [f*speed]
 				self.intf.set_val(self.conf_out, f*speed)
 			r.sleep()
+		print "finish"
 
 		self.intf.set_val(self.conf_out, 0)
 		self.joint_msg.velocity = [0.0]
