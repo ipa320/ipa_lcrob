@@ -362,7 +362,7 @@ int main(int argc, char ** argv)
 							{
 								ROS_ERROR("Sensor %d is used in the configuration %d but not connected.", i, count);
 							}
-							else
+							else if (count==0)
 							{
 								ROS_WARN("Sensor %d not connected.", i);
 							}
