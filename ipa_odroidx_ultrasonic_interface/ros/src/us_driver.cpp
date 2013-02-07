@@ -256,6 +256,7 @@ int main(int argc, char ** argv)
 		}
 		ROS_INFO(" ");
 	}
+	ROS_INFO("Writing configuration string on comm. port...");
 	ROS_ASSERT(comm_port_->writeBytes(config_string_, config_string_length_)==config_string_length_);
 	unsigned char * buffer_ = new unsigned char[100];
 
@@ -315,7 +316,7 @@ int main(int argc, char ** argv)
 		timeout_count=0;
 		if (no_ack_count> ((((MAX_SENSOR_READINGS*2)+1)*MAX_SENSORS)*MAX_CONFIGURATIONS+1))
 		{
-			ROS_ERROR("Cannot send data on serial port, node shutting down.");
+			ROS_ERROR("Cannot send data on comm. port, node shutting down.");
 			sleep(5);
 			raise(SIGINT);
 		}
@@ -395,7 +396,7 @@ int main(int argc, char ** argv)
 		{
 			if (zero_count>100)
 			{
-				ROS_ERROR("Cannot read data from serial port properly, restarting node.");
+				ROS_ERROR("Cannot read data from comm. port properly, restarting node.");
 				sleep(5);
 				raise(SIGINT);
 			}
@@ -490,7 +491,7 @@ int main(int argc, char ** argv)
 			}
 		}
 		ros::spinOnce();
-		//	usleep(1000); // Test value, if enabled, be careful, will cause serial input code to miss characters in input. 
+		//	usleep(1000); // Test value, if enabled, be careful, will cause comm. input code to miss characters in input. 
 	}
 	delete comm_port_;
 	ros::shutdown();
