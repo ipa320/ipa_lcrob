@@ -62,7 +62,6 @@ from sensor_msgs.msg import ChannelFloat32
 class MobinaInterface:
 	def __init__(self):
 		self.pub_out = rospy.Publisher("command", ChannelFloat32, tcp_nodelay=True)
-		rospy.Subscriber("state", ChannelFloat32, self.InputCallback)
 
 		self.output = ChannelFloat32()
 		self.input = ChannelFloat32()
@@ -74,7 +73,9 @@ class MobinaInterface:
 		self.input.values = [0,0, 0,0]
 
 		self.lights = [LightControl("light_controller", self, [3,6,2])]
-		self.motors = [TrajectoryControl("motor_controller", self, 0, 0)]
+		self.motors = [TrajectoryControl("tray_controller", "tray_joint", self, 0, 0)]
+
+                rospy.Subscriber("state", ChannelFloat32, self.InputCallback)
 
 	def set_val(self, pin, value):
 		#print "setval ",pin,value
@@ -92,6 +93,8 @@ class MobinaInterface:
 	def publish_marker(self):
 		for l in self.lights:
 			l.publish_marker()
+		for m in self.motors:
+			m.publish()
 
 if __name__ == '__main__':
 	rospy.init_node('mobina')

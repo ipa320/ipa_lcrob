@@ -168,10 +168,10 @@ void init(void) {
 	timer1PWMInit(8); //8 bit resolution
 
 	timer1PWMAOn();
-	timer1PWMASet(0);
+	timer1PWMASet(255);
 
 	timer1PWMBOn();
-	timer1PWMBSet(0);
+	timer1PWMBSet(255);
 
 	a2dSetPrescaler(ADC_PRESCALE_DIV8);
 	a2dSetReference(ADC_REFERENCE_AVCC);

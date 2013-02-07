@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<robot>
+
+  <property name="mobina_calib_cam_x" value="0" />
+  <property name="mobina_calib_cam_y" value="0" />
+  <property name="mobina_calib_cam_z" value="0.105" />
+  <property name="mobina_calib_cam_rr" value="0" />
+  <property name="mobina_calib_cam_rp" value="-1.57079" />
+  <property name="mobina_calib_cam_ry" value="0" />
+  <property name="mobina_calib_beta" value="0" />
+  <property name="mobina_camera_parent_name" value="tray_base_link" />
+
+</robot>

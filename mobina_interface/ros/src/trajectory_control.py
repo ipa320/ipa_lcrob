@@ -57,37 +57,51 @@ import actionlib
 import yaml
 import math
 
-from pr2_controllers_msgs.msg import *
+from control_msgs.msg import *
 from std_srvs.srv import *
 from trajectory_msgs.msg import *
-
+from sensor_msgs.msg import JointState
+from brics_actuator.msg import JointVelocities
 from thread import start_new_thread
 
 class TrajectoryControl(object):
 	# create messages that are used to publish feedback/result
-	_feedback = JointTrajectoryFeedback()
-	_result   = JointTrajectoryResult()
+	_feedback = FollowJointTrajectoryActionFeedback()
+	_result   = FollowJointTrajectoryResult()
 
-	def __init__(self, name, intf, conf_out, conf_in):
+	def __init__(self, name, joint_name, intf, conf_out, conf_in):
+		pname = '/odroidx_interface'
 		self.intf = intf
 		self.conf_out = conf_out
 		self.conf_in  = conf_in
-		self.calibration = [ [0,0.0006], [1,0.0006] ]
-		self.tolerance = rospy.get_param(name+'/tolerance', 0.005)
+		self.calibration = [ [0,0.004], [1,0.002] ]
+		self.calibration_pos = [ [0,0], [1,1] ]
+		self.tolerance = rospy.get_param(pname+'/tolerance', 0.005)
 
-		if rospy.has_param(name+'/calibration'):
-			self.calibration = yaml.load(open(rospy.get_param(name+'/calibration')))
+		if rospy.has_param(pname+'/calibration'):
+			y = yaml.load(open(rospy.get_param(pname+'/calibration')))
+			if 'calibration_vel' in y: self.calibration = y['calibration_vel']
+			if 'calibration_pos' in y: self.calibration_pos = y['calibration_pos']
+		else: rospy.logwarn("no calibration set: "+pname+'/calibration')
 
+		self.joint_msg = JointState()
+		self.joint_msg.name = [joint_name]
+		self.joint_msg.position = [0.0]
+		self.joint_msg.velocity = [0.0]
+
+		rospy.Subscriber(name+'/command_vel', JointVelocities, self.on_vel)
+
+		self.joint_pub = rospy.Publisher('joint_states', JointState)
 		self.calibration_srv = rospy.Service(name+'/calibration', Empty, self.handle_calibration)
 		self._action_name = name+"/follow_joint_trajectory"
-		self._as = actionlib.SimpleActionServer(self._action_name, JointTrajectoryAction, execute_cb=self.execute_cb, auto_start=False)
+		self._as = actionlib.SimpleActionServer(self._action_name, FollowJointTrajectoryAction, execute_cb=self.execute_cb, auto_start=False)
 		self._as.start()
 
 	def start_test(self, pos):
-		goal = JointTrajectoryGoal()
-		pt = JointTrajectoryPoint()
+		goal = FollowJointTrajectoryActionGoal()
+		pt = FollowJointTrajectoryActionPoint()
 		pt.positions=[pos]
-		goal.trajectory = JointTrajectory()
+		goal.trajectory = FollowJointTrajectoryAction()
 		goal.trajectory.points = [pt]
 		start_new_thread(self.execute_cb, (goal,))
 
@@ -112,20 +126,20 @@ class TrajectoryControl(object):
 	def move(self, pos, speed, pos2):
 		start = False
 		end = False
-		while abs(self.intf.get(self.conf_in)-pos)>self.tolerance:
+		while abs(self.getpos()-pos)>self.tolerance:
 			if self._as.is_preempt_requested():
 				rospy.loginfo('%s: Preempted' % self._action_name)
 				self._as.set_preempted()
 				success = False
 				break
 
-			if self.intf.get(self.conf_in)>=pos2[0] and self.intf.get(self.conf_in)<=pos2[1]:
+			if self.getpos()>=pos2[0] and self.getpos()<=pos2[1]:
 				if not start:
-					start = [rospy.get_time(),self.intf.get(self.conf_in)]
+					start = [rospy.get_time(),self.getpos()]
 				else:
-					end = [rospy.get_time(),self.intf.get(self.conf_in)]
+					end = [rospy.get_time(),self.getpos()]
 			f = 1
-			if self.intf.get(self.conf_in)-pos>0:
+			if self.getpos()-pos>0:
 				f=-1
 			self.intf.set_val(self.conf_out, f*speed)
 
@@ -139,7 +153,24 @@ class TrajectoryControl(object):
 		return
 	
 	def rad2pos(self, rad):
-		return rad/(2*math.pi)		#TODO:
+		j = 0
+		for c in self.calibration_pos:
+			if rad>=c[0]: break
+			j+=1
+		if j>=len(self.calibration_pos)-1: j=len(self.calibration_pos)-2
+		return (self.calibration_pos[j+1][1]-self.calibration_pos[j][1])*(rad-self.calibration_pos[j][0])/(self.calibration_pos[j+1][0]-self.calibration_pos[j][0])+self.calibration_pos[j][1]
+
+	def _getpos(self):
+		return self.intf.get(self.conf_in)
+
+	def getpos(self):
+		p = self._getpos()
+		j = 0
+		for c in self.calibration_pos:
+			if p>=c[1]: break
+			j+=1
+		if j>=len(self.calibration_pos)-1: j=len(self.calibration_pos)-2
+		return (self.calibration_pos[j+1][0]-self.calibration_pos[j][0])*(p-self.calibration_pos[j][1])/(self.calibration_pos[j+1][1]-self.calibration_pos[j][1])+self.calibration_pos[j][0]
 		
 
 	def speed2val(self, speed):
@@ -148,7 +179,11 @@ class TrajectoryControl(object):
 				f = (speed-self.calibration[i][0])/(self.calibration[i+1][0]-self.calibration[i][0])
 				return f*(self.calibration[i+1][1]-self.calibration[i][1]) + self.calibration[i][1]
 		return self.calibration[len(self.calibration)-1][1]
-    
+
+	def on_vel(self, vel):
+		if len(vel.velocities)==1: self.intf.set_val(self.conf_out, vel.velocities[0].value)
+		else: rospy.logwarn("only one joint in "+self._action_name)
+
 	def execute_cb(self, goal):
 		# helper variables
 		r = rospy.Rate(50)
@@ -158,16 +193,24 @@ class TrajectoryControl(object):
 		#assert( len(goal.trajectory.points[0].velocities)==1 )
 
 		pos = self.rad2pos(goal.trajectory.points[0].positions[0])
-		speed = 0
+		#print "desired pos", pos
+		speed = oldf= 0
+		min_speed = 0.1
 		if len(goal.trajectory.points[0].velocities)==1:
 			max_vel = goal.trajectory.points[0].velocities[0]
 		else:
 			max_vel = 1/float(255)
 		if max_vel<1/float(255):
-			max_vel = 1
+			max_vel = 0.1
     
-		while abs(self.intf.get(self.conf_in)-pos)>self.tolerance and not rospy.is_shutdown():
-			if (self.speed2val(speed)/abs(self.intf.get(self.conf_in)-pos))>=max_vel:
+		print "start"
+		start = rospy.get_time()
+		while abs(self._getpos()-pos)>self.tolerance and not rospy.is_shutdown():
+			if (rospy.get_time()-start)>10 or self._as.is_preempt_requested():
+				success=False
+				break
+			#print "pos ",self._getpos(), pos
+			if (self.speed2val(speed)/abs(self._getpos()-pos))>=max_vel:
 				s = speed - max_vel
 				if s<0:
 					s = 1/float(255)
@@ -175,16 +218,27 @@ class TrajectoryControl(object):
 				s = speed + max_vel
 				if s>1:
 					s = 1
-			f = 1
-			if self.intf.get(self.conf_in)-pos>0:
-				f=-1
+			if s<min_speed: s = min_speed
 
-			if s!=speed:
+			f = -1
+			if self._getpos()-pos>0:
+				f=1
+
+			if s!=speed or oldf!=f:
 				speed = s
+				oldf = f
+				self.joint_msg.velocity = [f*speed]
 				self.intf.set_val(self.conf_out, f*speed)
 			r.sleep()
+		print "finish"
+
 		self.intf.set_val(self.conf_out, 0)
-      
+		self.joint_msg.velocity = [0.0]
+		self._result.error_code = 0
 		if success:
 			self._as.set_succeeded(self._result)
-      
+
+	def publish(self):
+		self.joint_msg.header.stamp = rospy.Time.now()
+		self.joint_msg.position = [self.getpos()]
+		self.joint_pub.publish(self.joint_msg)
