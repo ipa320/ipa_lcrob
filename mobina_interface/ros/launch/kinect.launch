@@ -1,0 +1,50 @@
+<launch>
+  <arg name="camera" default="camera" />
+
+  <!-- Start nodelet manager in top-level namespace -->
+  <arg name="manager" value="$(arg camera)_nodelet_manager" />
+  <arg name="debug" default="false" /> <!-- Run manager in GDB? -->
+
+  <include file="$(find openni_launch)/launch/includes/manager.launch">
+    <arg name="name" value="$(arg manager)" />
+    <arg name="debug" value="$(arg debug)" />
+  </include>
+
+  <arg if="$(arg debug)" name="launch_prefix" value="xterm -rv -e gdb -ex run -args"/>
+  <arg unless="$(arg debug)" name="launch_prefix" value=""/>
+
+  <node pkg="openni_camera" type="openni_node" name="openni_node1" output="screen" launch-prefix="$(arg launch_prefix)" respawn="true">
+
+    <param name="rgb_frame_id" value="camera_rgb_optical_frame" />
+    <param name="depth_frame_id" value="camera_depth_optical_frame" />
+    <param name="depth_registration" value="false" />
+    <!--param name="image_mode" value="5" />
+    <param name="depth_mode" value="5" /-->
+    <!--param name="debayering" value="2" />
+    <param name="depth_time_offset" value="-0.055" />
+    <param name="image_time_offset" value="0" /-->
+
+    <rosparam command="load" />
+  </node>
+
+  <!-- Fake Laser -->
+  <node pkg="nodelet" type="nodelet" name="kinect_laser" args="load pointcloud_to_laserscan/CloudToScan /$(arg manager)" respawn="true">
+    <param name="output_frame_id" value="/camera_depth_frame"/>
+    <!-- heights are in the (optical?) frame of the kinect -->
+    <param name="min_height" value="-0.15"/>
+    <param name="max_height" value="0.15"/>
+    <remap from="cloud" to="/camera/depth/points"/>
+  </node>
+
+  <!-- Fake Laser (narrow one, for localization -->
+  <node pkg="nodelet" type="nodelet" name="kinect_laser_narrow" args="load pointcloud_to_laserscan/CloudToScan /$(arg manager)" respawn="true">
+    <param name="output_frame_id" value="/camera_depth_frame"/>
+    <!-- heights are in the (optical?) frame of the kinect -->
+    <param name="min_height" value="-0.025"/>
+    <param name="max_height" value="0.025"/>
+    <remap from="cloud" to="/camera/depth/points"/>
+    <remap from="scan" to="/narrow_scan"/>
+  </node>
+
+</launch>
+

@@ -91,8 +91,8 @@
     </inertial>
   </link>
 
-  <joint name="tray_axis_joint" type="continuous">
-    <axis xyz="0 1 0"/>
+  <joint name="tray_joint" type="continuous">
+    <axis xyz="0 -1 0"/>
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <parent link="tray_axis_link"/>
     <child link="tray_base_link"/>
@@ -308,7 +308,7 @@
 
   <joint name="gyro_joint" type="fixed">
     <axis xyz="0 1 0" />
-    <origin xyz="0 0 0.04" rpy="0 0 0" />
+    <origin xyz="0 0 0.04" rpy="-1.57079 0 0" />
     <parent link="tray_base_link"/>
     <child link="gyro_link"/>
   </joint>

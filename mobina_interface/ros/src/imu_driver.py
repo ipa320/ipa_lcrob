@@ -8,7 +8,7 @@ import socket, math, os, time
 
 class AndroidConnection:
 	def __init__(self, port=38300):
-		os.system("adb start-server")
+		os.system("cd /home/mobina/adb/adb_git; adb start-server")
 		os.system("adb wait-for-device")
 		os.system("adb shell am force-stop com.example.extendeddevice")
 		os.system("adb shell am start -n com.example.extendeddevice/de.fraunhofer.ipa.Main")
@@ -74,8 +74,10 @@ def talker():
     last = ""
 
     imu.header.frame_id = mag.header.frame_id = "/tablet"
-    imu.angular_velocity_covariance    = [0.1,0,0,  0,0.1,0, 0,0,0.1]
-    imu.linear_acceleration_covariance = [0.1,0,0,  0,0.1,0, 0,0,0.1]
+    v = math.pow(0.00003,2)
+    imu.angular_velocity_covariance    = [v,0,0,  0,v,0, 0,0,v]
+    imu.linear_acceleration_covariance = [v,0,0,  0,v,0, 0,0,v]
+    imu.orientation_covariance = [v,0,0,  0,v,0, 0,0,v]
 
     while not rospy.is_shutdown():
 	s = last + con.read()
