@@ -10,9 +10,9 @@ from BasicIO import *
 
 
 class DeliveryTask(smach.StateMachine):
-    def __init__(self, last, path_name):
+    def __init__(self, path_name):
         smach.StateMachine.__init__(self,
-								outcomes=['succeeded','deliver','failed'])
+								outcomes=['succeeded','failed'])
         with self:
 
             	self.add('MOVE_TO_CHARGE',ApproachPose("charge_pose"),
@@ -35,15 +35,11 @@ class DeliveryTask(smach.StateMachine):
                                                 'not_reached':'MOVE_TO_DELIVERY',
                                                 'failed':'failed'})
 
-            	next = 'deliver'
-            	if last:
-            		next = "succeeded"
-
             	self.add('LIGHT3',Light('red'),
                                    transitions={'succeeded':'PLAY_HAPPY_BIRTHDAY'})
 
             	self.add('PLAY_HAPPY_BIRTHDAY',Tablet_Start("happy_birthday.avi"),
-                                   transitions={'succeeded':next})
+                                   transitions={'succeeded':'succeeded'})
 
 
 class DeliverCake(smach.StateMachine):
@@ -56,11 +52,13 @@ class DeliverCake(smach.StateMachine):
 			transitions={'succeeded':'DELIVERY0', 'failed':'failed'})
 
             no = 0
-            while rospy.has_param("/cob_script_server/"+path_name+str(no)):
-            	last = not rospy.has_param("/cob_script_server/"+path_name+str(no+1))
-            	self.add('DELIVERY'+str(no),DeliveryTask(last, path_name),
-                                   transitions={'succeeded':'DELIVERY'+str(no+1),
-                                                'deliver':'MOVE_BACK',
+            for i in range(0,3):#while rospy.has_param("/cob_script_server/"+path_name+str(no)):
+            	last = i>1 #not rospy.has_param("/cob_script_server/"+path_name+str(no+1))
+		next = 'DELIVERY'+str(no+1)
+		if last:
+			next = 'succeeded'
+            	self.add('DELIVERY'+str(no),DeliveryTask(path_name),
+                                   transitions={'succeeded':next,
                                                 'failed':'failed'})
 
             	no += 1
