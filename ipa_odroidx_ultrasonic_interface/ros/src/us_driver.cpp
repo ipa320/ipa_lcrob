@@ -272,6 +272,7 @@ int main(int argc, char ** argv)
 	unsigned int connected_sensors = 0xffff;
 	int timeout_count = 0;
 	int zero_count = 0;
+	bool has_print_ack_msg = false;
 	sigemptyset(&sact.sa_mask);
 	sact.sa_flags = 0;
 	sact.sa_handler  = sigalrm_timeout;
@@ -320,6 +321,7 @@ int main(int argc, char ** argv)
 		}
 		if(ack_received_ == NO)
 		{
+			has_print_ack_msg = false;
 			if (debug_)ROS_INFO("ACK NO (0x%02x)", buffer_[0]);
 			if(buffer_[0] == 0x12)
 				ack_received_ = MAYBE;
@@ -404,6 +406,11 @@ int main(int argc, char ** argv)
 				zero_count=0;
 			//	ROS_INFO("ACK YES");
 			//	ROS_INFO("0x%02x", buffer_[0]);
+			if (!has_print_ack_msg)
+			{
+				ROS_INFO("Printing messages to topic: /us_reading");
+				has_print_ack_msg = true;
+			}
 			if(sequence_number == -1) //previous cycle complete.
 			{
 				sequence_number = buffer_[0];
