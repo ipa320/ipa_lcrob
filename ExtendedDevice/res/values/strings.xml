@@ -1,0 +1,7 @@
+<resources>
+
+    <string name="app_name">ExtendedDevice</string>
+    <string name="imu_service_name">IMU Device</string>
+    <string name="logo">Logo</string>
+
+</resources>

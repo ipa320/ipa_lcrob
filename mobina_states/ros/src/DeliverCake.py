@@ -57,7 +57,7 @@ class DeliverCake(smach.StateMachine):
 		next = 'DELIVERY'+str(no+1)
 		if last:
 			next = 'succeeded'
-            	self.add('DELIVERY'+str(no),DeliveryTask(path_name),
+            	self.add('DELIVERY'+str(no),DeliveryTask(path_name+str(no)),
                                    transitions={'succeeded':next,
                                                 'failed':'failed'})
 
