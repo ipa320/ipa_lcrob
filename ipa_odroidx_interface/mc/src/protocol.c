@@ -1,10 +1,9 @@
+#include "global.h"		// include our global settings
 #include "protocol.h"
 
 //----- Include Files ---------------------------------------------------------
 #include <avr/io.h>		// include I/O definitions (port names, pin names, etc)
 #include <avr/interrupt.h>	// include interrupt support
-
-#include "global.h"		// include our global settings
 
 #include "a2d.h"		// include A/D converter function library
 #include "timerx8.h"		// include timer function library (timing, PWM, etc)
@@ -134,14 +133,17 @@ void on_parse(void) {
 			break;
 
 		case GET_ANALOG:
+			while(!softSpiCanSend()) soft_pwm();
 			softSpiSendWord(get_analog(c&0x03));
 			break;
 
 		case GET_INPUT:
+			while(!softSpiCanSend()) soft_pwm();
 			softSpiSendByte(get_input());
 			break;
 
 		case SETUP:
+			while(!softSpiCanSend()) soft_pwm();
 			softSpiSendByte('O');
 			PORTC = softSpiGetByte()&0x0f;
 			break;
@@ -158,9 +160,11 @@ void init(void) {
 	// turn on and initialize A/D converter
 	a2dInit();
 
+	a2dSetPrescaler(ADC_PRESCALE_DIV32);
+	a2dSetReference(ADC_REFERENCE_AVCC);
+
 	// initialize the timer system
 	//timerInit();
-	sei();
 
 	outb(DDRB, 0x06);
 	outb(DDRC, 0x30);
@@ -174,9 +178,6 @@ void init(void) {
 	timer1PWMBOn();
 	timer1PWMBSet(0);
 
-	a2dSetPrescaler(ADC_PRESCALE_DIV8);
-	a2dSetReference(ADC_REFERENCE_AVCC);
-
 	softSpiInit();
 
 	//timer2SetPrescaler(TIMERRTC_CLK_DIV32);
@@ -188,4 +189,6 @@ void init(void) {
 	//timer0SetPrescaler();
 	timerAttach(TIMER0OVERFLOW_INT, check_motor);
 #endif
+
+	sei();
 }

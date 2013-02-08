@@ -81,6 +81,10 @@ void softSpiSendWord(u16 data)
 	data_out = data;
 }
 
+u08 softSpiCanSend(void) {
+	return (data_out_len==0);
+}
+
 u08 softSpiHasByte(void) {
 	return data_in_len>=8;
 }
