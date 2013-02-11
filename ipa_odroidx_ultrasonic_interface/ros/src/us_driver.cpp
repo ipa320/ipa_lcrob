@@ -188,7 +188,7 @@ ipa_odroidx_ultrasonic_interface::ExRangeArray generateExRangeArray(std::map<int
 	}
 	return measurement_array;
 }
-void sigalrm_timeout(int sig)
+void sigalrm_timeout(int sig) //signal callback for timeout. 
 {
 	TIMEOUT_OCCURED = 1;
 }
@@ -219,7 +219,7 @@ int main(int argc, char ** argv)
 		ROS_ERROR("Sensor configurations not found.");
 		return(EXIT_FAILURE);
 	}
-	if(nh_.hasParam("us_driver/debug"))
+	if(nh_.hasParam("us_driver/debug")) //Checks for debug parameter in launch file.
 		nh_.getParam("us_driver/debug", debug_);
 		
 	ROS_INFO("Configurations found.");
@@ -246,7 +246,7 @@ int main(int argc, char ** argv)
 	unsigned char config_string_[100]; // Must be declared before use.
 	int config_string_length_ = 0;
 
-	config_string_length_ = generateConfigString(config_vector_, config_string_);
+	config_string_length_ = generateConfigString(config_vector_, config_string_); //Generating a configuration string to send to slave. 
 	if (debug_)
 	{
 		ROS_INFO("config_string_length_ = %d", config_string_length_);
@@ -262,17 +262,17 @@ int main(int argc, char ** argv)
 
 	ACK_RECEIVED ack_received_ = NO;
 	bool ack_stage_2 = false;
-	int sequence_number = -1;
-	int sensor_count = 0;
-	int total_sensor_readings = -1;
+	int sequence_number = -1; //For storing sequence number for a configuration. -1 if current cycle is complete or no ack received. 
+	int sensor_count = 0; //Current sensor number. 
+	int total_sensor_readings = -1; //Gets from slave. -1 if not set.
 	int current_sensor_address = -1;
 	int current_sensor_reading = 0;
 	int temp_reading = -1;
-	int no_ack_count = 0;
-	struct sigaction sact;
-	unsigned int connected_sensors = 0xffff;
-	int timeout_count = 0;
-	int zero_count = 0;
+	int no_ack_count = 0; // Counts the number of times an ACK is not recieved. Restarts node if condition is met.
+	struct sigaction sact; //To define the signal for custom note shutdown routine. 
+	unsigned int connected_sensors = 0xffff; //To hold input from slave regarding connectivity of sensors. 
+	int timeout_count = 0; //Holds count for number of times timeout has occurred while reading from slave. 
+	int zero_count = 0; //For holding the number of times 0x00 is received after ACK signal. Once a certain count is received the node is restarted. 
 	bool has_print_ack_msg = false;
 	sigemptyset(&sact.sa_mask);
 	sact.sa_flags = 0;
@@ -283,7 +283,7 @@ int main(int argc, char ** argv)
 	ros::XMLRPCManager::instance()->bind("shutdown", shutdownCallback);
 	while(!g_request_shutdown)
 	{
-		alarm(10);
+		alarm(10); // Setting up timer for a signal. 
 		comm_port_->readBytes(buffer_, 1);
 		alarm(0);
 		if (TIMEOUT_OCCURED)
@@ -298,6 +298,7 @@ int main(int argc, char ** argv)
 			{
 				ROS_WARN("TIMEOUT!!!! Sending configuration string again.");
 				ROS_ASSERT(comm_port_->writeBytes(config_string_, config_string_length_)==config_string_length_);
+				//Resetting all values
 				ack_received_ = NO;
 				ack_stage_2 = false;
 				sequence_number = -1;
@@ -314,13 +315,13 @@ int main(int argc, char ** argv)
 			}
 		}
 		timeout_count=0;
-		if (no_ack_count> ((((MAX_SENSOR_READINGS*2)+1)*MAX_SENSORS)*MAX_CONFIGURATIONS+1))
+		if (no_ack_count> ((((MAX_SENSOR_READINGS*2)+1)*MAX_SENSORS)*MAX_CONFIGURATIONS+1)) //If ack is not received till max. possible message length. 
 		{
 			ROS_ERROR("Cannot send data on comm. port, node shutting down.");
 			sleep(5);
 			raise(SIGINT);
 		}
-		if(ack_received_ == NO)
+		if(ack_received_ == NO) //Increment  NO_ACK counter 
 		{
 			has_print_ack_msg = false;
 			if (debug_)ROS_INFO("ACK NO (0x%02x)", buffer_[0]);
@@ -329,11 +330,11 @@ int main(int argc, char ** argv)
 			else
 				no_ack_count++;
 		}
-		else if(ack_received_ == MAYBE)
+		else if(ack_received_ == MAYBE) //0x12 received on comm port in a NO_ACK state.
 		{
 			if (debug_)
 				ROS_INFO("ACK MAYBE");
-			if (connected_sensors == 0xffff)
+			if (connected_sensors == 0xffff) //Received byte containing sensor status. (connected or not.)
 			{
 				connected_sensors = ((buffer_[0] <<8) & 0xff00) | 0xff;
 			}
@@ -343,7 +344,7 @@ int main(int argc, char ** argv)
 			}
 			else if(ack_stage_2 == false)
 			{
-				if (buffer_[0] == 0x00)
+				if (buffer_[0] == 0x00) //Checking sequence number, should be 0x00 after receiving ack byte.
 				{
 					if(debug_)
 						ROS_INFO("ack_stage_2 = true");
@@ -385,14 +386,14 @@ int main(int argc, char ** argv)
 				}
 				ack_received_ = YES;
 			}
-			else
+			else // False positive, reset values.
 			{
 				ack_received_ = NO;
 				ack_stage_2 = false;
 				connected_sensors = 0xffff;
 			}
 		}
-		if(ack_received_==YES) //ack reception confirmed.
+		if(ack_received_==YES) //Receipt of ack confirmed.
 		{
 			if (zero_count>100)
 			{
@@ -420,7 +421,7 @@ int main(int argc, char ** argv)
 			}
 			else
 			{
-				if(sensor_count < MAX_SENSORS)
+				if(sensor_count < MAX_SENSORS) // expecting sensor address and total number of readings 
 				{
 					if (total_sensor_readings == -1)
 					{
@@ -435,14 +436,14 @@ int main(int argc, char ** argv)
 						}
 					}
 					else{
-						if(current_sensor_reading < total_sensor_readings)
+						if(current_sensor_reading < total_sensor_readings) //expecting sensor readings. Two byte reading
 						{
 							if (temp_reading == -1)
-								temp_reading= (buffer_[0]<<8 & 0xff00);
+								temp_reading= (buffer_[0]<<8 & 0xff00); 
 							else
 							{
 								temp_reading |= (buffer_[0] & 0xff);
-								input_map_[current_sensor_address].push_back(temp_reading & 0xffff);
+								input_map_[current_sensor_address].push_back(temp_reading & 0xffff); //After two bytes of a reading have been read, push them onto a vector.
 								temp_reading = -1;
 								current_sensor_reading++;
 							}
@@ -456,9 +457,9 @@ int main(int argc, char ** argv)
 						}
 					}
 				}
-				if(sensor_count >= MAX_SENSORS)
+				if(sensor_count >= MAX_SENSORS) //After complete cycle has been read, start processing. 
 				{
-					if(debug_)
+					if(debug_) // Print all sensor values if debug is enabled. 
 						for (std::map<int, std::vector<int> >::iterator map_it = input_map_.begin(); map_it != input_map_.end(); map_it++)
 						{
 							ROS_INFO("Sensor address: %d", map_it->first);
@@ -470,8 +471,8 @@ int main(int argc, char ** argv)
 							ROS_INFO("----");
 						}
 
-					ipa_odroidx_ultrasonic_interface::ExRangeArray ex_range_array = generateExRangeArray(input_map_, config_vector_, sequence_number);
-					if(debug_)
+					ipa_odroidx_ultrasonic_interface::ExRangeArray ex_range_array = generateExRangeArray(input_map_, config_vector_, sequence_number); //Create ExRangeArray message.
+					if(debug_) // Print all messages if debug is enabled. 
 					{
 						ROS_INFO("Printing ExRangeArray");
 						ROS_INFO("----------");
@@ -481,7 +482,7 @@ int main(int argc, char ** argv)
 						}
 						ROS_INFO("----------");
 					}
-					if (ex_range_array.measurements.size()>0)
+					if (ex_range_array.measurements.size()>0) // Publish the messages if more than zero are gathered.
 						pub.publish(ex_range_array);
 					//After one complete cycle has been processed.
 					input_map_.clear();
