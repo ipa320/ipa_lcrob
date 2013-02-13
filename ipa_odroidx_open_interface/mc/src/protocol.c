@@ -1,19 +1,19 @@
-#include "protocol.h"
 
 //----- Include Files ---------------------------------------------------------
 #include <avr/io.h>		// include I/O definitions (port names, pin names, etc)
 #include <avr/interrupt.h>	// include interrupt support
-
+#define __DELAY_BACKWARD_COMPATIBLE__  // For delay 
+#include <util/delay.h>
+#include "protocol.h"
 #include "uart.h"
-#include "uartsw.h"
 
+#define 	DEFAULT_UART_BAUD_RATE 57600
+#define 	MAX_STREAM_PACKETS 10 //Sets the maximum number of packet IDs to be expected with the command STREAM (Should confirmed and set according to the capacity of the controller).
+uint32_t	MASTER_UART_BAUD_RATE = DEFAULT_UART_BAUD_RATE;
 
-void init(void)
-{
-	uartInit();
-....
-}
-
+uint8_t		STREAM_PACKET_ID[MAX_STREAM_PACKETS];
+uint8_t 	NUMBER_OF_PACKETS;	
+uint8_t		STREAM_ENABLED;
 /*
 implement
 
@@ -97,7 +97,25 @@ implement
 #define PID_IR		17
 #define PID_BUTTONS	18
 
-void sendSensorPacket(u08 packet_id) {
+void init(void){
+	NUMBER_OF_PACKETS = 0;
+	STREAM_ENABLED = 1;
+	uart_init(UART_BAUD_SELECT(MASTER_UART_BAUD_RATE, F_CPU ));
+	//All initiialization is to be done here.
+	//Soft UARTs for motors 
+	//ADC
+	//Timer to generate 15ms for Stream command?
+	//Watchdog timer(Before anything else)
+	sei();
+}
+uint8_t uart_get_valid_char(){
+	uint16_t buffer = 0;
+	do{
+		buffer = uart_getc();
+	}while((buffer & UART_NO_DATA) || (buffer & UART_OVERRUN_ERROR) || (buffer & UART_BUFFER_OVERFLOW));
+	return (uint8_t)(buffer & 0xff);
+}
+void sendSensorPacket(uint8_t packet_id) {
 	switch(packet_id) {
 		case PID_LS_DRIVER:
 
@@ -111,139 +129,176 @@ void sendSensorPacket(u08 packet_id) {
 		case PID_UNUSED1:
 		case PID_UNUSED2:
 		case PID_BW_DROPS:
-			uartSend(0);
+			uart_putc(0);
 			break;
 
 		case PID_IR:
-			uartSend(0xff);
+			uart_putc(0xff);
 			break;
 	}
 }
 
 void parse(void)
 {
-	u32 baud;
-	s16 vel, radius;
-	s16 vel1, vel2;
+	int16_t vel, radius;
+	int16_t vel1, vel2;
+	uint8_t command = 0;
+	uint8_t packet_id = 0;
 
-	if(receivedU) {
-		switch( uartGetByte() ) {	//opcode
-			case OP_START:
-				break;
-			case OP_BAUD:
-				switch(uartGetByte()) {//baud
-					case 0: baud=300;break;
-					case 1: baud=600;break;
-					case 2: baud=1200;break;
-					case 3: baud=2400;break;
-					case 4: baud=4800;break;
-					case 5: baud=9600;break;
-					case 6: baud=14400;break;
-					case 7: baud=19200;break;
-					case 8: baud=28800;break;
-					case 9: baud=38400;break;
-					case 10: baud=57600;break;
-					default: baud=115200;break;
-				}
-				uartSetBaudRate(baud);
-				break;
-			case OP_CONTROL: case OP_SAFE:
-				break;
-			case OP_PLAY_SCRIPT:
-				break;
-			case OP_SHOW_SCRIPT:
-				uartPutByte(0); //no script
-				break;
-			case OP_FULL:
-				break;
-			case OP_DEMO:	uartGetByte();//dummy
-				break;
-			case OP_SEND_IR:	uartGetByte();//dummy
-				break;
-			case OP_PLAY_SONG:	uartGetByte();//dummy
-				break;
-			case OP_LEDS:	uartGetByte();uartGetByte();uartGetByte();//dummy
-				break;
-			case OP_OUTPUT:	uartGetByte();//dummy
-				break;
-			case OP_COVER:
-				break;
-			case OP_COVERDOCK:
-				break;
-			case OP_SPOT:
-				break;
-			case OP_LS_DRIVERS:	uartGetByte();//dummy
-				break;
-			case OP_DRIVE:
-				//TODO:
-				vel    = (((u16)uartGetByte())<<8) | uartGetByte();
-				radius = (((u16)uartGetByte())<<8) | uartGetByte();
-				break;
-			case OP_DRIVE_DIRECT:
-				//TODO:
-				vel1 = (((u16)uartGetByte())<<8) | uartGetByte();
-				vel2 = (((u16)uartGetByte())<<8) | uartGetByte();
-				break;
-			case OP_SONG:
-				uartGetByte();//dummy
-				vel = uartGetByte();
-				for(radius=0; radius!=vel; radius++) {
-					uartGetByte();uartGetByte();
-				}
-				break;
-			case OP_SENSORS:
-				packet_id = uartGetByte();
-				switch(packet_id) {
-					case 0:
-						for(packet_id=7; packet_id<=26; packet_id++) sendSensorPacket(packet_id);
-						break;
-					case 1:
-						for(packet_id=7; packet_id<=16; packet_id++) sendSensorPacket(packet_id);
-						break;
-					case 2:
-						for(packet_id=17; packet_id<=20; packet_id++) sendSensorPacket(packet_id);
-						break;
-					case 3:
-						for(packet_id=21; packet_id<=26; packet_id++) sendSensorPacket(packet_id);
-						break;
-					case 4:
-						for(packet_id=27; packet_id<=34; packet_id++) sendSensorPacket(packet_id);
-						break;
-					case 5:
-						for(packet_id=35; packet_id<=42; packet_id++) sendSensorPacket(packet_id);
-						break;
-					case 6:
-						for(packet_id=7; packet_id<=42; packet_id++) sendSensorPacket(packet_id);
-						break;
-					default: sendSensorPacket(packet_id); break;
-				}
-				break;
-			case OP_STREAM:
-				for(number_of_packets=0; number_of_packets<?; number_of_packets++) enable[number_of_packets] = false;
-				number_of_packets = uartGetByte();
-				while(number_of_packets--)
-					enable[uartGetByte()] = true;
-				//TODO:
-				break;
-			case OP_PAUSE_RESUME:
-				enable = uartGetByte();
-				//TODO:
-				break;
-			case OP_SCRIPT:
-				vel = uartGetByte();
-				for(radius=0; radius!=vel; radius++) {
-					uartGetByte();
-				}
-				break;
-			case OP_WAIT:
-				delay_ms( uartGetByte()*15 );
-				break;
-		}
+	command = uart_get_valid_char();
+	switch(command ) {	//opcode
+		case OP_START:
+			break;
+		case OP_BAUD:
+			switch(uart_get_valid_char()) {//baud
+				case 0: MASTER_UART_BAUD_RATE=300;break;
+				case 1: MASTER_UART_BAUD_RATE=600;break;
+				case 2: MASTER_UART_BAUD_RATE=1200;break;
+				case 3: MASTER_UART_BAUD_RATE=2400;break;
+				case 4: MASTER_UART_BAUD_RATE=4800;break;
+				case 5: MASTER_UART_BAUD_RATE=9600;break;
+				case 6: MASTER_UART_BAUD_RATE=14400;break;
+				case 7: MASTER_UART_BAUD_RATE=19200;break;
+				case 8: MASTER_UART_BAUD_RATE=28800;break;
+				case 9: MASTER_UART_BAUD_RATE=38400;break;
+				case 10: MASTER_UART_BAUD_RATE=57600;break;
+				default: MASTER_UART_BAUD_RATE=115200;break;
+			}
+			cli();// Should be tested
+			uart_init(UART_BAUD_SELECT(MASTER_UART_BAUD_RATE, F_CPU ));
+			sei();
+			break;
+		case OP_CONTROL: 
+		case OP_SAFE:
+			break;
+		case OP_PLAY_SCRIPT:
+			break;
+		case OP_SHOW_SCRIPT:
+//			uartPutByte(0); //no script
+			uart_get_valid_char();
+			break;
+		case OP_FULL:
+			break;
+		case OP_DEMO:	
+//			uartGetByte();//dummy
+			uart_get_valid_char();
+			break;
+		case OP_SEND_IR:	
+//			uartGetByte();//dummy
+			uart_get_valid_char();
+			break;
+		case OP_PLAY_SONG:	
+//			uartGetByte();//dummy
+			uart_get_valid_char();			
+			break;
+		case OP_LEDS:	
+//			uartGetByte();uartGetByte();uartGetByte();//dummy
+			uart_get_valid_char();uart_get_valid_char();uart_get_valid_char();
+			break;
+		case OP_OUTPUT:	
+//			uartGetByte();//dummy
+			uart_get_valid_char();			
+			break;
+		case OP_COVER:
+			break;
+		case OP_COVERDOCK:
+			break;
+		case OP_SPOT:
+			break;
+		case OP_LS_DRIVERS:	
+//			uartGetByte();//dummy
+			uart_get_valid_char();			
+			break;
+		case OP_DRIVE:
+			//TODO: Maybe? since all calculations are to be done on the master. 
+//			vel    = (((u16)uartGetByte())<<8) | uartGetByte();
+//			radius = (((u16)uartGetByte())<<8) | uartGetByte();
+			vel    = (((uint16_t)uart_get_valid_char())<<8) | uart_get_valid_char();
+			radius = (((uint16_t)uart_get_valid_char())<<8) | uart_get_valid_char();
+			break;
+		case OP_DRIVE_DIRECT:
+			//TODO:
+//			vel1 = (((u16)uartGetByte())<<8) | uartGetByte();
+//			vel2 = (((u16)uartGetByte())<<8) | uartGetByte();
+			vel1 = (((uint16_t)uart_get_valid_char())<<8) | uart_get_valid_char();
+			vel2 = (((uint16_t)uart_get_valid_char())<<8) | uart_get_valid_char();
+			break;
+		case OP_SONG:
+//			uartGetByte();//dummy
+			uart_get_valid_char();			
+//			vel = uartGetByte();
+			vel = uart_get_valid_char();			
+			for(radius=0; radius!=vel; radius++) {
+//				uartGetByte();uartGetByte();
+				uart_get_valid_char();uart_get_valid_char();
+			}
+			break;
+		case OP_SENSORS:
+//			packet_id = uartGetByte();
+			packet_id = uart_get_valid_char();			
+			switch(packet_id) {
+				case 0:
+					for(packet_id=7; packet_id<=26; packet_id++) sendSensorPacket(packet_id);
+					break;
+				case 1:
+					for(packet_id=7; packet_id<=16; packet_id++) sendSensorPacket(packet_id);
+					break;
+				case 2:
+					for(packet_id=17; packet_id<=20; packet_id++) sendSensorPacket(packet_id);
+					break;
+				case 3:
+					for(packet_id=21; packet_id<=26; packet_id++) sendSensorPacket(packet_id);
+					break;
+				case 4:
+					for(packet_id=27; packet_id<=34; packet_id++) sendSensorPacket(packet_id);
+					break;
+				case 5:
+					for(packet_id=35; packet_id<=42; packet_id++) sendSensorPacket(packet_id);
+					break;
+				case 6:
+					for(packet_id=7; packet_id<=42; packet_id++) sendSensorPacket(packet_id);
+					break;
+				default: sendSensorPacket(packet_id); 
+					break;
+			}
+			break;
+		case OP_STREAM:
+/*			for(number_of_packets=0; number_of_packets<?; number_of_packets++) enable[number_of_packets] = false;
+			number_of_packets = uartGetByte();
+			while(number_of_packets--)
+				enable[uartGetByte()] = true;
+			//TODO:
+*/
+			NUMBER_OF_PACKETS = uart_get_valid_char();
+			for (int i=0; i<NUMBER_OF_PACKETS; i++){
+				STREAM_PACKET_ID[i] = uart_get_valid_char();
+			}
+			//Stream is enabled by setting NUMBER_OF_PACKETS and STREAM_ENABLED
+			//Depending on the number of packets to be sent a timer should be set to
+			//appoximate around 15ms. Here in the parser, timer 1 interrupt should
+			//be forced to enable calling of STREAM responder function. 
+			break;
+		case OP_PAUSE_RESUME:
+			STREAM_ENABLED = uart_get_valid_char();
+			//TODO:
+			break;
+		case OP_SCRIPT:
+//			vel = uartGetByte();
+			vel = uart_get_valid_char();			
+			for(radius=0; radius!=vel; radius++) {
+//				uartGetByte();
+				uart_get_valid_char();
+			}
+			break;
+		case OP_WAIT:
+			_delay_ms( uart_get_valid_char()*15 );
+			break;
 	}
 
-	if(recveivedM1) {
+/*	if(recveivedM1) {
 	}
 
 	if(recveivedM2) {
 	}
+	*/
 }
