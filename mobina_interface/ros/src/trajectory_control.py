@@ -203,7 +203,6 @@ class TrajectoryControl(object):
 		if max_vel<1/float(255):
 			max_vel = 0.1
     
-		print "start"
 		start = rospy.get_time()
 		while abs(self._getpos()-pos)>self.tolerance and not rospy.is_shutdown():
 			if (rospy.get_time()-start)>10 or self._as.is_preempt_requested():
@@ -230,7 +229,6 @@ class TrajectoryControl(object):
 				self.joint_msg.velocity = [f*speed]
 				self.intf.set_val(self.conf_out, f*speed)
 			r.sleep()
-		print "finish"
 
 		self.intf.set_val(self.conf_out, 0)
 		self.joint_msg.velocity = [0.0]
