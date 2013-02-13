@@ -54,4 +54,6 @@ u08 softSpiHasByte(void);
 u08 softSpiGetByte(void);
 u16 softSpiGetWord(void);
 
+u08 softSpiCanSend(void);
+
 #endif
