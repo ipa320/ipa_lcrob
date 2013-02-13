@@ -8,6 +8,8 @@ import time
 import threading
 
 class evjoy(threading.Thread):
+    max_range = 2.**15-1
+
     def __init__(self):
 	threading.Thread.__init__(self)
 	rospy.init_node("evjoy")
@@ -61,8 +63,7 @@ class evjoy(threading.Thread):
     def factor(self,axis, v):
 	if not self.axes_factor[axis]:
 		return v
-	if v < 128: value = (v-128)/128.0
-	else: value = (v-128)/127.0
+	value = v/self.max_range
 	if value < -1.0: value = -1.0
 	elif value > 1.0: value = 1.0
 	elif abs(value) < self.nullzone: value = 0.0

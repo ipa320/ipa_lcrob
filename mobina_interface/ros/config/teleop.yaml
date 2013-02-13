@@ -23,8 +23,11 @@ led_step: 0.1
 
 script_button0: 2
 script_button1: 3
+script_button2: 5
 
-script0: "rosrun mobina_states search_dock.py"
+script1: "rosrun mobina_states search_dock.py"
+script2: "roslaunch cob_camera_alignment mobina.launch"
+
 
 # axes
 axis_vx: 0

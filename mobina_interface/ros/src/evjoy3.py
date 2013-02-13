@@ -6,8 +6,9 @@ if __name__ == "__main__":
         print "waiting for joystick..."
 	while True:
 		p1 = Popen(["dmesg"], stdout=PIPE)
-		p2 = Popen(["grep", "hid_logitech"], stdin=p1.stdout, stdout=PIPE)
-		c = p2.communicate()
+		p2 = Popen(["grep", "-i", "hid"], stdin=p1.stdout, stdout=PIPE)
+		p3 = Popen(["grep", "-i", "logitech"], stdin=p2.stdout, stdout=PIPE)
+		c = p3.communicate()
 		if len(c[0])<1:
 			time.sleep(1)
 			continue
