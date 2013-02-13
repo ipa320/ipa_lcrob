@@ -10,8 +10,6 @@ class AndroidConnection:
 	def __init__(self, port=38300):
 		os.system("cd /home/mobina/adb/adb_git; adb start-server")
 		os.system("adb wait-for-device")
-		os.system("adb shell am force-stop com.example.extendeddevice")
-		os.system("adb shell am start -n com.example.extendeddevice/de.fraunhofer.ipa.Main")
 		os.system("adb forward tcp:"+str(port)+" tcp:"+str(port))
 		self.port = port
 		self.connected = False
@@ -19,6 +17,9 @@ class AndroidConnection:
 
 	def connect(self):
 		print "connecting..."
+		os.system("adb shell am force-stop com.example.extendeddevice")
+		os.system("adb shell am start -n com.example.extendeddevice/de.fraunhofer.ipa.Main")
+
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 		self.s.settimeout(10)
 		try:
