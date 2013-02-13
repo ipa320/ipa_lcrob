@@ -52,8 +52,10 @@ class DeliverCake(smach.StateMachine):
 			transitions={'succeeded':'DELIVERY0', 'failed':'failed'})
 
             no = 0
-            for i in range(0,3):#while rospy.has_param("/cob_script_server/"+path_name+str(no)):
-            	last = i>1 #not rospy.has_param("/cob_script_server/"+path_name+str(no+1))
+            #for i in range(0,3):
+            while rospy.has_param("/script_server/base/"+path_name+str(no)):
+            	#last = i>1n
+		last = not rospy.has_param("/script_server/base/"+path_name+str(no+1))
 		next = 'DELIVERY'+str(no+1)
 		if last:
 			next = 'succeeded'
