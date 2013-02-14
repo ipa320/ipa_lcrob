@@ -7,7 +7,7 @@
 #include "protocol.h"
 #include "uart.h"
 
-#define 	DEFAULT_UART_BAUD_RATE 57600
+#define 	DEFAULT_UART_BAUD_RATE 115200
 #define 	MAX_STREAM_PACKETS 10 //Sets the maximum number of packet IDs to be expected with the command STREAM (Should confirmed and set according to the capacity of the controller).
 uint32_t	MASTER_UART_BAUD_RATE = DEFAULT_UART_BAUD_RATE;
 
