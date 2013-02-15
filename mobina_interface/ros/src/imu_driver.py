@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 import roslib; roslib.load_manifest('mobina_interface')
 import rospy
 from sensor_msgs.msg import Imu

@@ -1,13 +1,12 @@
+#include "global.h"		// include our global settings
 #include "protocol.h"
 
 //----- Include Files ---------------------------------------------------------
 #include <avr/io.h>		// include I/O definitions (port names, pin names, etc)
 #include <avr/interrupt.h>	// include interrupt support
 
-#include "global.h"		// include our global settings
-
 #include "a2d.h"		// include A/D converter function library
-#include "timer.h"		// include timer function library (timing, PWM, etc)
+#include "timerx8.h"		// include timer function library (timing, PWM, etc)
 #include "soft_spi.h"		
 
 #undef WATCH_MOTOR
@@ -54,7 +53,7 @@ void set_motor_speed(u08 channel, u08 speed) {
 }
 
 #ifdef WATCH_MOTOR
-
+#error
 //check soft-limits before moving
 u08 set_motor_direction(u08 channel, u08 dir) {
 	u16 ad = a2dConvert10bit(0);
@@ -134,14 +133,17 @@ void on_parse(void) {
 			break;
 
 		case GET_ANALOG:
+			while(!softSpiCanSend()) soft_pwm();
 			softSpiSendWord(get_analog(c&0x03));
 			break;
 
 		case GET_INPUT:
+			while(!softSpiCanSend()) soft_pwm();
 			softSpiSendByte(get_input());
 			break;
 
 		case SETUP:
+			while(!softSpiCanSend()) soft_pwm();
 			softSpiSendByte('O');
 			PORTC = softSpiGetByte()&0x0f;
 			break;
@@ -158,8 +160,11 @@ void init(void) {
 	// turn on and initialize A/D converter
 	a2dInit();
 
+	a2dSetPrescaler(ADC_PRESCALE_DIV32);
+	a2dSetReference(ADC_REFERENCE_AVCC);
+
 	// initialize the timer system
-	timerInit();
+	//timerInit();
 
 	outb(DDRB, 0x06);
 	outb(DDRC, 0x30);
@@ -168,13 +173,10 @@ void init(void) {
 	timer1PWMInit(8); //8 bit resolution
 
 	timer1PWMAOn();
-	timer1PWMASet(255);
+	timer1PWMASet(0);
 
 	timer1PWMBOn();
-	timer1PWMBSet(255);
-
-	a2dSetPrescaler(ADC_PRESCALE_DIV8);
-	a2dSetReference(ADC_REFERENCE_AVCC);
+	timer1PWMBSet(0);
 
 	softSpiInit();
 
@@ -182,8 +184,11 @@ void init(void) {
 	//timerAttach(TIMER2OVERFLOW_INT, soft_pwm);
 
 #ifdef WATCH_MOTOR
+#error
 	//check if motor went too far  for security
 	//timer0SetPrescaler();
 	timerAttach(TIMER0OVERFLOW_INT, check_motor);
 #endif
+
+	sei();
 }

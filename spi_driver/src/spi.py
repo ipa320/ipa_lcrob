@@ -16,7 +16,7 @@ class SPI:
 		self.clk  = clk
 		self.reset  = reset
 
-		GPIO.output(self.reset, GPIO.HIGH)
+		self.dev_reset()
 		GPIO.output(self.mosi, GPIO.LOW)
 
 		self.rest_ms = 100
@@ -25,7 +25,7 @@ class SPI:
 	def wait(self, us):
 		GPIO.usleep(us)
 
-	def reset(self):
+	def dev_reset(self):
 		GPIO.output(self.reset, GPIO.LOW)
 		time.sleep(0.05)
 		GPIO.output(self.reset, GPIO.HIGH)
