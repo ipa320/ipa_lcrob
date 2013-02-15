@@ -6,6 +6,7 @@
 
 int main(void)
 {
+	//Add watchdog related code here.
 	init();
 
 	while(1) {

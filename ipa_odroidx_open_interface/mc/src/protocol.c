@@ -105,7 +105,6 @@ void init(void){
 	//Soft UARTs for motors 
 	//ADC
 	//Timer to generate 15ms for Stream command?
-	//Watchdog timer(Before anything else)
 	sei();
 }
 uint8_t uart_get_valid_char(){
@@ -134,6 +133,35 @@ void sendSensorPacket(uint8_t packet_id) {
 
 		case PID_IR:
 			uart_putc(0xff);
+			break;
+	}
+}
+
+void parseSendSensorPacket(uint8_t packet_id){
+	switch(packet_id) {
+		case 0:
+			for(packet_id=7; packet_id<=26; packet_id++) sendSensorPacket(packet_id);
+			break;
+		case 1:
+			for(packet_id=7; packet_id<=16; packet_id++) sendSensorPacket(packet_id);
+			break;
+		case 2:
+			for(packet_id=17; packet_id<=20; packet_id++) sendSensorPacket(packet_id);
+			break;
+		case 3:
+			for(packet_id=21; packet_id<=26; packet_id++) sendSensorPacket(packet_id);
+			break;
+		case 4:
+			for(packet_id=27; packet_id<=34; packet_id++) sendSensorPacket(packet_id);
+			break;
+		case 5:
+			for(packet_id=35; packet_id<=42; packet_id++) sendSensorPacket(packet_id);
+			break;
+		case 6:
+			for(packet_id=7; packet_id<=42; packet_id++) sendSensorPacket(packet_id);
+			break;
+		//Implement all packet types here
+		default: sendSensorPacket(packet_id); 
 			break;
 	}
 }
@@ -236,31 +264,7 @@ void parse(void)
 		case OP_SENSORS:
 //			packet_id = uartGetByte();
 			packet_id = uart_get_valid_char();			
-			switch(packet_id) {
-				case 0:
-					for(packet_id=7; packet_id<=26; packet_id++) sendSensorPacket(packet_id);
-					break;
-				case 1:
-					for(packet_id=7; packet_id<=16; packet_id++) sendSensorPacket(packet_id);
-					break;
-				case 2:
-					for(packet_id=17; packet_id<=20; packet_id++) sendSensorPacket(packet_id);
-					break;
-				case 3:
-					for(packet_id=21; packet_id<=26; packet_id++) sendSensorPacket(packet_id);
-					break;
-				case 4:
-					for(packet_id=27; packet_id<=34; packet_id++) sendSensorPacket(packet_id);
-					break;
-				case 5:
-					for(packet_id=35; packet_id<=42; packet_id++) sendSensorPacket(packet_id);
-					break;
-				case 6:
-					for(packet_id=7; packet_id<=42; packet_id++) sendSensorPacket(packet_id);
-					break;
-				default: sendSensorPacket(packet_id); 
-					break;
-			}
+			parseSendSensorPacket(packet_id);
 			break;
 		case OP_STREAM:
 /*			for(number_of_packets=0; number_of_packets<?; number_of_packets++) enable[number_of_packets] = false;

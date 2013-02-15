@@ -14,7 +14,7 @@ LIBS =
 MCU = atmega168p
 
 # user specific compiler options
-COPTS = -g -O2 -DF_CPU=18342000 -Wno-parentheses -fgnu89-inline
+COPTS = -g -O2 -DF_CPU=18432000 -Wno-parentheses -fgnu89-inline
 #COPTS = -g -O2 -DF_CPU=1000000 -Wno-parentheses -fgnu89-inline
 
 #  user specific linker options
@@ -32,10 +32,11 @@ LIBPATH =
 CC = avr-gcc
 OBJCOPY = avr-objcopy
 CTAGS = ctags
+AVRDUDE = avrdude
 #UISP=uisp -dt_sck=200 -v=3 -dlpt=/dev/parport0 -dprog=dapa
 UISP=uisp -v=3 -dlpt=/dev/parport0 -dprog=dapa
-AVRDUDE_P=avrdude -p $(MCU) -F -c dapa -P /dev/parport0 -i 30
-AVRDUDE_U=avrdude -p $(MCU) -F -c stk500v2 -P /dev/ttyUSB0
+AVRDUDE_P=$(AVRDUDE) -p $(MCU) -c dapa -P /dev/parport0 -i 30
+AVRDUDE_U=$(AVRDUDE) -p $(MCU) -c stk500v2 -P /dev/ttyUSB0
 #AVRDUDE_U=avrdude -p $(MCU) -c butterfly -P com1 -b 230400
 CFLAGS = -std=c99 -pedantic -Wall $(INCPATH:%=-I%) -mmcu=$(MCU) \
          -mcall-prologues $(COPTS)
