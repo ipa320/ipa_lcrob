@@ -12,10 +12,19 @@ arm_joint7_button: -1
 deadman_button: 0
 run_button: 1
 base_safety_button: -1
+
+special_button: 6
+script_button: 7
+
 led_r_button: 3
 led_g_button: 4
 led_b_button: 5
 led_step: 0.1
+
+script_button0: 2
+script_button1: 3
+
+script0: "rosrun mobina_states search_dock.py"
 
 # axes
 axis_vx: 0

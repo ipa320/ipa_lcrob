@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <launch>
-    <node pkg="mobina_interface" type="evjoy.py" name="evjoy" output="screen">
+    <node pkg="mobina_interface" type="evjoy3.py" name="evjoy" output="screen">
 	<rosparam param="axes">['!ABS_Y','!ABS_Z',~ABS_HAT0X,~ABS_HAT0Y]</rosparam>
-	<rosparam param="buttons">[BTN_Z,BTN_TR,BTN_X,BTN_C,BTN_B,BTN_GAMEPAD]</rosparam>
+	<rosparam param="buttons">[BTN_Z,BTN_TR,BTN_X,BTN_C,BTN_B,BTN_GAMEPAD,BTN_TL,BTN_Y]</rosparam>
 	<param name="nullzone" type="double" value="0.12"/>
 	<param name="debug" type="boolean" value="false"/>
     </node>

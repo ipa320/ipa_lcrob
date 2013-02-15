@@ -37,7 +37,7 @@
 // function prototypes
 
 // SPI interface initializer
-void softSpiInit(/*void (*func)(void)*/);
+void softSpiInit(void);
 
 void softSpiClear(void);
 
@@ -53,5 +53,7 @@ void softSpiSendWord(u16 data);
 u08 softSpiHasByte(void);
 u08 softSpiGetByte(void);
 u16 softSpiGetWord(void);
+
+u08 softSpiCanSend(void);
 
 #endif
