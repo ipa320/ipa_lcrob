@@ -5,7 +5,7 @@ TARGET = src/main
 
 # list of modules
 SRC = src/
-MODULES = $(TARGET) src/uart src/protocol
+MODULES = $(TARGET) src/uart src/softuart src/mcontroller src/protocol
 
 # list of additional libraries to link against
 LIBS = 

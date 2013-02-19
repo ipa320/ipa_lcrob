@@ -4,5 +4,6 @@
 
 void init(void);
 void parse(void);
+void init_motors(void);
 
 #endif

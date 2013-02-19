@@ -6,6 +6,8 @@
 #include <util/delay.h>
 #include "protocol.h"
 #include "uart.h"
+#include "softuart.h"
+#include "mcontroller.h"
 
 #define 	DEFAULT_UART_BAUD_RATE 115200
 #define 	MAX_STREAM_PACKETS 10 //Sets the maximum number of packet IDs to be expected with the command STREAM (Should confirmed and set according to the capacity of the controller).
@@ -92,10 +94,35 @@ implement
 #define PID_CLIFF_R	12
 #define PID_VWALL	13
 #define PID_LS_DRIVER	14
-#define PID_UNUSED1	15
-#define PID_UNUSED2	16
+#define PID_DIRT_DETECT	15
+#define PID_UNUSED1	16
 #define PID_IR		17
 #define PID_BUTTONS	18
+#define PID_DISTANCE 19 
+#define PID_ANGLE 20
+#define PID_CHARGING_STATE 21
+#define PID_VOLTAGE 22
+#define PID_CURRENT 23
+#define PID_TEMPERATURE 24
+#define PID_BATTERY_CHARGE 25
+#define PID_BATTERY_CAPACITY 26
+#define PID_WALL_SIGNAL 27
+#define PID_CLIFF_LEFT_SIGNAL 28
+#define PID_CLIFF_FRONT_LEFT_SIGNAL 29
+#define PID_CLIFF_FRONT_RIGHT_SIGNAL 30
+#define PID_CLIFF_RIGHT_SIGNAL 31
+#define PID_UNUSED2 32
+#define PID_UNUSED3 33
+#define PID_CHARGER_AVAILABLE 34
+#define PID_OPEN_INTERFACE_MODE 35
+#define PID_SONG_NUMBER 36
+#define PID_SONG_PLAYING 37
+#define PID_OI_STREAM_NUM_PACKETS 38
+#define PID_VELOCITY 39
+#define PID_RADIUS 40
+#define PID_VELOCITY_RIGHT 41
+#define PID_VELOCITY_LEFT 42
+
 
 void init(void){
 	NUMBER_OF_PACKETS = 0;
@@ -105,8 +132,12 @@ void init(void){
 	//Soft UARTs for motors 
 	//ADC
 	//Timer to generate 15ms for Stream command?
+	softuart_init(PORT_1);
+	softuart_init(PORT_2);
 	sei();
+	motor_init(); // enable motors after both soft uart ports are enabled.
 }
+
 uint8_t uart_get_valid_char(){
 	uint16_t buffer = 0;
 	do{
@@ -118,6 +149,7 @@ void sendSensorPacket(uint8_t packet_id) {
 	switch(packet_id) {
 		case PID_LS_DRIVER:
 
+		case PID_CHARGING_STATE:
 		case PID_CLIFF_L:
 		case PID_CLIFF_R:
 		case PID_CLIFF_FR:
@@ -128,12 +160,38 @@ void sendSensorPacket(uint8_t packet_id) {
 		case PID_UNUSED1:
 		case PID_UNUSED2:
 		case PID_BW_DROPS:
+		case PID_TEMPERATURE:
+		case PID_CHARGER_AVAILABLE:
+		case PID_OPEN_INTERFACE_MODE:
+		case PID_SONG_NUMBER:
+		case PID_SONG_PLAYING:
+		case PID_OI_STREAM_NUM_PACKETS:
 			uart_putc(0);
 			break;
 
 		case PID_IR:
 			uart_putc(0xff);
 			break;
+		case PID_DISTANCE:
+		case PID_ANGLE:
+		case PID_VOLTAGE: //Will have to implement 
+		case PID_CURRENT:
+		case PID_BATTERY_CHARGE:
+		case PID_BATTERY_CAPACITY:
+		case PID_WALL_SIGNAL:
+		case PID_CLIFF_LEFT_SIGNAL:
+		case PID_CLIFF_FRONT_LEFT_SIGNAL:
+		case PID_CLIFF_FRONT_RIGHT_SIGNAL:
+		case PID_CLIFF_RIGHT_SIGNAL:
+		case PID_UNUSED3:
+		case PID_VELOCITY:
+		case PID_RADIUS:
+		case PID_VELOCITY_RIGHT:
+		case PID_VELOCITY_LEFT:
+			uart_putc(0x00);
+			uart_putc(0x00);
+			break;
+
 	}
 }
 
@@ -250,6 +308,7 @@ void parse(void)
 //			vel2 = (((u16)uartGetByte())<<8) | uartGetByte();
 			vel1 = (((uint16_t)uart_get_valid_char())<<8) | uart_get_valid_char();
 			vel2 = (((uint16_t)uart_get_valid_char())<<8) | uart_get_valid_char();
+			motor_setVel(vel1, vel2);
 			break;
 		case OP_SONG:
 //			uartGetByte();//dummy

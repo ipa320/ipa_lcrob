@@ -1,11 +1,19 @@
+#include <stdlib.h>
+#include "mcontroller.h"
+#include "softuart.h"
 
-static void int2str(char *str, u16 val) {
-	u16 div=10000;
-	while(!(val/div) && div>1) div/=10;
-	while(div) {
+void int2str(char *str, int16_t val){
+	int16_t div=10000;
+	if (val <0){
+		*str = '-';
+		str++;
+		val=abs(val);
+	}
+	while(!(val/div) && div > 1) div/=10;
+	while(div){
 		*str = '0'+(val/div);
 		str++;
-		val %=div;
+		val %= div;
 		div/=10;
 	}
 	*str = '\n';
@@ -13,37 +21,32 @@ static void int2str(char *str, u16 val) {
 	*str = 0;
 }
 
-#define ENABLE   "EN\n"
-#define DISABLE  "DI\n"
-#define POSITION "POS\n"
 
-void init() {
-	send(ENABLE, 0);
-	send(ENABLE, 1);
+void motor_init() {
+	softuart_broadcast(ENABLE);
 }
 
-void stop() {
-	send(DISABLE, 0);
-	send(DISABLE, 1);
+void motor_stop() {
+	softuart_broadcast(DISABLE);
 }
 
-void setVel(u16 rpm1, u16 rpm2) {
+void motor_setVel(int16_t rpm1, int16_t rpm2) {
 	char buffer[8];
 	buffer[0]='V';
 
 	int2str(buffer+1, rpm1);
-	send(buffer, 0);
+	softuart_puts(PORT_1, buffer);
 
 	int2str(buffer+1, rpm2);
-	send(buffer, 1);
+	softuart_puts(PORT_2, buffer);
 }
 
-i32 getPos(u08 motor) {
+int32_t motor_getPos(uint8_t motor) {
 	char c;
-	i32 r=0;
+	int32_t r=0;
 
-	send(POSITION, motor);
-	while( (c=recv(motor))!='\r' ) {
+	softuart_puts(motor, POSITION);
+	while( (c=softuart_getchar(motor))!='\r' ) {
 		if(c=='-') r*=-1;
 		else if(c>='0'&&c<='9') {
 			r*=10;
