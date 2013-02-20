@@ -236,6 +236,9 @@ static volatile unsigned char UART_RxHead;
 static volatile unsigned char UART_RxTail;
 static volatile unsigned char UART_LastRxError;
 
+static volatile unsigned char CHECKSUM;
+static volatile unsigned char ENABLE_ACCUMULATE;
+
 #if defined( ATMEGA_USART1 )
 static volatile unsigned char UART1_TxBuf[UART_TX_BUFFER_SIZE];
 static volatile unsigned char UART1_RxBuf[UART_RX_BUFFER_SIZE];
@@ -388,6 +391,7 @@ void uart_init(unsigned int baudrate)
 
 #endif
 
+	ENABLE_ACCUMULATE = 0;
 }/* uart_init */
 
 
@@ -431,7 +435,9 @@ void uart_putc(unsigned char data)
 {
     unsigned char tmphead;
 
-    
+	if (ENABLE_ACCUMULATE)
+		CHECKSUM += data;
+
     tmphead  = (UART_TxHead + 1) & UART_TX_BUFFER_MASK;
     
     while ( tmphead == UART_TxTail ){
@@ -476,6 +482,25 @@ void uart_puts_p(const char *progmem_s )
 
 }/* uart_puts_p */
 
+void uart_enable_checksum()
+{
+	ENABLE_ACCUMULATE = 1;
+	CHECKSUM = 0;
+}
+
+void uart_disable_checksum()
+{
+	ENABLE_ACCUMULATE = 0;
+	CHECKSUM = 0;
+}
+
+void uart_put_checksum()
+{
+	CHECKSUM = ~CHECKSUM;
+	ENABLE_ACCUMULATE = 0;
+	uart_putc(CHECKSUM);
+	CHECKSUM = 0;
+}
 
 /*
  * these functions are only for ATmegas with two USART
@@ -659,5 +684,6 @@ void uart1_puts_p(const char *progmem_s )
 
 }/* uart1_puts_p */
 
+void 
 
 #endif

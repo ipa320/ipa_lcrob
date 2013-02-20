@@ -3,6 +3,7 @@
 
 #include "protocol.h"		// include our global settings
 
+volatile uint8_t TIMER_OVERFLOW;
 
 int main(void)
 {
@@ -11,6 +12,11 @@ int main(void)
 
 	while(1) {
 		parse();	
+		if (TIMER_OVERFLOW)
+		{
+			generateStreamResponse();
+			TIMER_OVERFLOW=0;
+		}
 	}
 	
 	return 0;

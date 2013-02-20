@@ -168,6 +168,10 @@ extern void uart_puts(const char *s );
  */
 extern void uart_puts_p(const char *s );
 
+extern void uart_enable_checksum();
+extern void uart_disable_checksum();
+extern void uart_put_checksum();
+
 /**
  * @brief    Macro to automatically put a string constant into program memory
  */
