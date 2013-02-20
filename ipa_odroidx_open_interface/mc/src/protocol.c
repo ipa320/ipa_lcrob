@@ -10,12 +10,13 @@
 #include "mcontroller.h"
 
 #define 	DEFAULT_UART_BAUD_RATE 115200
-#define 	MAX_STREAM_PACKETS 10 //Sets the maximum number of packet IDs to be expected with the command STREAM (Should confirmed and set according to the capacity of the controller).
-uint32_t	MASTER_UART_BAUD_RATE = DEFAULT_UART_BAUD_RATE;
+#define 	MAX_STREAM_PACKETS 10 //Sets the maximum number of packet IDs to be expected with the command STREAM (Should be confirmed and set according to the capacity of the controller).
 
-uint8_t		STREAM_PACKET_ID[MAX_STREAM_PACKETS];
-uint8_t 	NUMBER_OF_PACKETS;	
-uint8_t		STREAM_ENABLED;
+uint32_t			MASTER_UART_BAUD_RATE = DEFAULT_UART_BAUD_RATE;
+
+uint8_t				STREAM_PACKET_ID[MAX_STREAM_PACKETS];
+uint8_t				NUMBER_OF_PACKETS;	
+volatile uint8_t	TIMER_OVERFLOW = 0;
 /*
 implement
 
@@ -85,6 +86,7 @@ implement
 #define OP_PLAY_SCRIPT	153
 #define OP_SHOW_SCRIPT	154
 #define OP_WAIT		155
+#define OP_STREAM_RESPONSE 19
 
 #define PID_BW_DROPS	7
 #define PID_WALL	8
@@ -126,12 +128,10 @@ implement
 
 void init(void){
 	NUMBER_OF_PACKETS = 0;
-	STREAM_ENABLED = 1;
+	TIMER_OVERFLOW = 0;
 	uart_init(UART_BAUD_SELECT(MASTER_UART_BAUD_RATE, F_CPU ));
 	//All initiialization is to be done here.
-	//Soft UARTs for motors 
 	//ADC
-	//Timer to generate 15ms for Stream command?
 	softuart_init(PORT_1);
 	softuart_init(PORT_2);
 	sei();
@@ -230,8 +230,12 @@ void parse(void)
 	int16_t vel1, vel2;
 	uint8_t command = 0;
 	uint8_t packet_id = 0;
+	uint16_t uart_read = 0;
 
-	command = uart_get_valid_char();
+	uart_read = uart_getc();
+	if ((uart_read & 0xff00)!= 0)
+		return; //Have to test
+	command = uart_read;
 	switch(command ) {	//opcode
 		case OP_START:
 			break;
@@ -266,23 +270,18 @@ void parse(void)
 		case OP_FULL:
 			break;
 		case OP_DEMO:	
-//			uartGetByte();//dummy
 			uart_get_valid_char();
 			break;
 		case OP_SEND_IR:	
-//			uartGetByte();//dummy
 			uart_get_valid_char();
 			break;
 		case OP_PLAY_SONG:	
-//			uartGetByte();//dummy
 			uart_get_valid_char();			
 			break;
 		case OP_LEDS:	
-//			uartGetByte();uartGetByte();uartGetByte();//dummy
 			uart_get_valid_char();uart_get_valid_char();uart_get_valid_char();
 			break;
 		case OP_OUTPUT:	
-//			uartGetByte();//dummy
 			uart_get_valid_char();			
 			break;
 		case OP_COVER:
@@ -292,64 +291,58 @@ void parse(void)
 		case OP_SPOT:
 			break;
 		case OP_LS_DRIVERS:	
-//			uartGetByte();//dummy
 			uart_get_valid_char();			
 			break;
 		case OP_DRIVE:
 			//TODO: Maybe? since all calculations are to be done on the master. 
-//			vel    = (((u16)uartGetByte())<<8) | uartGetByte();
-//			radius = (((u16)uartGetByte())<<8) | uartGetByte();
 			vel    = (((uint16_t)uart_get_valid_char())<<8) | uart_get_valid_char();
 			radius = (((uint16_t)uart_get_valid_char())<<8) | uart_get_valid_char();
 			break;
 		case OP_DRIVE_DIRECT:
 			//TODO:
-//			vel1 = (((u16)uartGetByte())<<8) | uartGetByte();
-//			vel2 = (((u16)uartGetByte())<<8) | uartGetByte();
 			vel1 = (((uint16_t)uart_get_valid_char())<<8) | uart_get_valid_char();
 			vel2 = (((uint16_t)uart_get_valid_char())<<8) | uart_get_valid_char();
 			motor_setVel(vel1, vel2);
 			break;
 		case OP_SONG:
-//			uartGetByte();//dummy
 			uart_get_valid_char();			
-//			vel = uartGetByte();
 			vel = uart_get_valid_char();			
 			for(radius=0; radius!=vel; radius++) {
-//				uartGetByte();uartGetByte();
 				uart_get_valid_char();uart_get_valid_char();
 			}
 			break;
 		case OP_SENSORS:
-//			packet_id = uartGetByte();
 			packet_id = uart_get_valid_char();			
 			parseSendSensorPacket(packet_id);
 			break;
 		case OP_STREAM:
-/*			for(number_of_packets=0; number_of_packets<?; number_of_packets++) enable[number_of_packets] = false;
-			number_of_packets = uartGetByte();
-			while(number_of_packets--)
-				enable[uartGetByte()] = true;
-			//TODO:
-*/
 			NUMBER_OF_PACKETS = uart_get_valid_char();
-			for (int i=0; i<NUMBER_OF_PACKETS; i++){
+			for (int i=0; i<NUMBER_OF_PACKETS; i++){ // Make sure the array STREAM_PACKET_ID is big enough
 				STREAM_PACKET_ID[i] = uart_get_valid_char();
 			}
-			//Stream is enabled by setting NUMBER_OF_PACKETS and STREAM_ENABLED
-			//Depending on the number of packets to be sent a timer should be set to
-			//appoximate around 15ms. Here in the parser, timer 1 interrupt should
-			//be forced to enable calling of STREAM responder function. 
+			//A timer is set for 15 ms, if the stream is enabled a STREAM_RESPONSE packet is generated.
+			TCNT1 = 0x78FF; //15ms
+			TCCR1B |= (1 << CS11);
+	 		TIMSK1 |= (1 << TOIE1);
 			break;
 		case OP_PAUSE_RESUME:
-			STREAM_ENABLED = uart_get_valid_char();
+			if (uart_get_valid_char()){
+				if (NUMBER_OF_PACKETS>0){
+					TCNT1 = 0x78FF; //15ms
+					TCCR1B |= (1 << CS11);
+	 				TIMSK1 |= (1 << TOIE1);
+				}
+			}
+			else{
+				TCNT1 = 0x0; //Disabling timer
+				TCCR1B &= 0xF8;
+	 			TIMSK1 &= ~(1 << TOIE1);
+			}
 			//TODO:
 			break;
 		case OP_SCRIPT:
-//			vel = uartGetByte();
 			vel = uart_get_valid_char();			
 			for(radius=0; radius!=vel; radius++) {
-//				uartGetByte();
 				uart_get_valid_char();
 			}
 			break;
@@ -364,4 +357,33 @@ void parse(void)
 	if(recveivedM2) {
 	}
 	*/
+}
+
+void generateStreamResponse(){
+	uint8_t count=0;
+	uart_putc(OP_STREAM_RESPONSE);
+	for (int i=0; i<NUMBER_OF_PACKETS; i++){
+		switch(STREAM_PACKET_ID[i]){
+			case PID_VOLTAGE:
+			case PID_VELOCITY:
+			case PID_VELOCITY_LEFT:
+			case PID_VELOCITY_RIGHT:
+				count+=3;
+		}
+	}
+	uart_putc(count);
+	uart_enable_checksum();
+	for(int i = 0; i<NUMBER_OF_PACKETS; i++){
+		uart_putc(STREAM_PACKET_ID[i]);
+		parseSendSensorPacket(STREAM_PACKET_ID[i]);
+	}
+	uart_put_checksum();
+}
+
+
+ISR(TIMER1_OVF_vect){
+	TIMER_OVERFLOW = 1;
+	TCNT1 = 0x78FF; //15ms
+	TCCR1B |= (1 << CS11);
+	TIMSK1 |= (1 << TOIE1);
 }
