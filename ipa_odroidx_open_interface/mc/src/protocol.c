@@ -17,6 +17,16 @@ uint32_t			MASTER_UART_BAUD_RATE = DEFAULT_UART_BAUD_RATE;
 uint8_t				STREAM_PACKET_ID[MAX_STREAM_PACKETS];
 uint8_t				NUMBER_OF_PACKETS;	
 volatile uint8_t	TIMER_OVERFLOW = 0;
+
+//Signed 16 bits for storing velocities
+int16_t 			VELOCITY_1 = 0;
+int16_t				VELOCITY_2 = 0;
+
+//For storing battery voltage
+uint16_t			BATTERY_VOLTAGE = 24000; //using 5e-4V as a unit step
+
+//For storing OI_MODE
+uint8_t				OI_MODE = 0;
 /*
 implement
 
@@ -148,7 +158,7 @@ uint8_t uart_get_valid_char(){
 void sendSensorPacket(uint8_t packet_id) {
 	switch(packet_id) {
 		case PID_LS_DRIVER:
-
+		case PID_DIRT_DETECT:
 		case PID_CHARGING_STATE:
 		case PID_CLIFF_L:
 		case PID_CLIFF_R:
@@ -162,7 +172,6 @@ void sendSensorPacket(uint8_t packet_id) {
 		case PID_BW_DROPS:
 		case PID_TEMPERATURE:
 		case PID_CHARGER_AVAILABLE:
-		case PID_OPEN_INTERFACE_MODE:
 		case PID_SONG_NUMBER:
 		case PID_SONG_PLAYING:
 		case PID_OI_STREAM_NUM_PACKETS:
@@ -174,7 +183,6 @@ void sendSensorPacket(uint8_t packet_id) {
 			break;
 		case PID_DISTANCE:
 		case PID_ANGLE:
-		case PID_VOLTAGE: //Will have to implement 
 		case PID_CURRENT:
 		case PID_BATTERY_CHARGE:
 		case PID_BATTERY_CAPACITY:
@@ -186,12 +194,25 @@ void sendSensorPacket(uint8_t packet_id) {
 		case PID_UNUSED3:
 		case PID_VELOCITY:
 		case PID_RADIUS:
-		case PID_VELOCITY_RIGHT:
-		case PID_VELOCITY_LEFT:
 			uart_putc(0x00);
 			uart_putc(0x00);
 			break;
+		case PID_OPEN_INTERFACE_MODE:
+			uart_putc(OI_MODE);
 
+		case PID_VELOCITY_LEFT:
+			uart_putc((VELOCITY_1>>8)& 0xff);
+			uart_putc(VELOCITY_1 & 0xff);
+			break;
+		case PID_VELOCITY_RIGHT:
+			uart_putc((VELOCITY_2>>8)& 0xff);
+			uart_putc(VELOCITY_2 & 0xff);
+			break;
+
+		case PID_VOLTAGE: //Will have to implement 
+			uart_putc((BATTERY_VOLTAGE >> 8) & 0xff);
+			uart_putc(BATTERY_VOLTAGE & 0xff);
+			break;
 	}
 }
 
@@ -227,7 +248,6 @@ void parseSendSensorPacket(uint8_t packet_id){
 void parse(void)
 {
 	int16_t vel, radius;
-	int16_t vel1, vel2;
 	uint8_t command = 0;
 	uint8_t packet_id = 0;
 	uint16_t uart_read = 0;
@@ -238,6 +258,7 @@ void parse(void)
 	command = uart_read;
 	switch(command ) {	//opcode
 		case OP_START:
+			OI_MODE = 1;
 			break;
 		case OP_BAUD:
 			switch(uart_get_valid_char()) {//baud
@@ -260,6 +281,7 @@ void parse(void)
 			break;
 		case OP_CONTROL: 
 		case OP_SAFE:
+			OI_MODE = 2;
 			break;
 		case OP_PLAY_SCRIPT:
 			break;
@@ -268,6 +290,7 @@ void parse(void)
 			uart_get_valid_char();
 			break;
 		case OP_FULL:
+			OI_MODE = 3;
 			break;
 		case OP_DEMO:	
 			uart_get_valid_char();
@@ -300,9 +323,9 @@ void parse(void)
 			break;
 		case OP_DRIVE_DIRECT:
 			//TODO:
-			vel1 = (((uint16_t)uart_get_valid_char())<<8) | uart_get_valid_char();
-			vel2 = (((uint16_t)uart_get_valid_char())<<8) | uart_get_valid_char();
-			motor_setVel(vel1, vel2);
+			VELOCITY_1 = (((uint16_t)uart_get_valid_char())<<8) | uart_get_valid_char();
+			VELOCITY_2 = (((uint16_t)uart_get_valid_char())<<8) | uart_get_valid_char();
+			motor_setVel(VELOCITY_1, VELOCITY_2);
 			break;
 		case OP_SONG:
 			uart_get_valid_char();			
