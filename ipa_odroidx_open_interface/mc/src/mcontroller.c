@@ -16,6 +16,8 @@ void int2str(char *str, int16_t val){
 		val %= div;
 		div/=10;
 	}
+	*str = '\r';
+	str++;
 	*str = '\n';
 	str++;
 	*str = 0;
@@ -53,6 +55,6 @@ int32_t motor_getPos(uint8_t motor) {
 			r+=c-'0';
 		}
 	}
-
+	softuart_getchar(motor); // for '\n'
 	return r;
 }
