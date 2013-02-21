@@ -24,6 +24,7 @@ public class IMU_Service extends Service implements SensorEventListener {
 	private SensorManager mSensorManager;
 	private float[] values_ = new float[9];
 	private boolean running = true;
+	private MediaPlayer mPlayer = null;
 
 	public static USB_Interface usb_intf = null;
 
@@ -66,6 +67,10 @@ public class IMU_Service extends Service implements SensorEventListener {
 		mSensorManager.registerListener(
 				this, 
 				mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), 
+				SensorManager.SENSOR_DELAY_UI );
+		mSensorManager.registerListener(
+				this, 
+				mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION), 
 				SensorManager.SENSOR_DELAY_UI );
 	}
 
@@ -131,7 +136,6 @@ public class IMU_Service extends Service implements SensorEventListener {
 
 			while(running) {
 				s += usb_intf.read();
-				s += "playabc;playdef;";
 				while(s.length()>0) {
 					String key;
 					int pos;
@@ -167,10 +171,9 @@ public class IMU_Service extends Service implements SensorEventListener {
 							int pos2;
 							if( (pos2=s.indexOf(";"))<0) pos=-1;
 							else {
-								MediaPlayer mPlayer = MediaPlayer.create(null, Uri.parse(s.substring(pos, pos2)));
+								mPlayer = MediaPlayer.create(null, Uri.parse(s.substring(pos+key.length(), pos2)));
 
 								try {
-									mPlayer.prepare();
 									mPlayer.start();
 								} catch (Exception e) {
 									// TODO Auto-generated catch block
@@ -192,7 +195,7 @@ public class IMU_Service extends Service implements SensorEventListener {
 							if( (pos2=s.indexOf(";"))<0) pos=-1;
 							else {
 								try {
-									startUri(s.substring(pos, pos2));
+									startUri(s.substring(pos+key.length(), pos2));
 								} catch (Exception e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
@@ -234,6 +237,8 @@ public class IMU_Service extends Service implements SensorEventListener {
 			pos = 0;
 		} else if (type == Sensor.TYPE_GYROSCOPE) {
 			pos = 1;
+		} else if (type == Sensor.TYPE_ORIENTATION) {
+			usb_intf.write(val2str6(evt.values));
 		}
 
 		if(pos<0) return;
@@ -245,6 +250,14 @@ public class IMU_Service extends Service implements SensorEventListener {
 			usb_intf.write(val2str5());
 		else 
 			usb_intf.write(val2str34());
+	}
+
+	private String val2str6(float[] values) {
+		//compatible to Wireless IMU
+		String s = "0, 6";
+		for(int i=0; i<3; i++)
+			s += ", "+values[i]/180.*Math.PI;
+		return s+"|\n";
 	}
 
 	private String val2str() {
