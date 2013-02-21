@@ -27,6 +27,15 @@ class Tablet_StartLinphone(smach.State):
 		commandTablet('startLinphone')
 		return 'succeeded'
 
+class Tablet_KillLinphone(smach.State):
+	def __init__(self):
+		smach.State.__init__(self, 
+			outcomes=['succeeded'])
+
+	def execute(self, userdata):
+		os.system("adb shell am force-stop org.linphone")
+		return 'succeeded'
+
 class Tablet_DisableScreensaver(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, 
@@ -82,4 +91,15 @@ class Turtlebot_SetMode(smach.State):
 	    except rospy.ServiceException, e:
 		print "Service call failed: %s"%e
 	    return 'failed'
+
+
+class Exit(smach.State):
+	def __init__(self):
+		smach.State.__init__(self, 
+			outcomes=['succeeded'])
+
+	def execute(self, userdata):
+	    exit(0)
+	    return 'succeeded'
+
 
