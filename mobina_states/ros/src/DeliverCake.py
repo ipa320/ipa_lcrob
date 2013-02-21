@@ -31,9 +31,12 @@ class DeliveryTask(smach.StateMachine):
 
 
             	self.add('MOVE_TO_DELIVERY',ApproachPose(path_name),
-                                   transitions={'reached':'LIGHT3',
+                                   transitions={'reached':'WAIT2',
                                                 'not_reached':'MOVE_TO_DELIVERY',
                                                 'failed':'failed'})
+
+            	self.add('WAIT2',Sleep(25),
+                                   transitions={'succeeded':'LIGHT3'})
 
             	self.add('LIGHT3',Light('red'),
                                    transitions={'succeeded':'PLAY_HAPPY_BIRTHDAY'})
