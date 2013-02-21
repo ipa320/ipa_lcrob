@@ -10,6 +10,8 @@ class AVRInterface:
 	GET_ANALOG	=0x30
 	GET_INPUT	=0x40
 	SETUP		=0x50
+	SET_PULSE	=0x60
+	SET_MOTORAIM	=0x70
 
 	def __init__(self):
 		#setup device
@@ -29,15 +31,27 @@ class AVRInterface:
 
 	def set_output(self, ch, v):
 		assert (ch>=0 and ch<6)
-		if ch==2 or ch==5: return
+		#if ch==2 or ch==5: return
 		self.lock.acquire()
 		self.write( (self.SET_OUTPUT|ch),[v])
 		self.lock.release()
 
+        def set_pulse(self, ch, v):
+                assert (ch>=0 and ch<6)
+                #if ch==2 or ch==5: return
+                self.lock.acquire()
+                self.write( (self.SET_PULSE|ch),[(v<<1)])
+                self.lock.release()
+
 	def set_motor(self, motor, back, speed):
 		self.lock.acquire()
-		if motor==0: self.write( (self.SET_MOTOR|motor|(back<<1)), [speed])
+		self.write( (self.SET_MOTOR|motor|(back<<1)), [speed])
 		self.lock.release()
+
+        def set_motoraim0(self, aim):
+                self.lock.acquire()
+                self.write( (self.SET_MOTORAIM), [(aim>>8),(aim&0xff)])
+                self.lock.release()
 
 	def get_analog(self, ch):
 		assert(ch<4 and ch>=0)
