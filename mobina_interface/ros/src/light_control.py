@@ -65,6 +65,8 @@ class LightControl:
 		self.intf = intf
 		self.conf = conf
 
+		self.pulse_offset = 6
+
 		# set default color to green rgba = [0,1,0,1]
 		self.color = ColorRGBA()
 		self.color.r = 0
@@ -73,6 +75,7 @@ class LightControl:
 		self.color.a = 1
 		self.setRGB( self.color )
 		rospy.Subscriber(ns+"/command", ColorRGBA, self.LightCallback)
+		rospy.Subscriber(ns+"/pulse", ColorRGBA, self.PulseCallback)
 
 	def setRGB(self, color):
 		self.color = color
@@ -110,4 +113,9 @@ class LightControl:
 	def LightCallback(self,color):
 		#rospy.loginfo("Received new color: rgb = [%d, %d, %d] a = [%d]", color.r, color.g, color.b, color.a)
 		self.setRGB(color)
+
+	def PulseCallback(self,color):
+		self.intf.set_val(self.conf[0]+self.pulse_offset, color.r)
+		self.intf.set_val(self.conf[1]+self.pulse_offset, color.g)
+		self.intf.set_val(self.conf[2]+self.pulse_offset, color.b)
 

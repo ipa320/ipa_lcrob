@@ -57,6 +57,7 @@ import rospy
 from trajectory_control import TrajectoryControl
 from light_control import LightControl
 from sensor_msgs.msg import ChannelFloat32
+from ipa_odroidx_interface.srv import MotorAim
 
 
 class MobinaInterface:
@@ -67,7 +68,7 @@ class MobinaInterface:
 		self.input = ChannelFloat32()
 
 		self.output.name = "output"
-		self.output.values = [0,0, 0,0,0, 0,0,0]
+		self.output.values = [0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0]
 
 		self.input.name = "input"
 		self.input.values = [0,0, 0,0]
@@ -81,6 +82,15 @@ class MobinaInterface:
 		#print "setval ",pin,value
 		self.output.values[pin] = value
 		self.pub_out.publish(self.output)
+
+	def set_mot0(self, value):
+		rospy.wait_for_service('mot0')
+		try:
+			mot0 = rospy.ServiceProxy('mot0', MotorAim)
+			mot0(value)
+		except rospy.ServiceException, e:
+			print "Service call failed: %s"%e
+
 
 	def get(self, pin):
 		return self.input.values[pin]
