@@ -9,7 +9,7 @@ from mobina_interface.srv import *
 from turtlebot_node.srv import SetTurtlebotMode
 
 
-def commandTablet(self, cmd, srv_name = '/tablet/command'):
+def commandTablet(cmd, srv_name = '/tablet/command'):
     rospy.wait_for_service(srv_name)
     try:
 	add_two_ints = rospy.ServiceProxy(srv_name, StringSrv)
@@ -25,6 +25,7 @@ class Tablet_StartLinphone(smach.State):
 
 	def execute(self, userdata):
 		commandTablet('startLinphone')
+		return 'succeeded'
 
 class Tablet_DisableScreensaver(smach.State):
 	def __init__(self):
@@ -33,6 +34,7 @@ class Tablet_DisableScreensaver(smach.State):
 
 	def execute(self, userdata):
 		commandTablet('on')
+		return 'succeeded'
 
 class Tablet_EnableScreensaver(smach.State):
 	def __init__(self):
@@ -41,6 +43,7 @@ class Tablet_EnableScreensaver(smach.State):
 
 	def execute(self, userdata):
 		commandTablet('off')
+		return 'succeeded'
 
 class Tablet_Play(smach.State):
 	def __init__(self, f):
@@ -50,6 +53,7 @@ class Tablet_Play(smach.State):
 
 	def execute(self, userdata):
 		commandTablet('play'+self.file+';')
+		return 'succeeded'
 
 class Tablet_Start(smach.State):
 	def __init__(self, f):
@@ -59,6 +63,7 @@ class Tablet_Start(smach.State):
 
 	def execute(self, userdata):
 		commandTablet('start'+self.file+';')
+		return 'succeeded'
 
 
 
