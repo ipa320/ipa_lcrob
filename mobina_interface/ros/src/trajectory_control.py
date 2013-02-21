@@ -184,7 +184,7 @@ class TrajectoryControl(object):
 		if len(vel.velocities)==1: self.intf.set_val(self.conf_out, vel.velocities[0].value)
 		else: rospy.logwarn("only one joint in "+self._action_name)
 
-	def execute_cb(self, goal):
+	def execute_cb_old(self, goal):
 		# helper variables
 		r = rospy.Rate(50)
 		success = True
@@ -231,6 +231,29 @@ class TrajectoryControl(object):
 			r.sleep()
 
 		self.intf.set_val(self.conf_out, 0)
+		self.joint_msg.velocity = [0.0]
+		self._result.error_code = 0
+		if success:
+			self._as.set_succeeded(self._result)
+
+	def execute_cb(self, goal):
+		# helper variables
+		r = rospy.Rate(20)
+		success = True
+
+		assert( len(goal.trajectory.points[0].positions)==1 )
+		#assert( len(goal.trajectory.points[0].velocities)==1 )
+
+		pos = self.rad2pos(goal.trajectory.points[0].positions[0])
+		self.intf.set_mot0(pos)
+    
+		start = rospy.get_time()
+		while abs(self._getpos()-pos)>self.tolerance and not rospy.is_shutdown():
+			if (rospy.get_time()-start)>10 or self._as.is_preempt_requested():
+				success=False
+				break
+			r.sleep()
+
 		self.joint_msg.velocity = [0.0]
 		self._result.error_code = 0
 		if success:
