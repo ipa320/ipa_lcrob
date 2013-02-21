@@ -199,12 +199,12 @@ void sendSensorPacket(uint8_t packet_id) {
 			break;
 		case PID_OPEN_INTERFACE_MODE:
 			uart_putc(OI_MODE);
-
-		case PID_VELOCITY_LEFT:
+			break;
+		case PID_VELOCITY_RIGHT:
 			uart_putc((VELOCITY_1>>8)& 0xff);
 			uart_putc(VELOCITY_1 & 0xff);
 			break;
-		case PID_VELOCITY_RIGHT:
+		case PID_VELOCITY_LEFT:
 			uart_putc((VELOCITY_2>>8)& 0xff);
 			uart_putc(VELOCITY_2 & 0xff);
 			break;
@@ -275,7 +275,7 @@ void parse(void)
 				case 10: MASTER_UART_BAUD_RATE=57600;break;
 				default: MASTER_UART_BAUD_RATE=115200;break;
 			}
-			cli();// Should be tested
+			cli();
 			uart_init(UART_BAUD_SELECT(MASTER_UART_BAUD_RATE, F_CPU ));
 			sei();
 			break;
@@ -286,8 +286,7 @@ void parse(void)
 		case OP_PLAY_SCRIPT:
 			break;
 		case OP_SHOW_SCRIPT:
-//			uartPutByte(0); //no script
-			uart_get_valid_char();
+			uart_putc(0);
 			break;
 		case OP_FULL:
 			OI_MODE = 3;
@@ -323,7 +322,7 @@ void parse(void)
 			break;
 		case OP_DRIVE_DIRECT:
 			//TODO:
-			VELOCITY_1 = (((uint16_t)uart_get_valid_char())<<8) | uart_get_valid_char();
+			VELOCITY_1 = (((uint16_t)uart_get_valid_char())<<8) | uart_get_valid_char(); // Right wheel velocity first
 			VELOCITY_2 = (((uint16_t)uart_get_valid_char())<<8) | uart_get_valid_char();
 			motor_setVel(VELOCITY_1, VELOCITY_2);
 			break;
