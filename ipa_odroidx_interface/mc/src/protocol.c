@@ -14,7 +14,11 @@
 #define CHANNEL2PIN(x) (x==0?7:5)
 
 #define SOFT_PWM_CHANNELS 6
-u08 pwm_vals[SOFT_PWM_CHANNELS] = {};
+volatile u08 pwm_vals[SOFT_PWM_CHANNELS] = {0,0,0,0,0,0};
+volatile u08 pwm_vals2[SOFT_PWM_CHANNELS] = {0,0,0,0,0,0};
+volatile u08 pwm_mode[SOFT_PWM_CHANNELS] = {0,0,0,0,0,0};	//pulse: 0 -> no pulsing
+volatile u16 motor_aim;	//0 just move
+volatile u08  motor_enabled;
 
 
 static void set_output(u08 out) {
@@ -23,12 +27,36 @@ static void set_output(u08 out) {
 }
 
 static void soft_pwm(void) {
-	static u08 cnt = 0, vo=0;
-	u08 i,v=0xFF;
+	static u08 cnt = 0, vo=0, cnt2=0;
+	u08 i,v=0, t;
+	u16 ad;
 
-	for(i=0; i<SOFT_PWM_CHANNELS; i++) {
-		if(pwm_vals[i]<=cnt) {
-			v&=~(1<<i);
+	//calc. output
+	for(i=0; i<SOFT_PWM_CHANNELS; i++)
+		if(pwm_vals[i]>cnt)
+			v|=(1<<i);
+
+	//pulsing mode
+	if(cnt==0) {
+		cnt2+=16;
+		if(cnt2==0) {
+			for(i=0; i<SOFT_PWM_CHANNELS; i++) {
+				if(pwm_mode[i]&1) {
+					t = (pwm_mode[i]&(~1))>>1;
+					if(t!=0 && pwm_vals[i]<=t) {
+						pwm_mode[i]&=~1;
+						pwm_vals[i]=0;
+					}
+					else pwm_vals[i]-=t;
+				} else {
+					t = (pwm_mode[i]&(~1))>>1;
+					if(t!=0 && pwm_vals[i]>=pwm_vals2[i]-t) {
+						pwm_mode[i]|=1;
+						pwm_vals[i]=pwm_vals2[i];
+					}
+					else pwm_vals[i]+=t;
+				}
+			}
 		}
 	}
 
@@ -37,8 +65,24 @@ static void soft_pwm(void) {
 		vo=v;
 	}
 
-	cnt+=3;
+	cnt+=7;
 	//timer2ClearOverflowCount();
+
+	if(motor_enabled && motor_aim!=0) {
+		if(!a2dIsComplete()) {
+			ad = (inb(ADCL) | (inb(ADCH)<<8));
+			if(ad>motor_aim) {
+				if(ad>motor_aim+MOTOR_TOLERANCE) set_motor(MOTOR_OUT_CHANNEL, MOTOR_SPEED);
+				else  set_motor(MOTOR_OUT_CHANNEL, 0);
+			} else {
+				if(ad+MOTOR_TOLERANCE<motor_aim) set_motor(MOTOR_OUT_CHANNEL|2, MOTOR_SPEED);
+				else  set_motor(MOTOR_OUT_CHANNEL, 0);
+			}
+
+			a2dSetChannel(MOTOR_AD_CHANNEL);
+			a2dStartConvert();
+		}
+	}
 }
 
 //set speed, corred speed according to direction
@@ -107,29 +151,39 @@ void set_motor(u08 motor, u08 speed) {
 		set_motor_speed(channel, speed);
 }
 
-u16 get_analog(u08 ch) {
-	if(ch>=4) return 0xffff;
-	return a2dConvert10bit(ch);
-}
-
 u08 get_input(void) {
 	return inb(PINC)&0x0f;
 }
 
+u16 get_analog(u08 ch) {
+	u16 t;
+	if(ch>=4) return 0xffff;
+	motor_enabled=0;
+	a2dSetChannel(ch);
+	a2dStartConvert();
+	while(a2dIsComplete()) soft_pwm();
+	t = (inb(ADCL) | (inb(ADCH)<<8));
+	motor_enabled = 1;
+	return t;
+}
+
 void on_parse(void) {
 	u08 c = softSpiGetByte();
+	u16 t;
 
 	switch(c&0xF0) {
 		case SET_OUTPUT:
 			//set_output(softSpiGetByte());
 			if((c&0x0F)>=6) break;
 			while(!softSpiHasByte()) soft_pwm();
-			pwm_vals[c&0x0F] = softSpiGetByte();
+			pwm_vals2[c&0x0F] = pwm_vals[c&0x0F] = softSpiGetByte();
+			pwm_mode[c&0x0F] = 0;
 			break;
 
 		case SET_MOTOR:
 			while(!softSpiHasByte()) soft_pwm();
 			set_motor(c&0x03, softSpiGetByte());
+			motor_aim = 0;
 			break;
 
 		case GET_ANALOG:
@@ -147,6 +201,20 @@ void on_parse(void) {
 			softSpiSendByte('O');
 			PORTC = softSpiGetByte()&0x0f;
 			break;
+
+		case SET_PULSE:
+			if((c&0x0F)>=6) break;
+			while(!softSpiHasByte()) soft_pwm();
+			pwm_mode[c&0x0F] = softSpiGetByte();
+			break;
+
+		case SET_MOTORAIM:
+			while(!softSpiHasByte()) soft_pwm();
+			t = softSpiGetByte()<<8;
+			while(!softSpiHasByte()) soft_pwm();
+			t |= softSpiGetByte();
+			motor_aim = t;
+			break;
 	}
 }
 
@@ -160,15 +228,15 @@ void init(void) {
 	// turn on and initialize A/D converter
 	a2dInit();
 
-	a2dSetPrescaler(ADC_PRESCALE_DIV32);
+	a2dSetPrescaler(ADC_PRESCALE_DIV128);
 	a2dSetReference(ADC_REFERENCE_AVCC);
 
 	// initialize the timer system
-	//timerInit();
+	timer1Init();
 
 	outb(DDRB, 0x06);
 	outb(DDRC, 0x30);
-	outb(DDRD, 0xA2);
+	outb(DDRD, 0xA3);
 
 	timer1PWMInit(8); //8 bit resolution
 
@@ -190,5 +258,11 @@ void init(void) {
 	timerAttach(TIMER0OVERFLOW_INT, check_motor);
 #endif
 
+	motor_aim=0;
+	motor_enabled=1;
+
 	sei();
+
+	set_motor(0,0);
+	set_motor(1,0);
 }
