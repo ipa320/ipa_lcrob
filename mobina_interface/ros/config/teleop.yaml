@@ -20,6 +20,8 @@ led_r_button: 3
 led_g_button: 4
 led_b_button: 5
 led_step: 0.1
+led_step_pulse: 0.004
+led_pulse_button: 2
 
 script_button0: 2
 script_button1: 3
