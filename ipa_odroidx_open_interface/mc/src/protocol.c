@@ -23,7 +23,7 @@ int16_t 			VELOCITY_1 = 0;
 int16_t				VELOCITY_2 = 0;
 
 //For storing battery voltage
-uint16_t			BATTERY_VOLTAGE = 24000; //using 5e-4V as a unit step
+volatile uint16_t	BATTERY_VOLTAGE = 0; //using 5e-4V as a unit step, will be read from ADC
 
 //For storing OI_MODE
 uint8_t				OI_MODE = 0;
@@ -135,15 +135,25 @@ implement
 #define PID_VELOCITY_RIGHT 41
 #define PID_VELOCITY_LEFT 42
 
+void adc_init(void){
+	ADMUX = 0x40; // Enable AVcc with external capacitor at ARef pin, ADC0 as input.
+	DIDR0 =0x01; //Disable digital input at pin PINA0
+	ADCSRB = 0x00;
+	//Enable ADEN, ADSC, ADATE, ADIE and set ADPS to f/128	
+	ADCSRA = 0xEF;
+	BATTERY_VOLTAGE = 0;
+}
 
 void init(void){
 	NUMBER_OF_PACKETS = 0;
 	TIMER_OVERFLOW = 0;
 	uart_init(UART_BAUD_SELECT(MASTER_UART_BAUD_RATE, F_CPU ));
 	//All initiialization is to be done here.
-	//ADC
 	softuart_init(PORT_1);
 	softuart_init(PORT_2);
+
+	adc_init();
+
 	sei();
 	motor_init(); // enable motors after both soft uart ports are enabled.
 }
@@ -408,4 +418,8 @@ ISR(TIMER1_OVF_vect){
 	TCNT1 = 0x78FF; //15ms
 	TCCR1B |= (1 << CS11);
 	TIMSK1 |= (1 << TOIE1);
+}
+
+ISR(ADC_vect){
+	BATTERY_VOLTAGE = ((uint16_t)(ADCH) << 8) | (ADCL & 0xff);
 }
