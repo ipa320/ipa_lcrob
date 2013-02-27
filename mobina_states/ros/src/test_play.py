@@ -13,15 +13,18 @@ class DeliverCake(smach.StateMachine):
         smach.StateMachine.__init__(self, outcomes=['succeeded'])
 
         with self:
-		if len(sys.argv)>1:
-		    	self.add('PLAY_HAPPY_BIRTHDAY',Tablet_Play("/mnt/sdcard/musik.mp3"),
-		                           transitions={'succeeded':'EXIT'})
+		if len(sys.argv)>2:
+		    	self.add('PLAY_HAPPY_BIRTHDAY1',Tablet_Start("http://www.golem.de/"),
+		                           transitions={'succeeded':'succeeded'})
+		elif len(sys.argv)>1:
+		    	self.add('PLAY_HAPPY_BIRTHDAY2',Tablet_Play("/mnt/sdcard/musik.mp3"),
+		                           transitions={'succeeded':'succeeded'})
 		else:
-            		self.add('PLAY_HAPPY_BIRTHDAY',Tablet_Start("/mnt/sdcard/Mimi.mp4"),
-                	                   transitions={'succeeded':'EXIT'})
+            		self.add('PLAY_HAPPY_BIRTHDAY3',Tablet_Start("/mnt/sdcard/Mimi.mp4"),
+                	                   transitions={'succeeded':'succeeded'})
 
-            	self.add('EXIT', Exit(),
-                                   transitions={'succeeded':'succeeded'})
+            	#self.add('EXIT', Exit(),
+                #                   transitions={'succeeded':'succeeded'})
 
 
 
