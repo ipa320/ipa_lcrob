@@ -10,6 +10,7 @@ void int2str(char *, int16_t);
 void motor_init();
 void motor_stop();
 void motor_setVel(int16_t, int16_t);
-int32_t motor_getPos(uint8_t motor);
+int32_t motor_getPos(uint8_t motor, uint8_t *valid_val);
+void motor_reqPos(uint8_t motor);
 
 #endif

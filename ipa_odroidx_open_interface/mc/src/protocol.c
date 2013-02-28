@@ -27,6 +27,13 @@ volatile uint16_t	BATTERY_VOLTAGE = 0; //using 5e-4V as a unit step, will be rea
 
 //For storing OI_MODE
 uint8_t				OI_MODE = 0;
+
+uint16_t			POSITION_1 = 0;
+uint16_t			POSITION_2 = 0;
+int32_t				LAST_POSITION_1 =0;
+int32_t				LAST_POSITION_2 = 0;
+
+uint8_t				STREAM_ENABLED = 0;
 /*
 implement
 
@@ -134,6 +141,8 @@ implement
 #define PID_RADIUS 40
 #define PID_VELOCITY_RIGHT 41
 #define PID_VELOCITY_LEFT 42
+#define PID_ENCODER_COUNTS_LEFT 43
+#define PID_ENCODER_COUNTS_RIGHT 44
 
 void adc_init(void){
 	ADMUX = 0x40; // Enable AVcc with external capacitor at ARef pin, ADC0 as input.
@@ -143,7 +152,12 @@ void adc_init(void){
 	ADCSRA = 0xEF;
 	BATTERY_VOLTAGE = 0;
 }
-
+void timer_init(void){
+	//A timer is set for 15 ms, if the stream is enabled a STREAM_RESPONSE packet is generated.
+	TCNT1 = 0x78FF; //15ms
+	TCCR1B |= (1 << CS11);
+	TIMSK1 |= (1 << TOIE1);
+}
 void init(void){
 	NUMBER_OF_PACKETS = 0;
 	TIMER_OVERFLOW = 0;
@@ -156,6 +170,7 @@ void init(void){
 
 	sei();
 	motor_init(); // enable motors after both soft uart ports are enabled.
+	timer_init();
 }
 
 uint8_t uart_get_valid_char(){
@@ -222,6 +237,16 @@ void sendSensorPacket(uint8_t packet_id) {
 		case PID_VOLTAGE: //Will have to implement 
 			uart_putc((BATTERY_VOLTAGE >> 8) & 0xff);
 			uart_putc(BATTERY_VOLTAGE & 0xff);
+			break;
+
+		case PID_ENCODER_COUNTS_LEFT:
+			uart_putc((POSITION_2 >> 8) & 0xff);
+			uart_putc(POSITION_2 & 0xff);
+			break;
+			
+		case PID_ENCODER_COUNTS_RIGHT:
+			uart_putc((POSITION_1 >> 8) & 0xff);
+			uart_putc(POSITION_1 & 0xff);
 			break;
 	}
 }
@@ -352,24 +377,11 @@ void parse(void)
 			for (int i=0; i<NUMBER_OF_PACKETS; i++){ // Make sure the array STREAM_PACKET_ID is big enough
 				STREAM_PACKET_ID[i] = uart_get_valid_char();
 			}
-			//A timer is set for 15 ms, if the stream is enabled a STREAM_RESPONSE packet is generated.
-			TCNT1 = 0x78FF; //15ms
-			TCCR1B |= (1 << CS11);
-	 		TIMSK1 |= (1 << TOIE1);
+			STREAM_ENABLED = 1;
 			break;
 		case OP_PAUSE_RESUME:
-			if (uart_get_valid_char()){
-				if (NUMBER_OF_PACKETS>0){
-					TCNT1 = 0x78FF; //15ms
-					TCCR1B |= (1 << CS11);
-	 				TIMSK1 |= (1 << TOIE1);
-				}
-			}
-			else{
-				TCNT1 = 0x0; //Disabling timer
-				TCCR1B &= 0xF8;
-	 			TIMSK1 &= ~(1 << TOIE1);
-			}
+			STREAM_ENABLED=uart_get_valid_char();
+			
 			//TODO:
 			break;
 		case OP_SCRIPT:
@@ -391,6 +403,51 @@ void parse(void)
 	*/
 }
 
+void updatePosition(){
+	static uint8_t req_sent_1=0;
+	static uint8_t req_sent_2=0;
+
+	static uint8_t timeout_count_1=0;
+	static uint8_t timeout_count_2=0;
+
+	if (req_sent_1==0 || timeout_count_1 == 10){
+		motor_reqPos(0);
+		req_sent_1 =1 ;
+		timeout_count_1 =0;
+	}
+	if (req_sent_2 ==0 || timeout_count_2 == 10){
+		motor_reqPos(1);
+		req_sent_2 = 1;
+		timeout_count_2 = 0;
+	} 
+	if(req_sent_1 == 1){
+		uint8_t valid_val= 0;
+		int32_t current_position = motor_getPos(0, &valid_val);
+		if (valid_val == 1){
+			if (LAST_POSITION_1 != current_position){
+
+				POSITION_1 += (current_position - LAST_POSITION_1);
+				LAST_POSITION_1 = current_position;
+			}
+			req_sent_1 = 0;
+		}
+		timeout_count_1++;
+	}
+	if (req_sent_2 == 1){
+		uint8_t valid_val= 0;
+		int32_t current_position = motor_getPos(1, &valid_val);
+		if (valid_val == 1){
+			if (LAST_POSITION_2 != current_position){
+
+				POSITION_2 += (current_position - LAST_POSITION_2);
+				LAST_POSITION_2 = current_position;
+			}
+			req_sent_2 = 0;
+		}
+		timeout_count_2++;
+	}
+}
+
 void generateStreamResponse(){
 	uint8_t count=0;
 	uart_putc(OP_STREAM_RESPONSE);
@@ -400,6 +457,8 @@ void generateStreamResponse(){
 			case PID_VELOCITY:
 			case PID_VELOCITY_LEFT:
 			case PID_VELOCITY_RIGHT:
+			case PID_ENCODER_COUNTS_LEFT:
+			case PID_ENCODER_COUNTS_RIGHT:
 				count+=3;
 		}
 	}
@@ -410,6 +469,11 @@ void generateStreamResponse(){
 		parseSendSensorPacket(STREAM_PACKET_ID[i]);
 	}
 	uart_put_checksum();
+}
+
+
+uint8_t is_stream_enabled(){
+	return STREAM_ENABLED;
 }
 
 

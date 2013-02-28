@@ -14,7 +14,9 @@ int main(void)
 		parse();	
 		if (TIMER_OVERFLOW)
 		{
-			generateStreamResponse();
+			if (is_stream_enabled())
+				generateStreamResponse();
+			updatePosition(); // Comment when motor controller no connected
 			TIMER_OVERFLOW=0;
 		}
 	}

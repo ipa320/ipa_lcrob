@@ -26,6 +26,7 @@ void int2str(char *str, int16_t val){
 
 void motor_init() {
 	softuart_broadcast(ENABLE);
+	softuart_broadcast("HO\r\n"); // set current position to 0
 }
 
 void motor_stop() {
@@ -43,18 +44,28 @@ void motor_setVel(int16_t rpm1, int16_t rpm2) {
 	softuart_puts(PORT_2, buffer);
 }
 
-int32_t motor_getPos(uint8_t motor) {
-	char c;
-	int32_t r=0;
-
+void motor_reqPos(uint8_t motor){
 	softuart_puts(motor, POSITION);
-	while( (c=softuart_getchar(motor))!='\r' ) {
-		if(c=='-') r*=-1;
-		else if(c>='0'&&c<='9') {
-			r*=10;
-			r+=c-'0';
+}
+int32_t motor_getPos(uint8_t motor, uint8_t * valid_val) {
+	if(softuart_kbhit(motor)){	
+		char c;
+		int32_t r=0;
+		uint8_t is_negative= 0;
+		while( (c=softuart_getchar(motor))!='\r' ) {
+			if(c=='-') is_negative=1; // Assuming "-" is the first character.
+			else if(c>='0'&&c<='9') {
+				r*=10;
+				r+=c-'0';
+			}
 		}
+		if(is_negative)r*=-1;
+		softuart_getchar(motor); // for '\n'
+		*valid_val = 1;
+		return r;
 	}
-	softuart_getchar(motor); // for '\n'
-	return r;
+	else{
+		*valid_val = 0;
+		return 0;
+	}
 }

@@ -9,7 +9,7 @@
 #define SOFTUART_PORT_1_BAUD_RATE 9600
 #define SOFTUART_PORT_2_BAUD_RATE 9600
 
-typedef enum {PORT_1=0, PORT_2} SOFTUART_PORT;
+typedef enum {PORT_1=0, PORT_2=1} SOFTUART_PORT;
 
 //PORT 1 Definitions
 #define SOFTUART_PORT_1_RXPIN PIND
@@ -60,7 +60,7 @@ typedef enum {PORT_1=0, PORT_2} SOFTUART_PORT;
 #define SOFTUART_PORT_2_T_CNT_REG         TCNT2
 #define SOFTUART_PORT_2_T_INTCTL_REG      TIMSK2
 #define SOFTUART_PORT_2_CMPINT_EN_MASK    (1 << OCIE2A)
-#define SOFTUART_PORT_2_CTC_MASKA         (1 << WGM01)
+#define SOFTUART_PORT_2_CTC_MASKA         (1 << WGM21)
 #define SOFTUART_PORT_2_CTC_MASKB         (0)
 
 
@@ -68,10 +68,10 @@ typedef enum {PORT_1=0, PORT_2} SOFTUART_PORT;
 
 #if (SOFTUART_PORT_2_PRESCALE == 8)
 	#define SOFTUART_PORT_2_PRESC_MASKA         (0)
-	#define SOFTUART_PORT_2_PRESC_MASKB         (1 << CS01)
+	#define SOFTUART_PORT_2_PRESC_MASKB         (1 << CS21)
 #elif (SOFTUART_PORT_2_PRESCALE==1)
 	#define SOFTUART_PORT_2_PRESC_MASKA         (0)
-	#define SOFTUART_PORT_2_PRESC_MASKB         (1 << CS00)
+	#define SOFTUART_PORT_2_PRESC_MASKB         (1 << CS20)
 #else 
 	#error "prescale unsupported"
 #endif
