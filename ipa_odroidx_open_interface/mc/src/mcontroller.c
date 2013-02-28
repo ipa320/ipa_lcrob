@@ -52,7 +52,7 @@ int32_t motor_getPos(uint8_t motor, uint8_t * valid_val) {
 		char c;
 		int32_t r=0;
 		uint8_t is_negative= 0;
-		while( (c=softuart_getchar(motor))!='\r' ) {
+		while( (c=softuart_getchar(motor))!='\r' ) { // MUST IMPLEMENT WATCHDOG TIMER HERE
 			if(c=='-') is_negative=1; // Assuming "-" is the first character.
 			else if(c>='0'&&c<='9') {
 				r*=10;
@@ -60,7 +60,7 @@ int32_t motor_getPos(uint8_t motor, uint8_t * valid_val) {
 			}
 		}
 		if(is_negative)r*=-1;
-		softuart_getchar(motor); // for '\n'
+		softuart_getchar(motor); // for '\n', MUST IMPLEMENT WATCHDOG TIMER HERE
 		*valid_val = 1;
 		return r;
 	}
