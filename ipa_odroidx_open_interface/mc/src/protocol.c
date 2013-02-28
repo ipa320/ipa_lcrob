@@ -274,6 +274,9 @@ void parseSendSensorPacket(uint8_t packet_id){
 		case 6:
 			for(packet_id=7; packet_id<=42; packet_id++) sendSensorPacket(packet_id);
 			break;
+		case 100:
+			for(packet_id=7; packet_id<=44; packet_id++) sendSensorPacket(packet_id);
+			break;
 		//Implement all packet types here
 		default: sendSensorPacket(packet_id); 
 			break;
