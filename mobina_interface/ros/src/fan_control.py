@@ -8,16 +8,15 @@
 #
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# Project name: care-o-bot
-# ROS stack name: cob_driver
-# ROS package name: cob_light
+# Project name: mobina
+# ROS stack name: mobina
+# ROS package name: mobina
 #								
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #			
-# Author: Florian Weisshardt, email:florian.weisshardt@ipa.fhg.de
-# Supervised by: Florian Weisshardt, email:florian.weisshardt@ipa.fhg.de
+# Author: Joshua Hampp
 #
-# Date of creation: June 2010
+# Date of creation: Nov 2012
 # ToDo:
 #
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -54,65 +53,23 @@
 import roslib; 
 roslib.load_manifest('mobina_interface')
 import rospy
-from trajectory_control import TrajectoryControl
-from light_control import LightControl
-from fan_control import FanControl
-from sensor_msgs.msg import ChannelFloat32
-from ipa_odroidx_interface.srv import MotorAim
 
+from mobina_interface.srv import *
 
-class MobinaInterface:
-	def __init__(self):
-		self.pub_out = rospy.Publisher("command", ChannelFloat32, tcp_nodelay=True)
+class FanControl(object):
 
-		self.output = ChannelFloat32()
-		self.input = ChannelFloat32()
+	def __init__(self, name, intf, conf_out,):
+		pname = '/odroidx_interface'
+		self.intf = intf
+		self.conf_out = conf_out
 
-		self.output.name = "output"
-		self.output.values = [0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0]
+		self.calibration_srv = rospy.Service(name+'/set', FanSrv, self.handle_set)
 
-		self.input.name = "input"
-		self.input.values = [0,0, 0,0]
+	def handle_set(self, req):
+		v = req.val
+		if v<0: v=0
+		elif v>1: v=1
 
-		self.lights = [LightControl("light_controller", self, [3,6,2])]
-		self.motors = [TrajectoryControl("tray_controller", "tray_joint", self, 0, 0)]
-		self.fans   = [FanControl("fan_controller", self, 7)]
+		self.intf.set_val(self.conf_out, v)
 
-                rospy.Subscriber("state", ChannelFloat32, self.InputCallback)
-
-	def set_val(self, pin, value):
-		#print "setval ",pin,value
-		self.output.values[pin] = value
-		self.pub_out.publish(self.output)
-
-	def set_mot0(self, value):
-		rospy.wait_for_service('mot0')
-		try:
-			mot0 = rospy.ServiceProxy('mot0', MotorAim)
-			mot0(value)
-		except rospy.ServiceException, e:
-			print "Service call failed: %s"%e
-
-
-	def get(self, pin):
-		return self.input.values[pin]
-
-	def InputCallback(self, inp):
-		self.input = inp
-		for m in self.motors:	#inform all motors
-			m.changed()
-
-	def publish_marker(self):
-		for l in self.lights:
-			l.publish_marker()
-		for m in self.motors:
-			m.publish()
-
-if __name__ == '__main__':
-	rospy.init_node('mobina')
-	mi = MobinaInterface()
-		
-	r = rospy.Rate(10)
-	while not rospy.is_shutdown():
-		mi.publish_marker()
-		r.sleep()
+		return FanSrvResponse()
