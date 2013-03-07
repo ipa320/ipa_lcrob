@@ -23,7 +23,6 @@ void int2str(char *str, int16_t val){
 	*str = 0;
 }
 
-
 void motor_init() {
 	softuart_broadcast(ENABLE);
 	softuart_broadcast("HO\r\n"); // set current position to 0
@@ -45,6 +44,7 @@ void motor_setVel(int16_t rpm1, int16_t rpm2) {
 }
 
 void motor_reqPos(uint8_t motor){
+	softuart_flush_input_buffer(motor);
 	softuart_puts(motor, POSITION);
 }
 int32_t motor_getPos(uint8_t motor, uint8_t * valid_val) {
