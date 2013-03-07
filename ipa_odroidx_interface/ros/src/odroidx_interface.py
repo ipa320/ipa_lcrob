@@ -72,8 +72,7 @@ class AVRControl:
 		else:
 			self.analog_ch = map(int, str(rospy.get_param(self.ns_global_prefix + "/analog_channels")).split(","))
 
-		self.intf = AVRInterface()
-		self.intf.setup()
+		self._connect()
 
 		self.old_values = [-1]*14
 
@@ -81,6 +80,25 @@ class AVRControl:
 		rospy.Subscriber("command", ChannelFloat32, self.setCallback, queue_size=1)
 
 		s = rospy.Service('mot0', MotorAim, self.cb_mot0)
+
+	def _connect(self):
+		while True:
+			try:
+				self.intf = AVRInterface()
+				self.intf.setup()
+				break
+			except Exception, e:
+				print "AVR Error:", e
+				rospy.sleep(1)
+
+
+	def _check(self):
+		try:
+			self.intf.setup()
+		except Exception, e:
+			return False
+		return True
+
 
 	def setCallback(self, data):
 		assert(len(data.values)==14)
@@ -97,7 +115,7 @@ class AVRControl:
 		for i in range(8,14):
 			assert (data.values[i]>=0 and data.values[i]<=1)
 			if self.old_values[i]!=data.values[i]:
-				if data.values[i]!=0: self.intf.set_pulse(i-8, int(data.values[i]*255))
+				self.intf.set_pulse(i-8, int(data.values[i]*255))
 				self.old_values[i] = data.values[i]
 
 	def cb_mot0(self, data):
@@ -119,7 +137,11 @@ if __name__ == '__main__':
 	ac = AVRControl()
 
 	r = rospy.Rate(ac.polling_interval)
+	n = 0
 	while not rospy.is_shutdown():
+		n+=1
+		if n%100==0:
+			if not ac._check(): ac._connect()
 		ac.publish()
 		r.sleep()
 	
