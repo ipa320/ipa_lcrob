@@ -5,6 +5,7 @@ from sensor_msgs.msg import Imu
 from geometry_msgs.msg import Vector3Stamped
 from mobina_interface.srv import *
 import socket, math, os, time
+import tf
 
 class AndroidConnection:
 	def __init__(self, port=38300):
@@ -24,7 +25,7 @@ class AndroidConnection:
 		self.s.settimeout(10)
 		try:
 			self.s.connect(("127.0.0.1", self.port))
-		except socket.timeout:
+		except:
 			self.close()
 			return
 		#self.s.setblocking(0)
@@ -75,7 +76,7 @@ def talker():
     last = ""
 
     imu.header.frame_id = mag.header.frame_id = "/tablet"
-    v = math.pow(0.00003,2)
+    v = math.pow(0.000028,2)
     imu.angular_velocity_covariance    = [v,0,0,  0,v,0, 0,0,v]
     imu.linear_acceleration_covariance = [v,0,0,  0,v,0, 0,0,v]
     imu.orientation_covariance = [v,0,0,  0,v,0, 0,0,v]
@@ -112,6 +113,12 @@ def talker():
 					mag.vector.y = y/l
 					mag.vector.z = z/l
 					up_mag=True
+				elif t==6:
+					qor =  tf.transformations.quaternion_from_euler(x,y,z)
+					imu.orientation.x = qor[0]
+					imu.orientation.y = qor[1]
+					imu.orientation.z = qor[2]
+					imu.orientation.w = qor[3]
 		except Exception as e:
 			print e
 
