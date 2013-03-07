@@ -21,7 +21,7 @@ def main():
 		elif s=="safe": mode = 2
 		elif s=="full": mode = 3
 		elif s=="dock": mode = 4
-
+		elif s=="reboot": mode = 5
 	if mode==-1:
 		print "please specify mode as argument"
 		print "possible modes are:"
