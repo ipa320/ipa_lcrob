@@ -26,10 +26,15 @@ led_pulse_button: 2
 script_button0: 2
 script_button1: 3
 script_button2: 5
+script_button3: 4
 
-script1: "rosrun mobina_states search_dock.py"
-script2: "roslaunch cob_camera_alignment mobina.launch"
-
+#script0: "rosrun mobina_states test_play.py a b c"
+script0: "rosrun cob_script_server light.py 1 1 1"
+script1: "rosrun mobina_states test_play.py a b c d"
+#script1: "rosrun mobina_states search_dock.py"
+#script2: "roslaunch cob_camera_alignment mobina.launch"
+script2: "rosrun mobina_states set_mode.py safe"
+script3: "rosrun mobina_states test_play.py a b c d e f g"
 
 # axes
 axis_vx: 0
