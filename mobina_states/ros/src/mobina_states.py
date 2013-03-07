@@ -8,12 +8,21 @@ import smach
 from mobina_interface.srv import *
 from turtlebot_node.srv import SetTurtlebotMode
 
+import commands
 
 def commandTablet(cmd, srv_name = '/tablet/command'):
     rospy.wait_for_service(srv_name)
     try:
 	add_two_ints = rospy.ServiceProxy(srv_name, StringSrv)
 	resp1 = add_two_ints(cmd)
+    except rospy.ServiceException, e:
+	print "Service call failed: %s"%e
+
+def setFan(speed, srv_name = '/fan_controller/set'):
+    rospy.wait_for_service(srv_name)
+    try:
+	add_two_ints = rospy.ServiceProxy(srv_name, FanSrv)
+	resp1 = add_two_ints(speed)
     except rospy.ServiceException, e:
 	print "Service call failed: %s"%e
 
@@ -92,6 +101,27 @@ class Turtlebot_SetMode(smach.State):
 		print "Service call failed: %s"%e
 	    return 'failed'
 
+class Turtlebot_SetFan(smach.State):
+	def __init__(self, speed):
+		self.speed = speed
+		smach.State.__init__(self, 
+			outcomes=['succeeded'])
+
+	def execute(self, userdata):
+		setFan(self.speed)
+		return 'succeeded'
+
+class Turtlebot_Temp(smach.State):
+        def __init__(self, mode):
+                smach.State.__init__(self,
+                        outcomes=['succeeded','failed'], output_keys=['temp'])
+
+        def execute(self, userdata):
+		try:
+			userdata.temp = float(commands.getoutput('cat /sys/bus/platform/drivers/hkdk_tmu/hkdk_tmu/curr_temp'))
+		except:
+			return 'failed'
+		return 'succeeded'
 
 class Exit(smach.State):
 	def __init__(self):
