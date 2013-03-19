@@ -109,9 +109,10 @@ class AVRControl:
 				self.old_values[i] = data.values[i]
 		for i in range(2,8):
 			assert (data.values[i]>=0 and data.values[i]<=1)
-			if self.old_values[i]!=data.values[i]:
+			if self.old_values[i]!=data.values[i] or self.old_values[i+6]!=data.values[i+6]:
 				self.intf.set_output(i-2, int(data.values[i]*255))
 				self.old_values[i] = data.values[i]
+				self.old_values[i+6] = 0
 		for i in range(8,14):
 			assert (data.values[i]>=0 and data.values[i]<=1)
 			if self.old_values[i]!=data.values[i]:
