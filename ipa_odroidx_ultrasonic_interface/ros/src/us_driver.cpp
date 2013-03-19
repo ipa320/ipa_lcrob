@@ -62,7 +62,7 @@ std::vector <std::vector<int> > generateConfigVector(XmlRpc::XmlRpcValue config_
 			if(config_list[i].hasMember(str_index))
 			{
 				cycle_vector[j]=PINGING_SENSOR; //Set -1 for pinging sensor
-				current_cycle = config_list[i][str_index];
+				current_cycle = (config_list[i]).operator[](str_index);
 				ROS_ASSERT(current_cycle.getType() == XmlRpc::XmlRpcValue::TypeArray);
 				ROS_ASSERT(current_cycle.size()>0);
 				//Assign address of pinging sensor to each listening sensor
