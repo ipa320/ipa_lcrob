@@ -1,8 +1,10 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/wdt.h>
 #include "helper.h"
 #include "softuart.h"
 int main(void){
+	MCUSR = 0; //Setting Reset Status Register to 0 (In case the watchdog timer restarts the controller).
 
 	//Setting PORTA and PORTD as output
 	DDRA = 0x7F;
@@ -75,13 +77,20 @@ int main(void){
 					uint16_t temp16 = 0; // 16bit variable to store configuration input from the master.
 					uint8_t temp8 = 0;
 					for (uint8_t count = 0; count < number_of_config; count++){
-						temp16 = (softuart_getchar() << 8);
-						temp8 = softuart_getchar();
+						wdt_enable(WDTO_4S); //Sets the watchdog timer for a timeout of 4 seconds. 
+							temp16 = (softuart_getchar() << 8);
+						wdt_disable(); //Disables the watchdog timer if the completes successfully.
+						
+						wdt_enable(WDTO_4S);
+							temp8 = softuart_getchar();
+						wdt_disable();
 						SENSOR_CONFIG[count] = (temp16 | temp8) ;
 					}
 					TOTAL_SENSOR_CONFIGS = number_of_config;
 					CURRENT_SENSOR_CONFIG = 0;
 					softuart_putchar(0x12); //Sending acknowledgement back to the master.
+					softuart_putchar(0x7f &(((PIND & 0x80) >> 1) | ((PINC & 0x04) <<3) | ((PINC & 0x08) <<1) | ((PINC & 0x10) >> 1) | ((PINC & 0x20) >> 3) | ((PINC & 0x40) >>5) | ((PINA & 0x80)>>7)));
+					softuart_putchar(0x7f &(((PINC & 0x80) >> 1) | (((PINB & 0x40)>>1) |(PINB & 0x1f))));
 				}
 			}
 			else if(TOTAL_SENSOR_CONFIGS > 0){
@@ -102,14 +111,14 @@ ISR(TIMER0_OVF_vect){ // Timer 0 is dedicated for Pinging and listening.
 		PORTD = (~PORTD_CONTROL) & (0x7F);
 		TCNT0 = 154; // Setting for 350us -0.02% error
 		PING_STAGE = 2;
+
+		//Setting up timer1 for 100ms
+		TCNT1 = 36735;
+		TIMSK1 |= (1 << TOIE1);
+
+		PCICR |= 0x0F; // Enabling input interrupts.
 	}
 	else if(PING_STAGE == 2){
-		PORTA = PORTA_CONTROL&0x7F;
-		PORTD = PORTD_CONTROL&0x7F;
-		TCNT0 = 177; // Setting for 270us -0.02% error
-		PING_STAGE = 3;
-	}
-	else if(PING_STAGE == 3){
 		PORTA = 0x00;
 		PORTD = 0x00;
 		//Disabling timer0 to setup timer1 to enable data reading from sensors.
@@ -117,11 +126,6 @@ ISR(TIMER0_OVF_vect){ // Timer 0 is dedicated for Pinging and listening.
 
 //		softuart_disable(); // Not sure if works or not.
 
-		//Setting up timer1 for 100ms
-		TCNT1 = 36735;
-		TIMSK1 |= (1 << TOIE1);
-
-		PCICR |= 0x0F;
 	}	
 }
 ISR(TIMER1_OVF_vect){

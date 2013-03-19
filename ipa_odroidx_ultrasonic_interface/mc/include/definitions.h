@@ -2,6 +2,7 @@
 #define __DEFINITIONS_H__
 
 #define MAX_VALUES 32 //Maximum number of values to be recorded per input pin
+#define MAX_VALUES_SENT 15
 
 #define MAX_INPUTS_PORTA 1 //Number of input pins on a port
 #define MAX_INPUTS_PORTB 6
@@ -41,7 +42,7 @@ extern volatile uint8_t PORTC_INPUT_count;// Counter for Input value for PORTC
 extern volatile struct TIME_KEEPER PORTD_INPUT_VALS[MAX_VALUES * MAX_INPUTS_PORTD];
 extern volatile uint8_t PORTD_INPUT_count;// Counter for Input value for PORTD
 
-extern volatile uint16_t TIMER[MAX_VALUES]; //For recording TIMER 1 due edge change.
+extern volatile uint16_t TIMER[MAX_VALUES_SENT]; //For recording TIMER 1 due edge change.
 extern volatile uint8_t TIMER_count;
 
 extern volatile uint8_t CYCLE_COMPLETE;
