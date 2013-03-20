@@ -74,6 +74,9 @@ class MobinaInterface:
 		self.input.name = "input"
 		self.input.values = [0,0, 0,0]
 
+		self.fan_temp_on = 50
+		self.fan_temp_off = 45
+
 		self.lights = [LightControl("light_controller", self, [3,6,2])]
 		self.motors = [TrajectoryControl("tray_controller", "tray_joint", self, 0, 0)]
 		self.fans   = [FanControl("fan_controller", self, 7)]
@@ -108,6 +111,13 @@ class MobinaInterface:
 		for m in self.motors:
 			m.publish()
 
+	def control_fan(self):
+		temp = float(commands.getoutput('cat /sys/bus/platform/drivers/hkdk_tmu/hkdk_tmu/curr_temp'))
+		if temp>=self.fan_temp_on:
+			self.fans[0].set_fan(1.)
+		elif temp<self.fan_temp_off:
+			self.fans[0].set_fan(0.)
+
 if __name__ == '__main__':
 	rospy.init_node('mobina')
 	mi = MobinaInterface()
@@ -115,4 +125,5 @@ if __name__ == '__main__':
 	r = rospy.Rate(10)
 	while not rospy.is_shutdown():
 		mi.publish_marker()
+		mi.control_fan()
 		r.sleep()
