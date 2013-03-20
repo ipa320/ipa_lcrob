@@ -38,16 +38,16 @@ class Slump(smach.StateMachine):
             	self.add('LED_START',Light('red_fast_pulse'),
                                    transitions={'succeeded':'MOVE_TO_PERSON'})
 
-            	self.add('MOVE_TO_PERSON',sss_wrapper('move_base_rel','base', [1,0,0]),
+            	self.add('MOVE_TO_PERSON',sss_wrapper('move_base_rel','base', [0.1,0,0]),
                                    transitions={'succeeded':'MOVE_TO_PERSON2','failed':'LED_NOT_REACHED'})
 
             	self.add('MOVE_TO_PERSON2',sss_wrapper('move_base_rel','base', [0,0,1.57]),
                                    transitions={'succeeded':'LED_REACHED','failed':'LED_NOT_REACHED'})
 
             	self.add('LED_REACHED',Light('white'),
-                                   transitions={'succeeded':'MOVE_TO_PERSON'})
+                                   transitions={'succeeded':'PLAY_MOVIE'})
 
-            	self.add('PLAY_MOVIE',Tablet_Start('/sdcard/Video/Mayer.mp4'),
+            	self.add('PLAY_MOVIE',Sleep(1),#Tablet_Start('/sdcard/Video/Mayer.mp4'),
                                    transitions={'succeeded':'WAIT_FOR_MOVIE'})
 
             	self.add('WAIT_FOR_MOVIE',Sleep(30),
@@ -59,7 +59,7 @@ class Slump(smach.StateMachine):
             	self.add('MOVE_TO_HOME',sss_wrapper('move_base_rel','base', [0,0,-1.57]),
                                    transitions={'succeeded':'MOVE_TO_HOME2','failed':'LED_NOT_REACHED'})
 
-            	self.add('MOVE_TO_HOME2',sss_wrapper('move_base_rel','base', [-1,0,0]),
+            	self.add('MOVE_TO_HOME2',sss_wrapper('move_base_rel','base', [-0.1,0,0]),
                                    transitions={'succeeded':'succeeded','failed':'LED_NOT_REACHED'})
 
 		#error case

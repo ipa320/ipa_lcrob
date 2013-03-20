@@ -10,6 +10,9 @@ from turtlebot_node.srv import SetTurtlebotMode
 
 import commands
 
+from simple_script_server import *
+sss = simple_script_server()
+
 def commandTablet(cmd, srv_name = '/tablet/command'):
     rospy.wait_for_service(srv_name)
     try:
@@ -142,11 +145,8 @@ class sss_wrapper(smach.State):
 		self.function = function_name
 		self.kwargs = kwargs
 	def execute(self, userdata):
-		emit_state_execution()
 		ah = getattr(sss, self.function)(*self.args,**self.kwargs)
 		if ah.get_state() == 3:
-			emit_state_done()
 			return 'succeeded'
 		else:
-			emit_state_error()
 			return 'failed'
