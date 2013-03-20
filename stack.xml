@@ -1,0 +1,9 @@
+<stack>
+  <description brief="ipa_lcrob">ipa_lcrob is a summary of low cost robots</description>
+  <author>Joshua Hampp</author>
+  <license>GPL</license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/ipa_lcrob</url>
+
+</stack>
+
