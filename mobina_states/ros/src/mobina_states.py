@@ -132,4 +132,21 @@ class Exit(smach.State):
 	    exit(0)
 	    return 'succeeded'
 
+class sss_wrapper(smach.State):
 
+	def __init__(self, function_name, *args, **kwargs):
+		smach.State.__init__(
+			self,
+			outcomes=['succeeded', 'failed'])
+		self.args = args
+		self.function = function_name
+		self.kwargs = kwargs
+	def execute(self, userdata):
+		emit_state_execution()
+		ah = getattr(sss, self.function)(*self.args,**self.kwargs)
+		if ah.get_state() == 3:
+			emit_state_done()
+			return 'succeeded'
+		else:
+			emit_state_error()
+			return 'failed'
