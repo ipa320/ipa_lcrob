@@ -6,8 +6,8 @@
     xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface">
 
     <!-- Included URDF Files -->
-    <include filename="$(find irobot_create_description)/urdf/materials.urdf.xacro" />
-    <include filename="$(find irobot_create_description)/urdf/create_wheel.xacro" />
+    <include filename="$(find lcrob1_description)/urdf/materials.urdf.xacro" />
+    <include filename="$(find lcrob1_description)/urdf/create_wheel.xacro" />
     <include filename="$(find hector_sensors_description)/urdf/sonar_sensor.urdf.xacro" />
 
     <!-- Properties (Constants) -->
@@ -74,7 +74,7 @@
             <visual>
                 <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
                 <geometry>
-                    <mesh filename="package://irobot_create_description/meshes/create_body.dae"/>
+                    <mesh filename="package://lcrob1_description/meshes/create_body.dae"/>
                 </geometry>
                 <material name="Blue" />
             </visual>
@@ -82,7 +82,7 @@
             <collision>
                 <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
                 <geometry>
-                    <mesh filename="package://irobot_create_description/meshes/create_body.stl"/>
+                    <mesh filename="package://lcrob1_description/meshes/create_body.stl"/>
                 </geometry>
             </collision>
         </link>

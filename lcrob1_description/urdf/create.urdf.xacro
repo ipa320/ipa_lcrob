@@ -6,7 +6,7 @@
     xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface">
     
     <!-- Included URDF Files -->
-    <include filename="$(find irobot_create_description)/urdf/create_base.xacro" />
+    <include filename="$(find lcrob1_description)/urdf/create_base.xacro" />
     
     <create />
 </robot>

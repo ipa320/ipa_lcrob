@@ -1,11 +1,11 @@
 <package>
     <description brief="URDF for Create mobile base with ultrasonic sensors.">
-    URDF description files for the Create mobile robot base from iRobot with eight ultrasonic sensors. Fork by Ali Shuja Siddiqui. Original package: irobot_create_description, url: http://ros.org/wiki/irobot_create_description
+    URDF description files for the Create mobile robot base from iRobot with eight ultrasonic sensors. Fork by Ali Shuja Siddiqui. Original package: lcrob1_description, url: http://ros.org/wiki/irobot_create_description
     </description>
     <author>Jeff Rousseau</author>
     <license>BSD</license>
     <review status="unreviewed" notes=""/>
-    <url>http://ros.org/wiki/irobot_create_description</url>
+    <url>http://ros.org/wiki/lcrob1_description</url>
 
     <depend package="urdf" />
     <depend package="xacro" />
