@@ -83,6 +83,10 @@ class MobinaInterface:
 
                 rospy.Subscriber("state", ChannelFloat32, self.InputCallback)
 
+		#reset all motors
+		for m in self.motors:
+			m.move0()
+
 	def set_val(self, pin, value):
 		#print "setval ",pin,value
 		self.output.values[pin] = value
