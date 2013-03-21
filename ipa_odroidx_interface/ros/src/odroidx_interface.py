@@ -121,6 +121,7 @@ class AVRControl:
 
 	def cb_mot0(self, data):
 		self.intf.set_motoraim0(data.value)
+		return MotorAimResponse()
 
 	def publish(self):
 		data = map(float, self.intf.get_input() )
