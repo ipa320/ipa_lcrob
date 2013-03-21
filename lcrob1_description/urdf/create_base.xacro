@@ -222,36 +222,36 @@
 
         <create_wheel suffix="left" parent="base_link" reflect="0.75"/>
         <create_wheel suffix="right" parent="base_link" reflect="-0.75"/>
-		<sonar_sensor name="sonar_1" parent="base_link" ros_topic="sonar" update_rate="10" min_range="0.5" max_range="10" field_of_view="90" ray_count="1">
-			<origin xyz="${base_size_x*0.8} 0.0 0" rpy="0 0 0" />
+		<sonar_sensor name="sonar_1" parent="base_link" ros_topic="sonar" update_rate="10" min_range="0.2" max_range="10" field_of_view="60" ray_count="1">
+			<origin xyz="${base_size_x*0.8} 0.0 0" rpy="0 -0.1 0" />
 		</sonar_sensor>
 
-		<sonar_sensor name="sonar_2" parent="base_link" ros_topic="sonar" update_rate="10" min_range="0.5" max_range="10" field_of_view="90" ray_count="1">
-			<origin xyz="${base_size_x*0.5} ${-(base_size_y*0.5)} 0" rpy="0 0 -0.785398163"   />
+		<sonar_sensor name="sonar_2" parent="base_link" ros_topic="sonar" update_rate="10" min_range="0.2" max_range="10" field_of_view="60" ray_count="1">
+			<origin xyz="${base_size_x*0.5} ${-(base_size_y*0.5)} 0" rpy="0 -0.1 -0.785398163"   />
 		</sonar_sensor>
 
-		<sonar_sensor name="sonar_3" parent="base_link" ros_topic="sonar" update_rate="10" min_range="0.5" max_range="10" field_of_view="90" ray_count="1">
-			<origin xyz="0 ${-(base_size_y*0.6)} 0" rpy="0 0 -1.57079633"   />
+		<sonar_sensor name="sonar_3" parent="base_link" ros_topic="sonar" update_rate="10" min_range="0.2" max_range="10" field_of_view="60" ray_count="1">
+			<origin xyz="0 ${-(base_size_y*0.6)} 0" rpy="0 -0.1 -1.57079633"   />
 		</sonar_sensor>
 
-		<sonar_sensor name="sonar_4" parent="base_link" ros_topic="sonar" update_rate="10" min_range="0.5" max_range="10" field_of_view="90" ray_count="1">
-			<origin xyz="${-(base_size_x*0.5)} ${-(base_size_y*0.5)} 0" rpy="0 0 -2.35619449"   />
+		<sonar_sensor name="sonar_4" parent="base_link" ros_topic="sonar" update_rate="10" min_range="0.2" max_range="10" field_of_view="60" ray_count="1">
+			<origin xyz="${-(base_size_x*0.5)} ${-(base_size_y*0.5)} 0" rpy="0 -0.1 -2.35619449"   />
 		</sonar_sensor>
 
-		<sonar_sensor name="sonar_5" parent="base_link" ros_topic="sonar" update_rate="10" min_range="0.5" max_range="10" field_of_view="90" ray_count="1">
-			<origin xyz="${-(base_size_x*0.8)} 0 0" rpy="0 0 ${M_PI}"   />
+		<sonar_sensor name="sonar_5" parent="base_link" ros_topic="sonar" update_rate="10" min_range="0.2" max_range="10" field_of_view="60" ray_count="1">
+			<origin xyz="${-(base_size_x*0.8)} 0 0" rpy="0 -0.1 ${M_PI}"   />
 		</sonar_sensor>
 
-		<sonar_sensor name="sonar_6" parent="base_link" ros_topic="sonar" update_rate="10" min_range="0.5" max_range="10" field_of_view="90" ray_count="1">
-			<origin xyz="${-(base_size_x*0.5)} ${base_size_y*0.5} 0" rpy="0 0 2.35619449"   />
+		<sonar_sensor name="sonar_6" parent="base_link" ros_topic="sonar" update_rate="10" min_range="0.2" max_range="10" field_of_view="60" ray_count="1">
+			<origin xyz="${-(base_size_x*0.5)} ${base_size_y*0.5} 0" rpy="0 -0.1 2.35619449"   />
 		</sonar_sensor>
 
-		<sonar_sensor name="sonar_7" parent="base_link" ros_topic="sonar" update_rate="10" min_range="0.5" max_range="10" field_of_view="90" ray_count="1">
-			<origin xyz="0 ${base_size_y*0.6} 0" rpy="0 0 1.57079633"   />
+		<sonar_sensor name="sonar_7" parent="base_link" ros_topic="sonar" update_rate="10" min_range="0.2" max_range="10" field_of_view="60" ray_count="1">
+			<origin xyz="0 ${base_size_y*0.6} 0" rpy="0 -0.1 1.57079633"   />
 		</sonar_sensor>
 
-		<sonar_sensor name="sonar_8" parent="base_link" ros_topic="sonar" update_rate="10" min_range="0.5" max_range="10" field_of_view="90" ray_count="1">
-			<origin xyz="${base_size_x*0.5} ${base_size_y*0.5} 0" rpy="0 0 0.785398163"   />
+		<sonar_sensor name="sonar_8" parent="base_link" ros_topic="sonar" update_rate="10" min_range="0.2" max_range="10" field_of_view="60" ray_count="1">
+			<origin xyz="${base_size_x*0.5} ${base_size_y*0.5} 0" rpy="0 -0.1 0.785398163"   />
 		</sonar_sensor>
         <!-- CONTROLLERS -->
 
