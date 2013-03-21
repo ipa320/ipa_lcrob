@@ -80,8 +80,9 @@ class TrajectoryControl(object):
 
 		if rospy.has_param(pname+'/calibration'):
 			y = yaml.load(open(rospy.get_param(pname+'/calibration')))
-			if 'calibration_vel' in y: self.calibration = y['calibration_vel']
-			if 'calibration_pos' in y: self.calibration_pos = y['calibration_pos']
+			if y is not None:
+				if 'calibration_vel' in y: self.calibration = y['calibration_vel']
+				if 'calibration_pos' in y: self.calibration_pos = y['calibration_pos']
 		else: rospy.logwarn("no calibration set: "+pname+'/calibration')
 
 		self.joint_msg = JointState()
@@ -91,7 +92,7 @@ class TrajectoryControl(object):
 
 		rospy.Subscriber(name+'/command_vel', JointVelocities, self.on_vel)
 
-		self.joint_pub = rospy.Publisher('joint_states', JointState)
+		self.joint_pub = rospy.Publisher('/joint_states', JointState)
 		self.calibration_srv = rospy.Service(name+'/calibration', Empty, self.handle_calibration)
 		self._action_name = name+"/follow_joint_trajectory"
 		self._as = actionlib.SimpleActionServer(self._action_name, FollowJointTrajectoryAction, execute_cb=self.execute_cb, auto_start=False)
