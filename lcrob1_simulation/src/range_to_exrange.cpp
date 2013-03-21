@@ -17,7 +17,7 @@ void MakeExRangeArray(const sensor_msgs::Range range_msg)
 	}
 	if(in_cycle==true){
 		ipa_odroidx_ultrasonic_interface::ExRange temp_exrange;
-		temp_exrange.sender_ch=range_msg.header.frame_id[7]-'0';
+		temp_exrange.sender_ch=range_msg.header.frame_id[7]-'0'-1;
 		temp_exrange.receiver_ch=temp_exrange.sender_ch;
 		temp_exrange.measurement.radiation_type = 0;
 		temp_exrange.measurement.field_of_view = range_msg.field_of_view;
@@ -27,7 +27,8 @@ void MakeExRangeArray(const sensor_msgs::Range range_msg)
 
 		temp_exrange.measurement.header.stamp = ros::Time::now();
 		temp_exrange.measurement.header.frame_id ="us"+range_msg.header.frame_id.substr(7,1);
-		ExRangeVector.push_back(temp_exrange);
+		if( range_msg.range != range_msg.max_range)
+			ExRangeVector.push_back(temp_exrange);
 	}
 	if (in_cycle == true && range_msg.header.frame_id == "/sonar_8_link")
 	{
