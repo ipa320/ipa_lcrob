@@ -77,12 +77,14 @@ class TrajectoryControl(object):
 		self.calibration = [ [0,0.004], [1,0.002] ]
 		self.calibration_pos = [ [0,0], [1,1] ]
 		self.tolerance = rospy.get_param(pname+'/tolerance', 0.005)
+		self.zero = -1
 
 		if rospy.has_param(pname+'/calibration'):
 			y = yaml.load(open(rospy.get_param(pname+'/calibration')))
 			if y is not None:
 				if 'calibration_vel' in y: self.calibration = y['calibration_vel']
 				if 'calibration_pos' in y: self.calibration_pos = y['calibration_pos']
+				if 'zero' in y: self.zero = y['zero']
 		else: rospy.logwarn("no calibration set: "+pname+'/calibration')
 
 		self.joint_msg = JointState()
@@ -259,6 +261,11 @@ class TrajectoryControl(object):
 		self._result.error_code = 0
 		if success:
 			self._as.set_succeeded(self._result)
+
+	def move0(self):
+		if self.zero<0: return False
+		else: self.intf.set_mot0(self.zero)
+		return True
 
 	def publish(self):
 		self.joint_msg.header.stamp = rospy.Time.now()
