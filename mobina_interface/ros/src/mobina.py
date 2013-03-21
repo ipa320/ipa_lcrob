@@ -59,7 +59,7 @@ from light_control import LightControl
 from fan_control import FanControl
 from sensor_msgs.msg import ChannelFloat32
 from ipa_odroidx_interface.srv import MotorAim
-
+import commands
 
 class MobinaInterface:
 	def __init__(self):
@@ -74,8 +74,8 @@ class MobinaInterface:
 		self.input.name = "input"
 		self.input.values = [0,0, 0,0]
 
-		self.fan_temp_on = 50
-		self.fan_temp_off = 45
+		self.fan_temp_on = 60
+		self.fan_temp_off = 55
 
 		self.lights = [LightControl("light_controller", self, [3,6,2])]
 		self.motors = [TrajectoryControl("tray_controller", "tray_joint", self, 0, 0)]
@@ -92,7 +92,7 @@ class MobinaInterface:
 		rospy.wait_for_service('mot0')
 		try:
 			mot0 = rospy.ServiceProxy('mot0', MotorAim)
-			mot0(value)
+			mot0((1<<10-1)*value)
 		except rospy.ServiceException, e:
 			print "Service call failed: %s"%e
 
