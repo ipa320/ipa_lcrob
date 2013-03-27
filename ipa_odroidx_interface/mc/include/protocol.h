@@ -17,8 +17,14 @@
 
 #define MOTOR_AD_CHANNEL  0
 #define MOTOR_OUT_CHANNEL 0
-#define MOTOR_TOLERANCE   6
+#define MOTOR_TOLERANCE   7
 #define MOTOR_SPEED	  200
+
+#define	CREATE_AUTO_ON		1
+//pins from input
+#define	CREATE_EXT_POWER	1
+#define CREATE_POWER_CONTROL	2
+#define CREATE_CHECK_ON		3
 
 void init(void);
 void parse(void);
