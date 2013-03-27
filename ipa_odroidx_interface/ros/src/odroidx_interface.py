@@ -75,6 +75,8 @@ class AVRControl:
 		self._connect()
 
 		self.old_values = [-1]*14
+		self.old_values[0] = 0	#prevent of motor stop
+		self.old_values[1] = 0
 
 		self.pub_marker = rospy.Publisher("state", ChannelFloat32)
 		rospy.Subscriber("command", ChannelFloat32, self.setCallback, queue_size=1)
