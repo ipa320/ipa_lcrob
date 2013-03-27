@@ -16,6 +16,8 @@ import android.view.Window;
 import android.view.WindowManager;
 
 public class Main extends Activity {
+	
+	static Activity act_ = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -26,6 +28,8 @@ public class Main extends Activity {
                                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		setContentView(R.layout.activity_main);
+		
+		act_ = this;
 		
 		Log.i("MAIN", "main window started");
 		

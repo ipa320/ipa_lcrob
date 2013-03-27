@@ -150,7 +150,18 @@ public class IMU_Service extends Service implements SensorEventListener {
 						key="on";
 						if( (pos=s.indexOf(key))>=0 )
 						{
-							((Activity)getApplicationContext()).getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+							if(Main.act_!=null)
+								Main.act_.runOnUiThread(new Runnable() {
+									@Override
+									public void run() {
+										Main.act_.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+										Main.act_.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+										Main.act_.getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+								        
+										Main.act_.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+									}
+								});
+
 						}
 					}
 
@@ -158,9 +169,16 @@ public class IMU_Service extends Service implements SensorEventListener {
 						key="off";
 						if( (pos=s.indexOf(key))>=0 )
 						{
-							WindowManager.LayoutParams attrs = ((Activity)getApplicationContext()).getWindow().getAttributes();
-							attrs.flags &= (~WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-							((Activity)getApplicationContext()).getWindow().setAttributes(attrs);
+							if(Main.act_!=null) {
+								Main.act_.runOnUiThread(new Runnable() {
+									@Override
+									public void run() {
+										WindowManager.LayoutParams attrs = Main.act_.getWindow().getAttributes();
+										attrs.flags &= (~WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+										Main.act_.getWindow().setAttributes(attrs);
+									}
+								});
+							}
 						}
 					}
 
@@ -181,7 +199,7 @@ public class IMU_Service extends Service implements SensorEventListener {
 								}
 
 							}
-							
+
 							pos = pos2;
 							key = ";";
 						}
@@ -201,7 +219,7 @@ public class IMU_Service extends Service implements SensorEventListener {
 									e.printStackTrace();
 								}
 							}
-							
+
 							pos = pos2;
 							key = ";";
 						}

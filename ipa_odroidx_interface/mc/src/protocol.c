@@ -28,6 +28,9 @@ static void set_output(u08 out) {
 
 static void soft_pwm(void) {
 	static u08 cnt = 0, vo=0, cnt2=0;
+#ifdef CREATE_AUTO_ON
+	static u08 power_state = 0;
+#endif
 	u08 i,v=0, t;
 	u16 ad;
 
@@ -83,6 +86,16 @@ static void soft_pwm(void) {
 			a2dStartConvert();
 		}
 	}
+
+#ifdef CREATE_AUTO_ON
+	if(!(inb(PINC)&CREATE_CHECK_ON) && !(inb(PINC)&CREATE_EXT_POWER) && power_state) {
+		PORTC |= CREATE_POWER_CONTROL;
+	}
+	else {
+		PORTC &= ~CREATE_POWER_CONTROL;
+	}
+	power_state = inb(PINC)&CREATE_EXT_POWER;
+#endif
 }
 
 //set speed, corred speed according to direction
