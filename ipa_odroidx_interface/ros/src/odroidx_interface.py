@@ -79,7 +79,8 @@ class AVRControl:
 		self.pub_marker = rospy.Publisher("state", ChannelFloat32)
 		rospy.Subscriber("command", ChannelFloat32, self.setCallback, queue_size=1)
 
-		s = rospy.Service('mot0', MotorAim, self.cb_mot0)
+		s1 = rospy.Service('mot0', MotorAim, self.cb_mot0)
+		s2 = rospy.Service('pullup', MotorAim, self.cb_pullup)
 
 	def _connect(self):
 		while True:
@@ -121,6 +122,10 @@ class AVRControl:
 
 	def cb_mot0(self, data):
 		self.intf.set_motoraim0(data.value)
+		return MotorAimResponse()
+
+	def cb_pullup(self, data):
+		self.intf.set_pullup(data.value)
 		return MotorAimResponse()
 
 	def publish(self):
