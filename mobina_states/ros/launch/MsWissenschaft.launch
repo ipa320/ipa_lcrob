@@ -4,6 +4,9 @@
     <rosparam command="load" ns="/script_server/base" file="$(find mobina_states)/ros/config/navigation_goals_ms_wissenschaft.yaml"/>
     <rosparam command="load" ns="/script_server/tray" file="$(find mobina_states)/ros/config/tray_ms_wissenschaft.yaml"/>
 
+    <node pkg="cob_fall_detection" type="check_fall.py" name="fall_detection" output="screen">
+    </node>
+
     <node pkg="mobina_states" type="ms_wissenschaft.py" name="ms_wissenschaft" output="screen">
     </node>
 
