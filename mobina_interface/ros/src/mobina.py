@@ -96,7 +96,7 @@ class MobinaInterface:
 		rospy.wait_for_service('mot0')
 		try:
 			mot0 = rospy.ServiceProxy('mot0', MotorAim)
-			mot0((1<<10-1)*value)
+			mot0(1023*value)
 		except rospy.ServiceException, e:
 			print "Service call failed: %s"%e
 
