@@ -14,7 +14,7 @@ class CheckLocked(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, 
 			outcomes=['locked','unlocked'])
-		rospy.Subscriber("/turtlebot/state", TurtlebotSensorState, self.callback)
+		rospy.Subscriber("/turtlebot_node/sensor_state", TurtlebotSensorState, self.callback)
 		self.lock = True
 
 	def callback(self, data):
@@ -53,13 +53,14 @@ class CheckSlump(smach.State):
 class MoveToPosition(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, 
-			outcomes=['reached','not_reached','failed'], input_keys=['position'])
+			outcomes=['succeeded','failed'], input_keys=['position'])
 
 	def execute(self, userdata):
-            	self.add('MOVE_TO_POS',ApproachPose(userdata.position),
-                                  transitions={'reached':'reached',
-                                               'not_reached':'not_reached',
-                                               'failed':'failed'})
+		ah = sss.move('base', userdata.position)
+		if ah.get_state() == 3:
+			return 'succeeded'
+		else:
+			return 'failed'
 
 
 class Slump(smach.StateMachine):
@@ -84,8 +85,7 @@ class Slump(smach.StateMachine):
 		                           transitions={'succeeded':'LED_REACHED','failed':'LED_NOT_REACHED'})
 		elif mode==3:
             		self.add('MOVE_TO_PERSON',MoveToPosition(),
-                                   transitions={'reached':'LED_REACHED',
-                                                'not_reached':'LED_NOT_REACHED',
+                                   transitions={'succeeded':'LED_REACHED',
                                                 'failed':'LED_NOT_REACHED'})
 
 
