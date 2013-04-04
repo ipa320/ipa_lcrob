@@ -47,10 +47,14 @@ class CheckTray(smach.StateMachine):
 
 		with self:
 		    	self.add('TRAY1',sss_wrapper('move','tray', 'home'),
-			                   transitions={'succeeded':'TRAY2','failed':'LED_R'})
+			                   transitions={'succeeded':'WAIT1','failed':'LED_R'})
+                        self.add('WAIT1',Sleep(5),
+                                           transitions={'succeeded':'TRAY2'})
 
 		    	self.add('TRAY2',sss_wrapper('move','tray', 'video'),
-			                   transitions={'succeeded':'TRAY3','failed':'LED_R'})
+			                   transitions={'succeeded':'WAIT2','failed':'LED_R'})
+                        self.add('WAIT2',Sleep(5),
+                                           transitions={'succeeded':'TRAY3'})
 
 		    	self.add('TRAY3',sss_wrapper('move','tray', 'home'),
 			                   transitions={'succeeded':'LED_G','failed':'LED_R'})
