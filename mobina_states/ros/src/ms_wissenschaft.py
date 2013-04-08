@@ -8,8 +8,7 @@ from ApproachPose import *
 from mobina_states import *
 from BasicIO import *
 from cob_object_detection_msgs.srv import *
-from turtlebot_node.msg import TurtlebotSensorState
-from brics_actuator.msg import JointVelocities
+from ipa_odroidx_interface.srv import MotorAim
 
 class CheckLocked(smach.State):
 	def __init__(self):
@@ -81,11 +80,12 @@ class StillTrayController(smach.State):
 			outcomes=['succeeded'])
 
 	def execute(self, userdata):
-		pub = rospy.Publisher('/tray_controller/command_vel', JointVelocities)
-		vel = JointVelocities()
-		vel.velocities = [JointValue()]
-		vel.velocities[0].value = 0
-		pub.publish(vel)
+		rospy.wait_for_service('mot0')
+		try:
+			mot0 = rospy.ServiceProxy('mot0', MotorAim)
+			mot0(1025)
+		except rospy.ServiceException, e:
+			print "Service call failed: %s"%e
 		return 'succeeded'
 
 		rospy.Subscriber(, JointVelocities, self.on_vel)
