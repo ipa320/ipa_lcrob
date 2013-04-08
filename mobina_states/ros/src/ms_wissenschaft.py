@@ -15,7 +15,7 @@ class CheckLocked(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, 
 			outcomes=['locked','unlocked'])
-		rospy.Subscriber("/turtlebot/state", TurtlebotSensorState, self.callback)
+		rospy.Subscriber("/turtlebot_node/sensor_state", TurtlebotSensorState, self.callback)
 		self.lock = True
 
 	def callback(self, data):
@@ -54,13 +54,14 @@ class CheckSlump(smach.State):
 class MoveToUPosition(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, 
-			outcomes=['reached','not_reached','failed'], input_keys=['position'])
+			outcomes=['succeeded','failed'], input_keys=['position'])
 
 	def execute(self, userdata):
-            	self.add('MOVE_TO_POS',ApproachPose(userdata.position),
-                                  transitions={'reached':'reached',
-                                               'not_reached':'not_reached',
-                                               'failed':'failed'})
+		ah = sss.move('base', userdata.position)
+		if ah.get_state() == 3:
+			return 'succeeded'
+		else:
+			return 'failed'
 
 class MoveToPosition(smach.State):
 	def __init__(self, pos):
@@ -102,17 +103,22 @@ class Slump(smach.StateMachine):
 		                           transitions={'succeeded':'MOVE_TO_PERSON2','failed':'LED_NOT_REACHED'})
 
 		    	self.add('MOVE_TO_PERSON2',sss_wrapper('move_base_rel','base', 'pos1_2'),
+		                           transitions={'succeeded':'MOVE_TO_PERSON3','failed':'LED_NOT_REACHED'})
+
+		    	self.add('MOVE_TO_PERSON3',sss_wrapper('move_base_rel','base', 'pos1_3'),
 		                           transitions={'succeeded':'LED_REACHED','failed':'LED_NOT_REACHED'})
 		elif mode==2:
 		    	self.add('MOVE_TO_PERSON',sss_wrapper('move_base_rel','base', 'pos2_1'),
 		                           transitions={'succeeded':'MOVE_TO_PERSON2','failed':'LED_NOT_REACHED'})
 
 		    	self.add('MOVE_TO_PERSON2',sss_wrapper('move_base_rel','base', 'pos2_2'),
+		                           transitions={'succeeded':'MOVE_TO_PERSON3','failed':'LED_NOT_REACHED'})
+
+		    	self.add('MOVE_TO_PERSON3',sss_wrapper('move_base_rel','base', 'pos2_3'),
 		                           transitions={'succeeded':'LED_REACHED','failed':'LED_NOT_REACHED'})
 		elif mode==3:
             		self.add('MOVE_TO_PERSON',MoveToUPosition(),
-                                   transitions={'reached':'LED_REACHED',
-                                                'not_reached':'LED_NOT_REACHED',
+                                   transitions={'succeeded':'LED_REACHED',
                                                 'failed':'LED_NOT_REACHED'})
 
 
@@ -139,12 +145,18 @@ class Slump(smach.StateMachine):
 		                           transitions={'succeeded':'MOVE_TO_HOME2','failed':'LED_NOT_REACHED'})
 
 		    	self.add('MOVE_TO_HOME2',sss_wrapper('move_base_rel','base', 'pos1_2_back'),
+		                           transitions={'succeeded':'MOVE_TO_HOME3','failed':'LED_NOT_REACHED'})
+
+		    	self.add('MOVE_TO_HOME3',sss_wrapper('move_base_rel','base', 'pos1_3_back'),
 		                           transitions={'succeeded':'succeeded','failed':'LED_NOT_REACHED'})
 		elif mode==2:
 		    	self.add('MOVE_TO_HOME',sss_wrapper('move_base_rel','base', 'pos2_1_back'),
 		                           transitions={'succeeded':'MOVE_TO_HOME2','failed':'LED_NOT_REACHED'})
 
 		    	self.add('MOVE_TO_HOME2',sss_wrapper('move_base_rel','base', 'pos2_2_back'),
+		                           transitions={'succeeded':'MOVE_TO_HOME3','failed':'LED_NOT_REACHED'})
+
+		    	self.add('MOVE_TO_HOME3',sss_wrapper('move_base_rel','base', 'pos2_3_back'),
 		                           transitions={'succeeded':'succeeded','failed':'LED_NOT_REACHED'})
 		elif mode==3:
             		self.add('MOVE_TO_HOME',MoveToPosition('home'),
@@ -154,8 +166,16 @@ class Slump(smach.StateMachine):
 
 
 		#error case
-            	self.add('LED_NOT_REACHED',Light('red'),
-                                   transitions={'succeeded':'failed'})
+		if mode==3:
+		    	self.add('LED_NOT_REACHED',Light('red'),
+		                           transitions={'succeeded':'MOVE_TO_HOME_EM'})
+            		self.add('MOVE_TO_HOME_EM',ApproachPose('home'),
+                                   transitions={'reached':'failed',
+                                                'not_reached':'failed',
+                                                'failed':'failed'})
+		else:
+		    	self.add('LED_NOT_REACHED',Light('red'),
+		                           transitions={'succeeded':'failed'})
 
 class Scenario(smach.StateMachine):
     def __init__(self):

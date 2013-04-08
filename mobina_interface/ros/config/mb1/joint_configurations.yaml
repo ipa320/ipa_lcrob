@@ -1,7 +1,8 @@
 joint_names: ["tray"]
 
 # single positions
-home: [[2.39]]
+home: [[0.3628836667537689]]
+video: [[0.33]]
 
 displayup: [[4.08]]
 displaydown: [[3.0]]
