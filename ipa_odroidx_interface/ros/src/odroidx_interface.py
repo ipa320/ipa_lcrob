@@ -123,7 +123,11 @@ class AVRControl:
 				self.old_values[i] = data.values[i]
 
 	def cb_mot0(self, data):
-		self.intf.set_motoraim0(data.value)
+		if data.value>=1024:
+			self.intf.set_motor(0, False, 0)
+			self.old_values[0] = 0
+		else:
+			self.intf.set_motoraim0(data.value)
 		return MotorAimResponse()
 
 	def cb_pullup(self, data):
