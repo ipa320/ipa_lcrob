@@ -167,12 +167,11 @@ class Slump(smach.StateMachine):
                                                 'not_reached':'LED_NOT_REACHED',
                                                 'failed':'LED_NOT_REACHED'})
 
-
 		#error case
 		if mode==3:
 		    	self.add('LED_NOT_REACHED',Light('red'),
 		                           transitions={'succeeded':'MOVE_TO_HOME_EM'})
-            		self.add('MOVE_TO_HOME_EM',ApproachPose('home'),
+            		self.add('MOVE_TO_HOME_EM',MoveToPosition('home'),
                                    transitions={'reached':'failed',
                                                 'not_reached':'failed',
                                                 'failed':'failed'})
