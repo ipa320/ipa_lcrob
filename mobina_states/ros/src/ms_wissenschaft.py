@@ -9,6 +9,7 @@ from mobina_states import *
 from BasicIO import *
 from cob_object_detection_msgs.srv import *
 from turtlebot_node.msg import TurtlebotSensorState
+from brics_actuator.msg import JointVelocities
 
 class CheckLocked(smach.State):
 	def __init__(self):
@@ -72,6 +73,21 @@ class MoveToPosition(smach.State):
                                   transitions={'reached':'reached',
                                                'not_reached':'not_reached',
                                                'failed':'failed'})
+class StillTrayController(smach.State):
+	def __init__(self, pos):
+		smach.State.__init__(self, 
+			outcomes=['succeeded'])
+		self.pos = pos
+
+	def execute(self, userdata):
+		pub = rospy.Publisher('/tray_controller/command_vel', JointVelocities)
+		vel = JointVelocities()
+		vel.velocities = [JointValue()]
+		vel.velocities[0].value = 0
+		pub.publish(vel)
+		return 'succeeded'
+
+		rospy.Subscriber(, JointVelocities, self.on_vel)
 
 class Slump(smach.StateMachine):
     def __init__(self, mode):
