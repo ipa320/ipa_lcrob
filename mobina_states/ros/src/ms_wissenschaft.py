@@ -74,11 +74,11 @@ class MoveToPosition(smach.State):
                                   transitions={'reached':'reached',
                                                'not_reached':'not_reached',
                                                'failed':'failed'})
+
 class StillTrayController(smach.State):
-	def __init__(self, pos):
+	def __init__(self):
 		smach.State.__init__(self, 
 			outcomes=['succeeded'])
-		self.pos = pos
 
 	def execute(self, userdata):
 		pub = rospy.Publisher('/tray_controller/command_vel', JointVelocities)
@@ -126,7 +126,10 @@ class Slump(smach.StateMachine):
                                    transitions={'succeeded':'MOVE_TRAY_MOVIE'})
 
 	    	self.add('MOVE_TRAY_MOVIE',sss_wrapper('move','tray', 'video'),
-	                           transitions={'succeeded':'PLAY_MOVIE','failed':'PLAY_MOVIE'})
+	                           transitions={'succeeded':'STILL_TRAY','failed':'STILL_TRAY'})
+
+	    	self.add('STILL_TRAY',StillTrayController(),
+	                           transitions={'succeeded':'PLAY_MOVIE'})
 
             	self.add('PLAY_MOVIE',Tablet_Start('/sdcard/Video/Mayer.mp4'),
                                    transitions={'succeeded':'WAIT_FOR_MOVIE'})
