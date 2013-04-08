@@ -50,7 +50,7 @@ class CheckSlump(smach.State):
 		
 		return 'nothing'
 
-class MoveToPosition(smach.State):
+class MoveToUPosition(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, 
 			outcomes=['reached','not_reached','failed'], input_keys=['position'])
@@ -61,6 +61,17 @@ class MoveToPosition(smach.State):
                                                'not_reached':'not_reached',
                                                'failed':'failed'})
 
+class MoveToPosition(smach.State):
+	def __init__(self, pos):
+		smach.State.__init__(self, 
+			outcomes=['reached','not_reached','failed'], input_keys=['position'])
+		self.pos = pos
+
+	def execute(self, userdata):
+            	self.add('MOVE_TO_POS',ApproachPose(self.pos),
+                                  transitions={'reached':'reached',
+                                               'not_reached':'not_reached',
+                                               'failed':'failed'})
 
 class Slump(smach.StateMachine):
     def __init__(self, mode):
@@ -83,7 +94,7 @@ class Slump(smach.StateMachine):
 		    	self.add('MOVE_TO_PERSON2',sss_wrapper('move_base_rel','base', 'pos2_2'),
 		                           transitions={'succeeded':'LED_REACHED','failed':'LED_NOT_REACHED'})
 		elif mode==3:
-            		self.add('MOVE_TO_PERSON',MoveToPosition(),
+            		self.add('MOVE_TO_PERSON',MoveToUPosition(),
                                    transitions={'reached':'LED_REACHED',
                                                 'not_reached':'LED_NOT_REACHED',
                                                 'failed':'LED_NOT_REACHED'})
@@ -120,7 +131,7 @@ class Slump(smach.StateMachine):
 		    	self.add('MOVE_TO_HOME2',sss_wrapper('move_base_rel','base', 'pos2_2_back'),
 		                           transitions={'succeeded':'succeeded','failed':'LED_NOT_REACHED'})
 		elif mode==3:
-            		self.add('MOVE_TO_HOME',ApproachPose('home'),
+            		self.add('MOVE_TO_HOME',MoveToPosition('home'),
                                    transitions={'reached':'succeeded',
                                                 'not_reached':'LED_NOT_REACHED',
                                                 'failed':'LED_NOT_REACHED'})
