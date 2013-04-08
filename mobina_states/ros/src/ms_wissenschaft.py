@@ -106,7 +106,7 @@ class Slump(smach.StateMachine):
 	    	self.add('MOVE_TRAY_MOVIE',sss_wrapper('move','tray', 'video'),
 	                           transitions={'succeeded':'PLAY_MOVIE','failed':'PLAY_MOVIE'})
 
-            	self.add('PLAY_MOVIE',Sleep(1),#Tablet_Start('/sdcard/Video/Mayer.mp4'),
+            	self.add('PLAY_MOVIE',Tablet_Start('/sdcard/Video/Mayer.mp4'),
                                    transitions={'succeeded':'WAIT_FOR_MOVIE'})
 
             	self.add('WAIT_FOR_MOVIE',Sleep(30),
