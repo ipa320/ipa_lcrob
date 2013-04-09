@@ -8,6 +8,7 @@ from ApproachPose import *
 from mobina_states import *
 from BasicIO import *
 from cob_object_detection_msgs.srv import *
+from turtlebot_node.msg import TurtlebotSensorState
 from ipa_odroidx_interface.srv import MotorAim
 
 class CheckLocked(smach.State):
