@@ -96,6 +96,9 @@ class Slump(smach.StateMachine):
 
         with self:
             	self.add('LED_START',Light('red_fast_pulse'),
+                                   transitions={'succeeded':'SCREEN_ON'})
+
+            	self.add('SCREEN_ON',Tablet_DisableScreensaver(),
                                    transitions={'succeeded':'MOVE_TO_PERSON'})
 
 		if mode==1:
@@ -151,7 +154,7 @@ class Slump(smach.StateMachine):
 		                           transitions={'succeeded':'MOVE_TO_HOME3','failed':'LED_NOT_REACHED'})
 
 		    	self.add('MOVE_TO_HOME3',sss_wrapper('move_base_rel','base', 'pos1_3_back'),
-		                           transitions={'succeeded':'succeeded','failed':'LED_NOT_REACHED'})
+		                           transitions={'succeeded':'SCREEN_OFF','failed':'LED_NOT_REACHED'})
 		elif mode==2:
 		    	self.add('MOVE_TO_HOME',sss_wrapper('move_base_rel','base', 'pos2_1_back'),
 		                           transitions={'succeeded':'MOVE_TO_HOME2','failed':'LED_NOT_REACHED'})
@@ -160,22 +163,28 @@ class Slump(smach.StateMachine):
 		                           transitions={'succeeded':'MOVE_TO_HOME3','failed':'LED_NOT_REACHED'})
 
 		    	self.add('MOVE_TO_HOME3',sss_wrapper('move_base_rel','base', 'pos2_3_back'),
-		                           transitions={'succeeded':'succeeded','failed':'LED_NOT_REACHED'})
+		                           transitions={'succeeded':'SCREEN_OFF','failed':'LED_NOT_REACHED'})
 		elif mode==3:
             		self.add('MOVE_TO_HOME',MoveToPosition('home'),
-                                   transitions={'succeeded':'succeeded',
+                                   transitions={'succeeded':'SCREEN_OFF',
                                                 'failed':'LED_NOT_REACHED'})
+
+            	self.add('SCREEN_OFF',Tablet_EnableScreensaver(),
+                                   transitions={'succeeded':'succeeded'})
 
 		#error case
 		if mode==3:
 		    	self.add('LED_NOT_REACHED',Light('red'),
 		                           transitions={'succeeded':'MOVE_TO_HOME_EM'})
             		self.add('MOVE_TO_HOME_EM',MoveToPosition('home'),
-                                   transitions={'succeeded':'failed',
-                                                'failed':'failed'})
+                                   transitions={'succeeded':'SCREEN_OFF_EM',
+                                                'failed':'SCREEN_OFF_EM'})
 		else:
 		    	self.add('LED_NOT_REACHED',Light('red'),
-		                           transitions={'succeeded':'failed'})
+		                           transitions={'succeeded':'SCREEN_OFF_EM'})
+
+            	self.add('SCREEN_OFF_EM',Tablet_EnableScreensaver(),
+                                   transitions={'succeeded':'failed'})
 
 class Scenario(smach.StateMachine):
     def __init__(self):
