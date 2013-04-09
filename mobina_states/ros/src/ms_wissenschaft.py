@@ -9,7 +9,7 @@ from mobina_states import *
 from BasicIO import *
 from cob_object_detection_msgs.srv import *
 from turtlebot_node.msg import TurtlebotSensorState
-from brics_actuator.msg import JointVelocities
+from brics_actuator.msg import JointVelocities, JointValue
 
 class CheckLocked(smach.State):
 	def __init__(self):
@@ -66,14 +66,15 @@ class MoveToUPosition(smach.State):
 class MoveToPosition(smach.State):
 	def __init__(self, pos):
 		smach.State.__init__(self, 
-			outcomes=['reached','not_reached','failed'], input_keys=['position'])
+			outcomes=['succeeded','failed'])
 		self.pos = pos
 
 	def execute(self, userdata):
-            	self.add('MOVE_TO_POS',ApproachPose(self.pos),
-                                  transitions={'reached':'reached',
-                                               'not_reached':'not_reached',
-                                               'failed':'failed'})
+		ah = sss.move('base', self.pos)
+		if ah.get_state() == 3:
+			return 'succeeded'
+		else:
+			return 'failed'
 
 class StillTrayController(smach.State):
 	def __init__(self):
@@ -82,13 +83,15 @@ class StillTrayController(smach.State):
 
 	def execute(self, userdata):
 		pub = rospy.Publisher('/tray_controller/command_vel', JointVelocities)
+		rospy.sleep(0.2)
 		vel = JointVelocities()
 		vel.velocities = [JointValue()]
+		vel.velocities[0].value = 1
+		pub.publish(vel)
 		vel.velocities[0].value = 0
 		pub.publish(vel)
 		return 'succeeded'
 
-		rospy.Subscriber(, JointVelocities, self.on_vel)
 
 class Slump(smach.StateMachine):
     def __init__(self, mode):
@@ -134,7 +137,7 @@ class Slump(smach.StateMachine):
             	self.add('PLAY_MOVIE',Tablet_Start('/sdcard/Video/Mayer.mp4'),
                                    transitions={'succeeded':'WAIT_FOR_MOVIE'})
 
-            	self.add('WAIT_FOR_MOVIE',Sleep(30),
+            	self.add('WAIT_FOR_MOVIE',Sleep(28),
                                    transitions={'succeeded':'MOVE_TRAY_HOME'})
 
 	    	self.add('MOVE_TRAY_HOME',sss_wrapper('move','tray', 'home'),
@@ -163,8 +166,7 @@ class Slump(smach.StateMachine):
 		                           transitions={'succeeded':'succeeded','failed':'LED_NOT_REACHED'})
 		elif mode==3:
             		self.add('MOVE_TO_HOME',MoveToPosition('home'),
-                                   transitions={'reached':'succeeded',
-                                                'not_reached':'LED_NOT_REACHED',
+                                   transitions={'succeeded':'succeeded',
                                                 'failed':'LED_NOT_REACHED'})
 
 		#error case
@@ -172,8 +174,7 @@ class Slump(smach.StateMachine):
 		    	self.add('LED_NOT_REACHED',Light('red'),
 		                           transitions={'succeeded':'MOVE_TO_HOME_EM'})
             		self.add('MOVE_TO_HOME_EM',MoveToPosition('home'),
-                                   transitions={'reached':'failed',
-                                                'not_reached':'failed',
+                                   transitions={'succeeded':'failed',
                                                 'failed':'failed'})
 		else:
 		    	self.add('LED_NOT_REACHED',Light('red'),
@@ -183,6 +184,9 @@ class Scenario(smach.StateMachine):
     def __init__(self):
         smach.StateMachine.__init__(self, outcomes=['succeeded','failed'])
         with self:
+
+	    	self.add('MOVE_TRAY_HOME',sss_wrapper('move','tray', 'home'),
+	                           transitions={'succeeded':'CHECK_LOCKED','failed':'CHECK_LOCKED'})
 
             	self.add('CHECK_LOCKED',CheckLocked(),
                                    transitions={'locked':'SLEEP_CHECK_LOCKED',
