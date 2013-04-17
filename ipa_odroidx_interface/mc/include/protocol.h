@@ -15,9 +15,9 @@
 #define WMOTOR_MIN	40
 #define WMOTOR_MAX	800
 
-#define MOTOR_AD_CHANNEL  0
+#define MOTOR_AD_CHANNEL  1
 #define MOTOR_OUT_CHANNEL 0
-#define MOTOR_TOLERANCE   10
+#define MOTOR_TOLERANCE   8
 #define MOTOR_SPEED	  190
 
 /*#define	CREATE_AUTO_ON		1
