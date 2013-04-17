@@ -17,8 +17,8 @@
 
 #define MOTOR_AD_CHANNEL  1
 #define MOTOR_OUT_CHANNEL 0
-#define MOTOR_TOLERANCE   7
-#define MOTOR_SPEED	  200
+#define MOTOR_TOLERANCE   10
+#define MOTOR_SPEED	  190
 
 /*#define	CREATE_AUTO_ON		1
 //pins from input
