@@ -41,7 +41,7 @@ static void soft_pwm(void) {
 
 	//pulsing mode
 	if(cnt==0) {
-		cnt2+=16;
+		cnt2+=2;
 		if(cnt2==0) {
 			for(i=0; i<SOFT_PWM_CHANNELS; i++) {
 				if(pwm_mode[i]&1) {

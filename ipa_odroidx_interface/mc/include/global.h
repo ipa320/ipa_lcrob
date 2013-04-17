@@ -32,7 +32,7 @@
 //#define F_CPU        16000000               		// 16MHz processor
 //#define F_CPU        14745000               		// 14.745MHz processor
 //#define F_CPU        8000000               		// 8MHz processor
-#define F_CPU        2372800               		// 7.37MHz processor
+#define F_CPU          18400000               		// 18.4MHz processor
 //#define F_CPU        4000000               		// 4MHz processor
 //#define F_CPU        3686400               		// 3.69MHz processor
 
