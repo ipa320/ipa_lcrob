@@ -193,7 +193,13 @@ class Scenario(smach.StateMachine):
         with self:
 
 	    	self.add('MOVE_TRAY_HOME',sss_wrapper('move','tray', 'home'),
-	                           transitions={'succeeded':'CHECK_LOCKED','failed':'CHECK_LOCKED'})
+	                           transitions={'succeeded':'LED_START','failed':'LED_START'})
+
+            	self.add('LED_START',Light('green'),
+                                   transitions={'succeeded':'STILL_TRAY'})
+
+	    	self.add('STILL_TRAY',StillTrayController(),
+	                           transitions={'succeeded':'CHECK_LOCKED'})
 
             	self.add('CHECK_LOCKED',CheckLocked(),
                                    transitions={'locked':'SLEEP_CHECK_LOCKED',
@@ -210,16 +216,16 @@ class Scenario(smach.StateMachine):
                                    transitions={'succeeded':'SLEEP_CHECK_LOCKED'})
 
             	self.add('SLUMP1',Slump(1),
-                                   transitions={'succeeded':'SLEEP_CHECK_LOCKED',
-                                                'failed':'SLEEP_CHECK_LOCKED'})
+                                   transitions={'succeeded':'LED_START',
+                                                'failed':'LED_START'})
 
             	self.add('SLUMP2',Slump(2),
-                                   transitions={'succeeded':'SLEEP_CHECK_LOCKED',
-                                                'failed':'SLEEP_CHECK_LOCKED'})
+                                   transitions={'succeeded':'LED_START',
+                                                'failed':'LED_START'})
 
             	self.add('SLUMP_POS',Slump(3),
-                                   transitions={'succeeded':'SLEEP_CHECK_LOCKED',
-                                                'failed':'SLEEP_CHECK_LOCKED'})
+                                   transitions={'succeeded':'LED_START',
+                                                'failed':'LED_START'})
 
 
 if __name__=='__main__':
