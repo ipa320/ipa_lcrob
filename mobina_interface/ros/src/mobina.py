@@ -78,7 +78,7 @@ class MobinaInterface:
 		self.fan_temp_off = 55
 
 		self.lights = [LightControl("light_controller", self, [3,6,2])]
-		self.motors = [TrajectoryControl("tray_controller", "tray_joint", self, 0, 0)]
+		self.motors = [TrajectoryControl("tray_controller", "tray_joint", self, 0, 1)]
 		self.fans   = [FanControl("fan_controller", self, 7)]
 
                 rospy.Subscriber("state", ChannelFloat32, self.InputCallback)
