@@ -43,28 +43,14 @@ void populateTIMER_SEND(uint8_t PORT_CONTROL, uint8_t CHANNEL_POSITION, volatile
 	 * SENSOR_ADDRESS: Sensor address assigned to the sensor.
 	 */
 
-	uint8_t PING_CHECK=0; //For storing, if timer value for a rising edge has been written in the variable TIMER
 	uint8_t last_value_temp=INPUT_POSITION; //Is used to check for falling edges.
 	TIMER_count=0;
-	for(uint8_t count=0; (count < INPUT_count) && (TIMER_count < 0xf); count++){ //For all input values while making sure that we have a maximum of 16 timer values. More than that will corrupt the sensor address value.
-		if((~(PORT_CONTROL) & CHANNEL_POSITION) == CHANNEL_POSITION){//If listening
-			if(((INPUT_POSITION & time_keeper[count].port_val)==0x00) && (last_value_temp==INPUT_POSITION)){ //Checks for falling edge.
-				if(TIMER_count < MAX_VALUES)
-					TIMER[TIMER_count++] = time_keeper[count].time_reg_val;
-			}
-			last_value_temp = (INPUT_POSITION & time_keeper[count].port_val); //Assign value to last_value_temp before looping.
+	for(uint8_t count=0; count < INPUT_count; count++){ //For all input values while making sure that we have a maximum of 16 timer values. More than that will corrupt the sensor address value.
+		if(((INPUT_POSITION & time_keeper[count].port_val)==0x00) && (last_value_temp==INPUT_POSITION)){ //Checks for falling edge.
+			if (TIMER_count <MAX_VALUES_SENT)
+				TIMER[TIMER_count++] = time_keeper[count].time_reg_val;
 		}
-		else { // Pinging
-			if(((INPUT_POSITION & time_keeper[count].port_val) == INPUT_POSITION) && (PING_CHECK==0)){ //checks for rising edge.
-				TIMER[TIMER_count++] = time_keeper[count].time_reg_val; 
-				PING_CHECK = 1;
-			}
-			else if (((INPUT_POSITION & time_keeper[count].port_val)==0x00) && (last_value_temp==INPUT_POSITION) && (PING_CHECK==1)){ //After the first rising edge has been recoded, check for consecutive falling edges.
-				if(TIMER_count < MAX_VALUES)
-					TIMER[TIMER_count++] = time_keeper[count].time_reg_val;
-			}
-			last_value_temp = (INPUT_POSITION & time_keeper[count].port_val);
-		}
+		last_value_temp = (INPUT_POSITION & time_keeper[count].port_val); //Assign value to last_value_temp before looping.
 	}
 	//Sending the data out
 	softuart_putchar((SENSOR_ADDRESS<<4) | TIMER_count); //Address + TIMER value

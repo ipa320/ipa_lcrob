@@ -66,10 +66,12 @@ class FanControl(object):
 		self.calibration_srv = rospy.Service(name+'/set', FanSrv, self.handle_set)
 
 	def handle_set(self, req):
-		v = req.val
+		self.set_fan(req.val)
+		return FanSrvResponse()
+
+	def set_fan(self, v):
 		if v<0: v=0
 		elif v>1: v=1
 
 		self.intf.set_val(self.conf_out, v)
 
-		return FanSrvResponse()

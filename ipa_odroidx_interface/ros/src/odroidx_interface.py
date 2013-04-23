@@ -75,11 +75,14 @@ class AVRControl:
 		self._connect()
 
 		self.old_values = [-1]*14
+		self.old_values[0] = 0	#prevent of motor stop
+		self.old_values[1] = 0
 
 		self.pub_marker = rospy.Publisher("state", ChannelFloat32)
 		rospy.Subscriber("command", ChannelFloat32, self.setCallback, queue_size=1)
 
-		s = rospy.Service('mot0', MotorAim, self.cb_mot0)
+		s1 = rospy.Service('mot0', MotorAim, self.cb_mot0)
+		s2 = rospy.Service('pullup', MotorAim, self.cb_pullup)
 
 	def _connect(self):
 		while True:
@@ -109,9 +112,10 @@ class AVRControl:
 				self.old_values[i] = data.values[i]
 		for i in range(2,8):
 			assert (data.values[i]>=0 and data.values[i]<=1)
-			if self.old_values[i]!=data.values[i]:
+			if self.old_values[i]!=data.values[i] or self.old_values[i+6]!=data.values[i+6]:
 				self.intf.set_output(i-2, int(data.values[i]*255))
 				self.old_values[i] = data.values[i]
+				self.old_values[i+6] = 0
 		for i in range(8,14):
 			assert (data.values[i]>=0 and data.values[i]<=1)
 			if self.old_values[i]!=data.values[i]:
@@ -119,7 +123,16 @@ class AVRControl:
 				self.old_values[i] = data.values[i]
 
 	def cb_mot0(self, data):
-		self.intf.set_motoraim0(data.value)
+		if data.value>=1024:
+			self.intf.set_motor(0, False, 0)
+			self.old_values[0] = 0
+		else:
+			self.intf.set_motoraim0(data.value)
+		return MotorAimResponse()
+
+	def cb_pullup(self, data):
+		self.intf.set_pullup(data.value)
+		return MotorAimResponse()
 
 	def publish(self):
 		data = map(float, self.intf.get_input() )

@@ -1,103 +1,95 @@
-# Makefile for AVR function library development and examples
-# Author: Pascal Stang
-#
-# For those who have never heard of makefiles: a makefile is essentially a
-# script for compiling your code.  Most C/C++ compilers in the world are
-# command line programs and this is even true of programming environments
-# which appear to be windows-based (like Microsoft Visual C++).  Although
-# you could use AVR-GCC directly from the command line and try to remember
-# the compiler options each time, using a makefile keeps you free of this
-# tedious task and automates the process.
-#
-# For those just starting with AVR-GCC and not used to using makefiles,
-# I've added some extra comments above several of the makefile fields which
-# you will have to deal with.
+### application  specific entries #############################################
 
-AVRLIB := ../avrlib/
+# name of executable
+TARGET = src/main
 
-########### change this lines according to your project ##################
-#put the name of the target mcu here (at90s8515, at90s8535, attiny22, atmega603 etc.)
-	MCU = atmega168a
-#	MCU = atmega323
-#	MCU = atmega161
-#	MCU = atmega128
+# list of modules
+SRC = src/
+MODULES = $(TARGET) src/uart src/softuart src/mcontroller src/protocol
 
-#put the name of the target file here (without extension)
-#  Your "target" file is your C source file that is at the top level of your code.
-#  In other words, this is the file which contains your main() function.
+# list of additional libraries to link against
+LIBS = 
 
-	TRG = ARMInterface
+# type of AVR controller (for gcc and avrdude)
+MCU = atmega168p
 
-#put your C sourcefiles here 
-#  Here you must list any C source files which are used by your target file.
-#  They will be compiled in the order you list them, so it's probably best
-#  to list $(TRG).c, your top-level target file, last.
+# user specific compiler options
+COPTS = -g -O2 -DF_CPU=18432000 -Wno-parentheses -fgnu89-inline
+#COPTS = -g -O2 -DF_CPU=1000000 -Wno-parentheses -fgnu89-inline
 
-	SRC = src/main.c src/protocol.c $(AVRLIB)/uart.c $(AVRLIB)/uartsw.c
+#  user specific linker options
+LOPTS =
 
-#put additional assembler source file here
-#  The ASRC line allows you to list files which contain assembly code/routines that
-#  you would like to use from within your C programs.  The assembly code must be
-#  written in a special way to be usable as a function from your C code.
+# list of additional directories to be searched for header files
+INCPATH = $(SRC) include/
 
-	ASRC =
-
-#additional libraries and object files to link
-#  Libraries and object files are collections of functions which have already been
-#  compiled.  If you have such files, list them here, and you will be able to use
-#  use the functions they contain in your target program.
-
-	LIB	=
-
-#additional includes to compile
-	INC	= -Iinclude
-
-#assembler flags
-	ASFLAGS = -Wa, -gstabs
-
-#compiler flags
-	CPFLAGS	= -g -Os -Wall -Wstrict-prototypes -I$(AVRLIB) -Wa,-ahlms=$(<:.c=.lst)
-
-#linker flags
-	LDFLAGS = -Wl,-Map=$(TRG).map,--cref
-#	LDFLAGS = -Wl,-Map=$(TRG).map,--cref -lm
-
-	
-########### you should not need to change the following line #############
-include avrproj_make
-		  
-###### dependecies, add any dependencies you need here ###################
-#  Dependencies tell the compiler which files in your code depend on which
-#  other files.  When you change a piece of code, the dependencies allow
-#  the compiler to intelligently figure out which files are affected and
-#  need to be recompiled.  You should only list the dependencies of *.o 
-#  files.  For example: uart.o is the compiled output of uart.c and uart.h
-#  and therefore, uart.o "depends" on uart.c and uart.h.  But the code in
-#  uart.c also uses information from global.h, so that file should be listed
-#  in the dependecies too.  That way, if you alter global.h, uart.o will be
-#  recompiled to take into account the changes.
-
-buffer.o		: buffer.c		buffer.h
-uart.o		: uart.c			uart.h		global.h
-uart2.o		: uart2.c		uart2.h		global.h
-rprintf.o	: rprintf.c		rprintf.h
-a2d.o			: a2d.c			a2d.h
-timer.o		: timer.c		timer.h		global.h
-pulse.o		: pulse.c		pulse.h		timer.h	global.h
-lcd.o			: lcd.c			lcd.h			global.h
-i2c.o			: i2c.c			i2c.h			global.h
-spi.o			: spi.c			spi.h			global.h
-swpwm.o		: swpwm.c		swpwm.h		global.h
-servo.o		: servo.c		servo.h		global.h
-swuart.o		: swuart.c		swuart.h		global.h
-tsip.o		: tsip.c			tsip.h		global.h
-nmea.o		: nmea.c			nmea.h		global.h
-vt100.o		: vt100.c		vt100.h		global.h
-gps.o			: gps.c			gps.h			global.h
-$(TRG).o		: $(TRG).c						global.h
+# list of additional directories to be searched for libraries
+LIBPATH = 
 
 
-AVRDUDE=avrdude -p m168 -c gpio -F
-load:	$(TRG).hex
-	@echo "P $(TRG) forced for Atmega168PA"
-	@$(AVRDUDE) -U flash:w:$<:i
+### common entries ############################################################
+
+CC = avr-gcc
+OBJCOPY = avr-objcopy
+CTAGS = ctags
+AVRDUDE = avrdude
+#UISP=uisp -dt_sck=200 -v=3 -dlpt=/dev/parport0 -dprog=dapa
+UISP=uisp -v=3 -dlpt=/dev/parport0 -dprog=dapa
+AVRDUDE_P=$(AVRDUDE) -p $(MCU) -c dapa -P /dev/parport0 -i 30
+AVRDUDE_U=$(AVRDUDE) -p $(MCU) -c stk500v2 -P /dev/ttyUSB0
+#AVRDUDE_U=avrdude -p $(MCU) -c butterfly -P com1 -b 230400
+CFLAGS = -std=c99 -pedantic -Wall $(INCPATH:%=-I%) -mmcu=$(MCU) \
+         -mcall-prologues $(COPTS)
+LDFLAGS = $(LIBPATH:%=-L%) $(LIBS:%=-l%) -mmcu=$(MCU) $(LOPTS)
+DEPS = $(foreach f, $(MODULES),$(dir $(f)).$(notdir $f).d)
+OBJS = $(MODULES:%=%.o)
+.PHONY: tags
+
+.%.d: %.c
+	@echo "D $*"
+	@echo $*.o $@: $(wordlist 2, 99999, $(shell $(CC) $(CFLAGS) -MM $<)) >$@
+
+%.o: %.c
+	@echo "C $*"
+	@$(CC) -c -o $@ $(CFLAGS) $<
+#	@$(CC) -c -Wa,-ahld -o $@ $(CFLAGS) $< >$*.lss
+
+%.o: %.S
+	@echo "C $*"
+	@$(CC) -c -o $@ $(CFLAGS) $<
+
+%.s: %.c
+	@echo "C $*"
+	$(CC) -S $(CFLAGS) $<
+
+%.lss: %.c
+	@echo "C $*"
+	$(CC) -Wa,-ahld $(CFLAGS) $< >$@
+
+$(TARGET).elf: $(OBJS)
+	@echo "L $(TARGET)"
+	@$(CC) -o $@ $^ $(LDFLAGS)
+
+%.hex: %.elf
+	@echo "H $*"
+	@$(OBJCOPY) -R .eeprom -O ihex $< $@
+
+tags:
+	@$(CTAGS) $(sort $(filter-out %: \, $(shell $(CC) $(CFLAGS) -M \
+                $(MODULES:%=%.c))))
+
+load: $(TARGET).hex
+	@echo "P $(TARGET)"
+	@$(AVRDUDE_P) -U flash:w:$<:i
+
+loadu: $(TARGET).hex
+	@echo "P(USB) $(TARGET)"
+	@$(AVRDUDE_U) -U flash:w:$<:i
+
+config:
+	@$(AVRDUDE_P) -t
+
+clean:
+	@rm $(OBJS) $(DEPS) $(TARGET).elf $(TARGET).hex tags 2>/dev/null || true
+
+-include $(DEPS)

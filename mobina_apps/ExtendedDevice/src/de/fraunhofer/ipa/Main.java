@@ -11,11 +11,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.View;
+import android.view.View.OnKeyListener;
 import android.view.Window;
 import android.view.WindowManager;
 
 public class Main extends Activity {
+	
+	static Activity act_ = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -26,6 +31,17 @@ public class Main extends Activity {
                                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		setContentView(R.layout.activity_main);
+		
+		findViewById(R.id.imageView1).setOnKeyListener(new OnKeyListener() {
+
+			@Override
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+			    return true;
+			}
+			
+		});
+		
+		act_ = this;
 		
 		Log.i("MAIN", "main window started");
 		
@@ -39,6 +55,11 @@ public class Main extends Activity {
 		// Start every 30 ms
 		alarm.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis(), 30, pintent);*/
 	}
+	
+	@Override
+    public void onBackPressed() { //disable back button in this activity
+        return;
+    }
 	
 	@Override
 	public void onDestroy() {

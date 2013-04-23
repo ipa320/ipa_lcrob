@@ -15,6 +15,7 @@ class AVRInterface:
 
 	def __init__(self):
 		#setup device
+		self.pullup = 0x00
 		self.spi = SPI(miso=22, mosi=23, clk=20, reset=38)
 		self.lock= threading.Lock()
 
@@ -26,7 +27,15 @@ class AVRInterface:
 	def setup(self):
 		self.lock.acquire()
 		self.write(self.SETUP)
-		assert self.spi.sendByte(0x00)==ord('O')	#no pullups actiavted (0-0x0f)
+		assert self.spi.sendByte(self.pullup)==ord('O')	#no pullups actiavted (0-0x0f)
+		self.lock.release()
+
+	def set_pullup(self, ch):
+		assert (ch>=0 and ch<4)
+		self.lock.acquire()
+		self.pullup |= (1<<ch)
+		self.write(self.SETUP)
+		assert self.spi.sendByte(self.pullup)==ord('O')	#no pullups actiavted (0-0x0f)
 		self.lock.release()
 
 	def set_output(self, ch, v):

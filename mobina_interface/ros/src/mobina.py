@@ -59,7 +59,7 @@ from light_control import LightControl
 from fan_control import FanControl
 from sensor_msgs.msg import ChannelFloat32
 from ipa_odroidx_interface.srv import MotorAim
-
+import commands
 
 class MobinaInterface:
 	def __init__(self):
@@ -74,11 +74,18 @@ class MobinaInterface:
 		self.input.name = "input"
 		self.input.values = [0,0, 0,0]
 
+		self.fan_temp_on = 60
+		self.fan_temp_off = 55
+
 		self.lights = [LightControl("light_controller", self, [3,6,2])]
-		self.motors = [TrajectoryControl("tray_controller", "tray_joint", self, 0, 0)]
+		self.motors = [TrajectoryControl("tray_controller", "tray_joint", self, 0, 1)]
 		self.fans   = [FanControl("fan_controller", self, 7)]
 
                 rospy.Subscriber("state", ChannelFloat32, self.InputCallback)
+
+		#reset all motors
+		for m in self.motors:
+			m.move0()
 
 	def set_val(self, pin, value):
 		#print "setval ",pin,value
@@ -89,7 +96,7 @@ class MobinaInterface:
 		rospy.wait_for_service('mot0')
 		try:
 			mot0 = rospy.ServiceProxy('mot0', MotorAim)
-			mot0(value)
+			mot0(1023*value)
 		except rospy.ServiceException, e:
 			print "Service call failed: %s"%e
 
@@ -108,6 +115,13 @@ class MobinaInterface:
 		for m in self.motors:
 			m.publish()
 
+	def control_fan(self):
+		temp = float(commands.getoutput('cat /sys/bus/platform/drivers/hkdk_tmu/hkdk_tmu/curr_temp'))
+		if temp>=self.fan_temp_on:
+			self.fans[0].set_fan(1.)
+		elif temp<self.fan_temp_off:
+			self.fans[0].set_fan(0.)
+
 if __name__ == '__main__':
 	rospy.init_node('mobina')
 	mi = MobinaInterface()
@@ -115,4 +129,5 @@ if __name__ == '__main__':
 	r = rospy.Rate(10)
 	while not rospy.is_shutdown():
 		mi.publish_marker()
+		mi.control_fan()
 		r.sleep()

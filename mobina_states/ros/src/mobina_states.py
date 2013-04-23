@@ -10,6 +10,9 @@ from turtlebot_node.srv import SetTurtlebotMode
 
 import commands
 
+from simple_script_server import *
+sss = simple_script_server()
+
 def commandTablet(cmd, srv_name = '/tablet/command'):
     rospy.wait_for_service(srv_name)
     try:
@@ -43,6 +46,16 @@ class Tablet_KillLinphone(smach.State):
 
 	def execute(self, userdata):
 		os.system("adb shell am force-stop org.linphone")
+		return 'succeeded'
+
+class Tablet_KillApp(smach.State):
+	def __init__(self, app):
+		smach.State.__init__(self, 
+			outcomes=['succeeded'])
+		self.app = app
+
+	def execute(self, userdata):
+		os.system("adb shell am force-stop "+self.app)
 		return 'succeeded'
 
 class Tablet_DisableScreensaver(smach.State):
@@ -132,4 +145,18 @@ class Exit(smach.State):
 	    exit(0)
 	    return 'succeeded'
 
+class sss_wrapper(smach.State):
 
+	def __init__(self, function_name, *args, **kwargs):
+		smach.State.__init__(
+			self,
+			outcomes=['succeeded', 'failed'])
+		self.args = args
+		self.function = function_name
+		self.kwargs = kwargs
+	def execute(self, userdata):
+		ah = getattr(sss, self.function)(*self.args,**self.kwargs)
+		if ah.get_state() == 3:
+			return 'succeeded'
+		else:
+			return 'failed'
