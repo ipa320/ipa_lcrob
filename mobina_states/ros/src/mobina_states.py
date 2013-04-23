@@ -48,6 +48,16 @@ class Tablet_KillLinphone(smach.State):
 		os.system("adb shell am force-stop org.linphone")
 		return 'succeeded'
 
+class Tablet_KillApp(smach.State):
+	def __init__(self, app):
+		smach.State.__init__(self, 
+			outcomes=['succeeded'])
+		self.app = app
+
+	def execute(self, userdata):
+		os.system("adb shell am force-stop "+self.app)
+		return 'succeeded'
+
 class Tablet_DisableScreensaver(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, 

@@ -139,6 +139,9 @@ class Slump(smach.StateMachine):
                                    transitions={'succeeded':'WAIT_FOR_MOVIE'})
 
             	self.add('WAIT_FOR_MOVIE',Sleep(28),
+                                   transitions={'succeeded':'KILL_MOVIE'})
+
+            	self.add('KILL_MOVIE',Tablet_KillApp(""),
                                    transitions={'succeeded':'MOVE_TRAY_HOME'})
 
 	    	self.add('MOVE_TRAY_HOME',sss_wrapper('move','tray', 'home'),
