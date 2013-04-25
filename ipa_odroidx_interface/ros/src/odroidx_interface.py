@@ -87,6 +87,10 @@ class AVRControl:
 	def _connect(self):
 		while True:
 			try:
+				try:
+					self.intf
+				except:
+					self.intf = AVRInterface()
 				self.intf.setup()
 				break
 			except Exception, e:
