@@ -252,7 +252,7 @@ class TrajectoryControl(object):
     
 		start = rospy.get_time()
 		while abs(self._getpos()-pos)>self.tolerance and not rospy.is_shutdown():
-			if (rospy.get_time()-start)>10 or self._as.is_preempt_requested():
+			if (rospy.get_time()-start)>15 or self._as.is_preempt_requested():
 				success=False
 				break
 			r.sleep()
@@ -261,6 +261,8 @@ class TrajectoryControl(object):
 		self._result.error_code = 0
 		if success:
 			self._as.set_succeeded(self._result)
+		else:
+			self._as.set_aborted()
 
 	def move0(self):
 		if self.zero<0: return False
