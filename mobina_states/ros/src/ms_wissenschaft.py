@@ -233,6 +233,7 @@ class Scenario(smach.StateMachine):
 
 if __name__=='__main__':
 	rospy.init_node('MsWissenschaft')
+	rospy.sleep(3)
 	sm = Scenario()
 
 	if True:	
