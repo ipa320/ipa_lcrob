@@ -11,7 +11,9 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.ToneGenerator;
 import android.net.Uri;
 import android.os.IBinder;
 import android.util.Log;
@@ -100,22 +102,18 @@ public class IMU_Service extends Service implements SensorEventListener {
 		}
 
 		private void startUri(String uri) {
+			MimeTypeMap myMime = MimeTypeMap.getSingleton();
+
+			Intent newIntent = new Intent(android.content.Intent.ACTION_VIEW);
+
+			//Intent newIntent = new Intent(Intent.ACTION_VIEW);
+			String mimeType = myMime.getMimeTypeFromExtension(fileExt(uri).substring(1));
+			newIntent.setDataAndType(Uri.parse(uri),mimeType);
+			newIntent.setFlags(newIntent.FLAG_ACTIVITY_NEW_TASK);
 			try {
-				MimeTypeMap myMime = MimeTypeMap.getSingleton();
-
-				Intent newIntent = new Intent(android.content.Intent.ACTION_VIEW);
-
-				//Intent newIntent = new Intent(Intent.ACTION_VIEW);
-				String mimeType = myMime.getMimeTypeFromExtension(fileExt(uri).substring(1));
-				newIntent.setDataAndType(Uri.parse(uri),mimeType);
-				newIntent.setFlags(newIntent.FLAG_ACTIVITY_NEW_TASK);
-				try {
-					startActivity(newIntent);
-				} catch (android.content.ActivityNotFoundException e) {
-					Toast.makeText(getApplicationContext(), "No handler for this type of file.", 4000).show();
-				}
-			} catch(Exception e) {
-				Log.e("cmd", ""+e);
+				startActivity(newIntent);
+			} catch (android.content.ActivityNotFoundException e) {
+				Toast.makeText(getApplicationContext(), "No handler for this type of file.", 4000).show();
 			}
 		}
 
@@ -135,6 +133,9 @@ public class IMU_Service extends Service implements SensorEventListener {
 			String s="";
 
 			while(running) {
+				try {
+					Thread.sleep(50);
+				} catch(Exception e) {}
 				s += usb_intf.read();
 				while(s.length()>0) {
 					String key;
@@ -209,6 +210,9 @@ public class IMU_Service extends Service implements SensorEventListener {
 						key="start";
 						if( (pos=s.indexOf(key))>=0 )
 						{
+//							final ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
+//						     tg.startTone(ToneGenerator.TONE_PROP_BEEP);
+						     
 							int pos2;
 							if( (pos2=s.indexOf(";"))<0) pos=-1;
 							else {
@@ -217,6 +221,15 @@ public class IMU_Service extends Service implements SensorEventListener {
 								} catch (Exception e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
+									Toast.makeText(getApplicationContext(), "startUri "+e, 4000).show();
+									
+									//retry it once
+									try {
+										startUri(s.substring(pos+key.length(), pos2));
+									} catch (Exception e2) {
+										// TODO Auto-generated catch block
+										e2.printStackTrace();
+									}
 								}
 							}
 
@@ -228,7 +241,7 @@ public class IMU_Service extends Service implements SensorEventListener {
 					if(pos>=0)
 						s = s.substring(pos+key.length());
 					else {
-						s = s.trim();
+						//s = s.trim();
 						break;
 					}
 
