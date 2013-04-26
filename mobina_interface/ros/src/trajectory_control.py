@@ -76,7 +76,7 @@ class TrajectoryControl(object):
 		self.conf_in  = conf_in
 		self.calibration = [ [0,0.004], [1,0.002] ]
 		self.calibration_pos = [ [0,0], [1,1] ]
-		self.tolerance = rospy.get_param(pname+'/tolerance', 0.005)
+		self.tolerance = rospy.get_param(pname+'/tolerance', 0.015)
 		self.zero = -1
 
 		if rospy.has_param(pname+'/calibration'):
