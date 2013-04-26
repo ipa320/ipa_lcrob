@@ -46,8 +46,9 @@ class AndroidConnection:
 			elif (time.clock()-self.last_recv)>10:
 				self.close()
 			return r
-		except socket.timeout:
+		except:
 			self.close()
+			print "disconnected"
 			return ""
 
 	def write(self, msg):
