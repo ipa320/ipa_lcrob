@@ -84,7 +84,7 @@ public class USB_Interface {
 							}
 
 							synchronized(this) {
-								ByteBuffer buf = ByteBuffer.allocate(48);
+								ByteBuffer buf = ByteBuffer.allocate(1024);
 								int bytesRead = Globals.client.read(buf);
 								if(bytesRead>0)
 									mBufferIn += new String(buf.array());

@@ -47,8 +47,8 @@ class AndroidConnection:
 				self.close()
 			return r
 		except:
-			print "disconnected"
 			self.close()
+			print "disconnected"
 			return ""
 
 	def write(self, msg):

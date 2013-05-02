@@ -87,16 +87,12 @@ class AVRControl:
 	def _connect(self):
 		while True:
 			try:
-				try:
-					self.intf
-				except:
-					self.intf = AVRInterface()
+				self.intf = AVRInterface()
 				self.intf.setup()
 				break
 			except Exception, e:
 				print "AVR Error:", e
 				rospy.sleep(1)
-				self.intf = AVRInterface()
 
 
 	def _check(self):
