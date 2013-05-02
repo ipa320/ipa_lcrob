@@ -6,5 +6,6 @@
     <include file="$(find mobina_interface)/ros/launch/avr_intf.launch" />
     <include file="$(find mobina_interface)/ros/launch/teleop.launch" />
 
+    <include file="$(find mobina_interface)/ros/launch/$(env ROBOT)/app.launch" />
 </launch>
 
