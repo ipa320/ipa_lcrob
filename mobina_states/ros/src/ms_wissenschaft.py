@@ -182,7 +182,7 @@ class Slump(smach.StateMachine):
 		                           transitions={'succeeded':'MOVE_TO_HOME_EM'})
             		self.add('MOVE_TO_HOME_EM',MoveToPosition('home'),
                                    transitions={'succeeded':'SCREEN_OFF_EM',
-                                                'failed':'SCREEN_OFF_EM'})
+                                                'failed':'MOVE_TO_HOME_EM'})
 		else:
 		    	self.add('LED_NOT_REACHED',Light('red'),
 		                           transitions={'succeeded':'SCREEN_OFF_EM'})
