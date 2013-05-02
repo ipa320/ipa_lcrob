@@ -34,7 +34,7 @@ script1: "rosrun mobina_states check.py"
 #script1: "rosrun mobina_states search_dock.py"
 #script2: "roslaunch cob_camera_alignment mobina.launch"
 script2: "rosrun mobina_states set_mode.py safe"
-script3: "rosrun mobina_states test_play.py a b c d e f g"
+script3: "python /home/mobina/ros/cob_object_perception_intern/cob_fall_detection/test.py" #"rosrun mobina_states test_play.py a b c d e f g"
 
 # axes
 axis_vx: 0
