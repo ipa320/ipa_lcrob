@@ -1,9 +1,29 @@
 <stack>
   <description brief="ipa_lcrob">ipa_lcrob is a summary of low cost robots</description>
   <author>Joshua Hampp</author>
-  <license>GPL</license>  
+  <license>GPL,BSD,LGPL</license>  
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/ipa_lcrob</url>
+  <depend stack="cob_common" /> <!-- brics_actuator -->
+  <depend stack="cob_object_perception" /> <!-- cob_object_detection_msgs -->
+  <depend stack="cob_object_perception_intern" /> <!-- cob_fall_detection -->
+  <depend stack="cob_scenario_states" /> <!-- cob_generic_states_experimental -->
+  <depend stack="common" /> <!-- actionlib -->
+  <depend stack="common_msgs" /> <!-- sensor_msgs, visualization_msgs -->
+  <depend stack="control" /> <!-- control_msgs -->
+  <depend stack="diagnostics_monitors" /> <!-- robot_monitor -->
+  <depend stack="erratic_robot" /> <!-- erratic_gazebo_plugins -->
+  <depend stack="executive_smach" /> <!-- smach -->
+  <depend stack="hector_gazebo" /> <!-- hector_gazebo_plugins -->
+  <depend stack="hector_models" /> <!-- hector_sensors_gazebo, hector_sensors_description -->
+  <depend stack="imu_tools" /> <!-- imu_filter_madgwick -->
+  <depend stack="navigation" /> <!-- fake_localization -->
+  <depend stack="robot_model" /> <!-- urdf -->
+  <depend stack="ros" /> <!-- roslib -->
+  <depend stack="ros_comm" /> <!-- std_msgs, std_srvs, rospy, roscpp -->
+  <depend stack="rx" /> <!-- rxtools -->
+  <depend stack="simulator_gazebo" /> <!-- gazebo_tools, gazebo -->
+  <depend stack="turtlebot" /> <!-- turtlebot_node -->
+  <depend stack="xacro" /> <!-- xacro -->
 
 </stack>
-
